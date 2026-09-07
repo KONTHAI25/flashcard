@@ -312,11 +312,14 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
         </div>
       </div>
 
-      {/* Mastery bar: not started · remaining · learned */}
+      {/* Mastery bar: not started · remaining (played, not yet Know) · learned */}
       {(() => {
         const total = cards.length;
-        const learned = cards.filter((c) => c.streak >= 3).length;
-        const remaining = cards.filter((c) => c.streak < 3 && isDue(c)).length;
+        // Learned = last result was Know (streak ≥ 1). Remaining = attempted
+        // but not closed out with Know (streak reset to 0 by Still learning,
+        // review pushed due past creation). Else never attempted.
+        const learned = cards.filter((c) => c.streak >= 1).length;
+        const remaining = cards.filter((c) => c.streak < 1 && c.due > c.createdAt).length;
         const notStarted = total - learned - remaining;
         const pct = (n: number) => (total > 0 ? Math.round((n / total) * 100) : 0);
         const learnedPct = total > 0 ? Math.round((learned / total) * 100) : 0;
