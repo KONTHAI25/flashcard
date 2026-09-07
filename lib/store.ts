@@ -1,6 +1,14 @@
 "use client";
 
 import { Deck, Card } from "./types";
+import {
+  VOCAB_01,
+  VOCAB_02,
+  VOCAB_03,
+  VOCAB_04,
+  VOCAB_05,
+  VOCAB_06,
+} from "../data/vocab";
 
 const DECKS_KEY = "fc_decks";
 const CARDS_KEY = "fc_cards";
@@ -101,10 +109,62 @@ function seedIfNeeded() {
   }
 }
 
+// ── Oxford 3000 deck (parts 01–06 only) ──
+
+const OXFORD_DECK_ID = "deck-oxford-3000";
+
+function buildOxfordCards(now: number): Card[] {
+  const all: Array<[string, string, string]> = [
+    ...VOCAB_01,
+    ...VOCAB_02,
+    ...VOCAB_03,
+    ...VOCAB_04,
+    ...VOCAB_05,
+    ...VOCAB_06,
+  ];
+  return all.map(([en, th, level], i) => ({
+    id: `ox-${i + 1}`,
+    deckId: OXFORD_DECK_ID,
+    front: en,
+    // Card has no `level` field, so keep CEFR level as a back suffix.
+    back: `${th} [${level}]`,
+    interval: 1,
+    ease: 2.5,
+    due: now,
+    streak: 0,
+    createdAt: now,
+  }));
+}
+
+// Merge-style seed: adds the Oxford deck + cards once, never overwrites.
+// Idempotent: skips if the deck (or any of its cards) already exists.
+// Quota-guarded: writeJSON drops + warns on QuotaExceededError.
+function seedOxfordIfNeeded() {
+  if (typeof window === "undefined") return;
+  try {
+    const decks = readJSON<Deck[]>(DECKS_KEY, []);
+    if (decks.some((d) => d.id === OXFORD_DECK_ID)) return;
+    const cards = readJSON<Card[]>(CARDS_KEY, []);
+    if (cards.some((c) => c.deckId === OXFORD_DECK_ID)) return;
+    const now = Date.now();
+    const deck: Deck = {
+      id: OXFORD_DECK_ID,
+      name: "Oxford 3000",
+      emoji: "📚",
+      createdAt: now,
+    };
+    writeJSON(DECKS_KEY, [...decks, deck]);
+    writeJSON(CARDS_KEY, [...cards, ...buildOxfordCards(now)]);
+  } catch {
+    // Never break existing deck/card flows if the Oxford merge fails.
+  }
+}
+
 // ── Decks ──
 
 export function getDecks(): Deck[] {
   seedIfNeeded();
+  seedOxfordIfNeeded();
   return readJSON<Deck[]>(DECKS_KEY, []);
 }
 
@@ -144,6 +204,7 @@ export function deleteDeck(id: string): void {
 
 export function getCards(): Card[] {
   seedIfNeeded();
+  seedOxfordIfNeeded();
   return readJSON<Card[]>(CARDS_KEY, []);
 }
 
