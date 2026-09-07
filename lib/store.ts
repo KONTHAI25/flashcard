@@ -18,7 +18,16 @@ function readJSON<T>(key: string, fallback: T): T {
 }
 
 function writeJSON<T>(key: string, data: T) {
-  localStorage.setItem(key, JSON.stringify(data));
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (e) {
+    // QuotaExceededError — localStorage full, silently drop write
+    if (e instanceof DOMException && e.name === "QuotaExceededError") {
+      console.warn(`[store] QuotaExceeded writing key "${key}" — data not persisted`);
+    } else {
+      throw e;
+    }
+  }
 }
 
 function uid(): string {
@@ -82,8 +91,11 @@ const SEED_CARDS: Card[] = [
 ];
 
 function seedIfNeeded() {
-  const decks = readJSON<Deck[]>(DECKS_KEY, []);
-  if (decks.length === 0) {
+  if (typeof window === "undefined") return;
+  // Only seed if both keys are absent — never overwrite existing data
+  const decksExist = localStorage.getItem(DECKS_KEY) !== null;
+  const cardsExist = localStorage.getItem(CARDS_KEY) !== null;
+  if (!decksExist && !cardsExist) {
     writeJSON(DECKS_KEY, [SEED_DECK]);
     writeJSON(CARDS_KEY, SEED_CARDS);
   }

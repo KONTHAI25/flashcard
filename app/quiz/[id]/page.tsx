@@ -22,6 +22,11 @@ interface Question {
   correctIdx: number;
 }
 
+function shuffleIndices(n: number): number[] {
+  const indices = Array.from({ length: n }, (_, i) => i);
+  return shuffle(indices);
+}
+
 function buildQuiz(cards: CardType[]): Question[] {
   if (cards.length < 4) return [];
   const shuffled = shuffle(cards);
@@ -31,12 +36,12 @@ function buildQuiz(cards: CardType[]): Question[] {
     const wrongOptions = shuffle(others)
       .slice(0, 3)
       .map((c) => c.back);
-    const options = shuffle([card.back, ...wrongOptions]);
-    return {
-      card,
-      options,
-      correctIdx: options.indexOf(card.back),
-    };
+    const raw = [card.back, ...wrongOptions];
+    // Shuffle via index tracking to avoid indexOf ambiguity
+    const order = shuffleIndices(raw.length);
+    const options = order.map((i) => raw[i]);
+    const correctIdx = order.indexOf(0); // 0 = correct answer slot
+    return { card, options, correctIdx };
   });
 }
 

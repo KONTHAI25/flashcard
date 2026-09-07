@@ -15,6 +15,8 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
   const [dueCards, setDueCards] = useState<CardType[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [finished, setFinished] = useState(false);
+  const [originalLen, setOriginalLen] = useState(0);
+  const [reviewed, setReviewed] = useState(0);
 
   useEffect(() => {
     const d = getDeck(id);
@@ -22,6 +24,7 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
     setDeck(d);
     const due = getCardsByDeck(id).filter(isDue);
     setDueCards(due);
+    setOriginalLen(due.length);
     if (due.length === 0) setFinished(true);
   }, [id, router]);
 
@@ -30,8 +33,17 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
     if (!card) return;
     const updated = reviewCard(card, quality);
     updateCard(card.id, updated);
+    setReviewed((r) => r + 1);
 
-    if (currentIdx + 1 >= dueCards.length) {
+    if (quality === 0) {
+      // Again — move card to end of queue, don't advance pointer
+      setDueCards((prev) => {
+        const next = [...prev];
+        const [moved] = next.splice(currentIdx, 1);
+        next.push(moved);
+        return next;
+      });
+    } else if (currentIdx + 1 >= dueCards.length) {
       setFinished(true);
     } else {
       setCurrentIdx((i) => i + 1);
@@ -41,6 +53,7 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
   if (!deck) return <p className="text-slate-500">Loading…</p>;
 
   const card = dueCards[currentIdx];
+  // "Again" re-queues cards, so count remaining by cards not yet rated Good/Easy
   const remaining = dueCards.length - currentIdx;
 
   if (finished || !card) {
@@ -85,12 +98,12 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
         </Button>
       </div>
 
-      {/* Progress bar */}
+      {/* Progress bar — tracks total reviews vs original queue + re-queues */}
       <div className="mt-6 h-2 overflow-hidden rounded-full bg-slate-800">
         <div
           className="h-full rounded-full bg-blue-500 transition-all"
           style={{
-            width: `${((currentIdx + 1) / dueCards.length) * 100}%`,
+            width: `${Math.min(100, Math.round((reviewed / Math.max(1, originalLen)) * 100))}%`,
           }}
         />
       </div>

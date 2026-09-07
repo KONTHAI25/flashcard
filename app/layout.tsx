@@ -5,7 +5,7 @@ import { BottomNav } from "@/components/BottomNav";
 export const metadata: Metadata = {
   title: "Flashcards",
   description: "Mobile-first spaced repetition flashcards",
-  manifest: "/manifest.json",
+  manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -28,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-slate-950 text-slate-100 antialiased">
-        <main className="mx-auto max-w-lg px-4 pt-4">{children}</main>
+        <main className="mx-auto max-w-lg px-4 pt-4 pb-24">{children}</main>
         <BottomNav />
       </body>
     </html>

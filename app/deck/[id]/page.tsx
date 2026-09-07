@@ -117,13 +117,13 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
                   </span>
                   <button
                     onClick={() => handleEditCard(card)}
-                    className="rounded p-1.5 text-slate-500 hover:bg-slate-800 hover:text-white text-sm"
+                    className="rounded min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-500 hover:bg-slate-800 hover:text-white text-sm"
                   >
                     ✏️
                   </button>
                   <button
                     onClick={() => handleDeleteCard(card.id)}
-                    className="rounded p-1.5 text-slate-500 hover:bg-red-900/30 hover:text-red-400 text-sm"
+                    className="rounded min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-500 hover:bg-red-900/30 hover:text-red-400 text-sm"
                   >
                     🗑
                   </button>
