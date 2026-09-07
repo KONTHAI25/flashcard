@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+:root {
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  min-height: 100dvh;
+  overscroll-behavior: none;
+  padding-top: var(--safe-top);
+  padding-bottom: calc(68px + var(--safe-bottom));
+}
+
+/* Card flip animation */
+.card-flip {
+  perspective: 1000px;
+}
+.card-flip-inner {
+  transition: transform 0.5s;
+  transform-style: preserve-3d;
+  position: relative;
+}
+.card-flip-inner.flipped {
+  transform: rotateY(180deg);
+}
+.card-flip-front,
+.card-flip-back {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.card-flip-back {
+  transform: rotateY(180deg);
+  position: absolute;
+  inset: 0;
+}
