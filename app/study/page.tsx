@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Deck } from "@/lib/types";
 import { getDecks, getCardsByDeck } from "@/lib/store";
 import { isDue } from "@/lib/srs";
 import { Button } from "@/components/Button";
+import { Badge } from "@/components/ui";
 
 function CheckCircleIcon({ className = "h-8 w-8" }: { className?: string }) {
   return (
@@ -54,7 +56,7 @@ export default function StudyIndexPage() {
 
   if (loading) {
     return (
-      <div aria-busy="true" aria-label="Loading study decks">
+      <div aria-busy="true" aria-label="Loading study sets">
         <div className="mb-2 h-8 w-28 animate-pulse rounded-lg bg-slate-200" />
         <div className="mb-6 h-4 w-48 animate-pulse rounded bg-slate-200" />
         <div className="space-y-3">
@@ -119,38 +121,47 @@ export default function StudyIndexPage() {
           </Button>
         </div>
       ) : (
-        <div className="space-y-3">
-          {decksWithDue.map(({ deck, total, dueCount }) => (
-            <button
-              key={deck.id}
-              type="button"
-              onClick={() => router.push(`/study/${deck.id}`)}
-              aria-label={`Study ${deck.name}, ${dueCount} due`}
-              className="flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition-all hover:border-slate-300 hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2"
+        <>
+          {totalDue > 0 && (
+            <Button
+              onClick={() => router.push("/study/all")}
+              className="mb-4 w-full"
             >
-              <span
-                className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-indigo-50 text-xl"
-                aria-hidden="true"
+              Study all due ({totalDue})
+            </Button>
+          )}
+          <div className="space-y-3">
+            {decksWithDue.map(({ deck, total, dueCount }) => (
+              <Link
+                key={deck.id}
+                href={`/study/${deck.id}`}
+                aria-label={`Study ${deck.name}, ${dueCount} due`}
+                className="flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition-all hover:border-slate-300 hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2"
               >
-                {deck.emoji}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate font-semibold text-slate-900">
-                  {deck.name}
+                <span
+                  className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-indigo-50 text-xl"
+                  aria-hidden="true"
+                >
+                  {deck.emoji}
                 </span>
-                <span className="mt-0.5 block truncate text-xs text-slate-500">
-                  {total} {total === 1 ? "term" : "terms"} total
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-semibold text-slate-900">
+                    {deck.name}
+                  </span>
+                  <span className="mt-0.5 block truncate text-xs text-slate-500">
+                    {total} {total === 1 ? "term" : "terms"} total
+                  </span>
                 </span>
-              </span>
-              <span className="inline-flex shrink-0 items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
-                {dueCount} due
-              </span>
-              <span className="shrink-0 text-slate-400" aria-hidden="true">
-                <ChevronRightIcon />
-              </span>
-            </button>
-          ))}
-        </div>
+                <Badge variant="warning" className="shrink-0">
+                  {dueCount} due
+                </Badge>
+                <span className="shrink-0 text-slate-400" aria-hidden="true">
+                  <ChevronRightIcon />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

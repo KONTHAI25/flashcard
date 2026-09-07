@@ -106,7 +106,7 @@ export function EmptyState({ title, hint, action, icon }: EmptyStateProps) {
 
 /* ---------- Badge ---------- */
 
-type BadgeVariant = "due" | "dim";
+type BadgeVariant = "due" | "dim" | "warning";
 
 interface BadgeProps {
   variant?: BadgeVariant;
@@ -117,6 +117,7 @@ interface BadgeProps {
 const badgeVariants: Record<BadgeVariant, string> = {
   due: "border-indigo-200 bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200",
   dim: "border-slate-200 bg-slate-100 text-slate-500",
+  warning: "border-amber-200 bg-amber-50 text-amber-700",
 };
 
 export function Badge({ variant = "dim", children, className }: BadgeProps) {

@@ -117,11 +117,11 @@ export function Header() {
           </nav>
 
           <Link
-            href="/"
+            href="/?new=1"
             className="inline-flex min-h-[44px] items-center gap-1.5 rounded-lg bg-[#4255FF] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#3040E6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           >
             <PlusIcon className="h-4 w-4" />
-            Create
+            New set
           </Link>
         </div>
 

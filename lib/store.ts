@@ -240,15 +240,30 @@ export function updateDeck(id: string, patch: Partial<Deck>): Deck | null {
   return decks[idx];
 }
 
-export function deleteDeck(id: string): void {
+export function deleteDeck(id: string): { deck: Deck | null; cards: Card[] } {
+  const decks = getDecks();
+  const cards = getCards();
+  const deck = decks.find((d) => d.id === id) ?? null;
+  const removed = cards.filter((c) => c.deckId === id);
   writeJSON(
     DECKS_KEY,
-    getDecks().filter((d) => d.id !== id)
+    decks.filter((d) => d.id !== id)
   );
   writeJSON(
     CARDS_KEY,
-    getCards().filter((c) => c.deckId !== id)
+    cards.filter((c) => c.deckId !== id)
   );
+  return { deck, cards: removed };
+}
+
+export function restoreDeck(deck: Deck, cards: Card[]): void {
+  const decks = getDecks();
+  const nextDecks = decks.some((d) => d.id === deck.id) ? decks : [...decks, deck];
+  writeJSON(DECKS_KEY, nextDecks);
+  const existing = getCards();
+  const ids = new Set(existing.map((c) => c.id));
+  const toAdd = cards.filter((c) => !ids.has(c.id));
+  writeJSON(CARDS_KEY, toAdd.length > 0 ? [...existing, ...toAdd] : existing);
 }
 
 // ── Cards ──
@@ -298,9 +313,19 @@ export function updateCard(id: string, patch: Partial<Card>): Card | null {
   return cards[idx];
 }
 
-export function deleteCard(id: string): void {
+export function deleteCard(id: string): Card | null {
+  const cards = getCards();
+  const found = cards.find((c) => c.id === id) ?? null;
+  if (!found) return null;
   writeJSON(
     CARDS_KEY,
-    getCards().filter((c) => c.id !== id)
+    cards.filter((c) => c.id !== id)
   );
+  return found;
+}
+
+export function restoreCard(card: Card): void {
+  const cards = getCards();
+  if (cards.some((c) => c.id === card.id)) return;
+  writeJSON(CARDS_KEY, [...cards, card]);
 }

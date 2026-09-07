@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Card as CardType, Deck } from "@/lib/types";
-import { getDeck, getCardsByDeck, updateCard } from "@/lib/store";
+import { Card as CardType } from "@/lib/types";
+import { getCards, getDeck, getDecks, updateCard } from "@/lib/store";
 import { isDue, reviewCard } from "@/lib/srs";
 import { FlashCard } from "@/components/FlashCard";
 import { Button } from "@/components/Button";
@@ -66,10 +66,8 @@ function CheckCircleIcon({ className = "h-8 w-8" }: { className?: string }) {
   );
 }
 
-export default function StudyPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function StudyAllPage() {
   const router = useRouter();
-  const [deck, setDeck] = useState<Deck | null>(null);
   const [dueCards, setDueCards] = useState<CardType[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [finished, setFinished] = useState(false);
@@ -82,18 +80,19 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
   const [requeues, setRequeues] = useState(0);
 
   useEffect(() => {
-    const d = getDeck(id);
-    if (!d) {
-      router.push("/");
-      return;
-    }
-    setDeck(d);
-    const due = getCardsByDeck(id).filter(isDue);
+    const deckNames = new Map(getDecks().map((d) => [d.id, d.name]));
+    const due = getCards()
+      .filter(isDue)
+      .sort((a, b) => {
+        const an = deckNames.get(a.deckId) ?? "";
+        const bn = deckNames.get(b.deckId) ?? "";
+        return an.localeCompare(bn);
+      });
     setDueCards(due);
     setOriginalLen(due.length);
     if (due.length === 0) setFinished(true);
     setLoading(false);
-  }, [id, router]);
+  }, []);
 
   function handleReview(quality: number) {
     const card = dueCards[currentIdx];
@@ -156,7 +155,7 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
     return () => window.removeEventListener("keydown", onKey);
   });
 
-  if (loading || !deck) {
+  if (loading) {
     return (
       <div
         className="mx-auto w-full max-w-3xl"
@@ -182,7 +181,7 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
     );
   }
 
-  // Empty state: deck had nothing due when the session loaded.
+  // Empty state: nothing due across all sets when the session loaded.
   if (finished && originalLen === 0) {
     return (
       <div className="mx-auto w-full max-w-3xl">
@@ -197,18 +196,18 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
             All caught up
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            No terms due in {deck.name} right now.
+            No terms due in any set right now.
           </p>
           <div className="mt-6 flex w-full flex-col gap-2">
-            <Button className="w-full" onClick={() => router.push(`/deck/${id}`)}>
-              Back to set
+            <Button className="w-full" onClick={() => router.push("/study")}>
+              Back to study
             </Button>
             <Button
               variant="secondary"
               className="w-full"
-              onClick={() => router.push("/study")}
+              onClick={() => router.push("/")}
             >
-              Study another set
+              Browse sets
             </Button>
           </div>
         </div>
@@ -233,18 +232,18 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
           </h1>
           <p className="mt-1 text-sm text-slate-500">
             Reviewed {reviewed} · {originalLen}{" "}
-            {originalLen === 1 ? "term" : "terms"} due in {deck.name}
+            {originalLen === 1 ? "term" : "terms"} due across all sets
           </p>
           <div className="mt-6 flex w-full flex-col gap-2">
-            <Button className="w-full" onClick={() => router.push(`/deck/${id}`)}>
-              Back to set
+            <Button className="w-full" onClick={() => router.push("/study")}>
+              Back to study
             </Button>
             <Button
               variant="secondary"
               className="w-full"
-              onClick={() => router.push("/study")}
+              onClick={() => router.push("/")}
             >
-              Study another set
+              Browse sets
             </Button>
           </div>
         </div>
@@ -259,6 +258,7 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
   const total = originalLen + requeues;
   const progress =
     total > 0 ? Math.min(100, Math.round((reviewed / total) * 100)) : 100;
+  const deckName = getDeck(card.deckId)?.name;
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col min-h-[70dvh]">
@@ -272,7 +272,7 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
           <ArrowLeftIcon />
         </button>
         <h1 className="min-w-0 flex-1 truncate text-xl font-bold tracking-tight text-slate-900">
-          {deck.name}
+          All sets
         </h1>
         <p className="shrink-0 text-sm tabular-nums text-slate-500">
           {position} / {dueCards.length}
@@ -282,6 +282,13 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
       <ProgressBar value={progress} className="mb-6" />
 
       <div className="flex-1">
+        {deckName ? (
+          <div className="mb-3">
+            <span className="inline-flex max-w-full items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-500 shadow-sm">
+              <span className="truncate">Set: {deckName}</span>
+            </span>
+          </div>
+        ) : null}
         {/* key remounts the card per prompt so flip state never leaks across cards */}
         <FlashCard key={card.id} front={card.front} back={card.back} />
       </div>

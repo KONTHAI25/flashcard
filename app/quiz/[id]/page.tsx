@@ -220,8 +220,8 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-16 text-center">
         <h1 className="mb-2 text-xl font-bold text-slate-900">Not enough terms</h1>
-        <p className="mb-4 text-sm text-slate-500">You need at least 4 terms to start a test.</p>
-        <Button onClick={() => router.push(`/deck/${id}`)}>Back to Deck</Button>
+        <p className="mb-4 text-sm text-slate-500">You need at least 4 terms to start a quiz.</p>
+        <Button onClick={() => router.push(`/deck/${id}`)}>Back to set</Button>
       </div>
     );
   }
@@ -233,7 +233,7 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
         <div className="flex flex-col items-center rounded-2xl border border-slate-200 bg-white px-6 py-10 text-center">
           <div
             role="status"
-            aria-label={`Test complete. Scored ${score} out of ${questions.length}, ${pct} percent.`}
+            aria-label={`Quiz complete. Scored ${score} out of ${questions.length}, ${pct} percent.`}
             className="grid h-36 w-36 place-items-center rounded-full border-4 border-[#4255FF] bg-white"
           >
             <div>
@@ -243,7 +243,7 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
               </p>
             </div>
           </div>
-          <h1 className="mb-1 mt-6 text-2xl font-bold text-slate-900">Test Complete!</h1>
+          <h1 className="mb-1 mt-6 text-2xl font-bold text-slate-900">Quiz Complete!</h1>
           <p className="text-sm text-slate-500">{resultMessage(pct)}</p>
           <dl className="mt-6 flex items-center gap-8 text-center">
             <div>
@@ -287,7 +287,7 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
         >
           <BackArrowIcon />
         </button>
-        <h1 className="min-w-0 flex-1 truncate text-xl font-bold text-slate-900">Test · {deck.name}</h1>
+        <h1 className="min-w-0 flex-1 truncate text-xl font-bold text-slate-900">Quiz · {deck.name}</h1>
         <span
           role="status"
           aria-label={`Current score ${score}`}
@@ -374,7 +374,7 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
       </p>
 
       {answered && (
-        <div className="mt-6 flex flex-col items-center gap-3">
+        <div className="sticky bottom-0 mt-6 flex flex-col items-center gap-3 border-t border-slate-200/70 bg-white/85 py-4 backdrop-blur supports-[backdrop-filter]:bg-white/70 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <p
             role="status"
             className={`flex items-center gap-2 font-semibold ${isCorrect ? "text-emerald-700" : "text-rose-600"}`}

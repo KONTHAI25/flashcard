@@ -3,9 +3,11 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { Deck, Card as CardType } from "@/lib/types";
-import { getDeck, getCardsByDeck, createCard, deleteCard, updateCard } from "@/lib/store";
+import { getDeck, getCardsByDeck, createCard, deleteCard, restoreCard, updateCard } from "@/lib/store";
 import { isDue, nextReviewLabel } from "@/lib/srs";
 import { Button } from "@/components/Button";
+import { showToast } from "@/components/Toast";
+import { Badge } from "@/components/ui";
 import { Sheet } from "@/components/Sheet";
 
 function ArrowLeftIcon() {
@@ -125,20 +127,6 @@ function TrashIcon() {
   );
 }
 
-function Badge({ due, children }: { due: boolean; children: React.ReactNode }) {
-  return (
-    <span
-      className={`inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-xs font-medium ${
-        due
-          ? "border-amber-200 bg-amber-50 text-amber-700"
-          : "border-slate-200 bg-slate-100 text-slate-500"
-      }`}
-    >
-      {children}
-    </span>
-  );
-}
-
 function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (
     <div className="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center shadow-sm">
@@ -159,7 +147,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
 
 function LoadingSkeleton() {
   return (
-    <div aria-busy="true" aria-label="Loading deck">
+    <div aria-busy="true" aria-label="Loading set">
       <div className="mb-6 flex animate-pulse items-center gap-3">
         <div className="h-11 w-11 rounded-xl bg-slate-200" />
         <div className="flex-1 space-y-2">
@@ -230,9 +218,15 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
   }
 
   function handleDeleteCard(cardId: string) {
-    if (!window.confirm("Delete this card? This cannot be undone.")) return;
-    deleteCard(cardId);
+    const removed = deleteCard(cardId);
     refresh();
+    showToast("Deleted term", {
+      label: "Undo",
+      onUndo: () => {
+        if (removed) restoreCard(removed);
+        refresh();
+      },
+    });
   }
 
   function handleOpenAdd() {
@@ -272,33 +266,51 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
 
       {/* Study-modes row */}
       <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Button
-          className="w-full"
-          size="lg"
-          disabled={dueCount === 0}
-          title={dueCount === 0 ? "No cards due — come back later" : `Study ${dueCount} due cards`}
-          onClick={() => router.push(`/study/${id}`)}
-        >
-          <CardStackIcon />
-          <span className="flex flex-col items-start text-left leading-tight">
-            <span className="font-semibold">Flashcards</span>
-            <span className="text-xs font-normal opacity-80">Study {dueCount} due</span>
-          </span>
-        </Button>
-        <Button
-          variant="secondary"
-          className="w-full"
-          size="lg"
-          disabled={quizDisabled}
-          title={quizDisabled ? `Add ${4 - cards.length} more card(s) to unlock Quiz` : `Quiz on ${cards.length} cards`}
-          onClick={() => router.push(`/quiz/${id}`)}
-        >
-          <CheckCircleIcon />
-          <span className="flex flex-col items-start text-left leading-tight">
-            <span className="font-semibold">Test</span>
-            <span className="text-xs font-normal opacity-80">Quiz · {cards.length}</span>
-          </span>
-        </Button>
+        <div>
+          <Button
+            className="w-full"
+            size="lg"
+            onClick={() => router.push(`/study/${id}`)}
+          >
+            <CardStackIcon />
+            <span className="font-semibold">Study · {dueCount} due</span>
+          </Button>
+          {dueCount === 0 && (
+            <p className="mt-1.5 flex items-center gap-1 text-xs text-emerald-700">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+                className="shrink-0 text-emerald-600"
+              >
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+              No terms due — you&apos;re all caught up. New terms become due later.
+            </p>
+          )}
+        </div>
+        <div>
+          <Button
+            variant="secondary"
+            className="w-full"
+            size="lg"
+            onClick={() => router.push(`/quiz/${id}`)}
+          >
+            <CheckCircleIcon />
+            <span className="font-semibold">Quiz · {cards.length}</span>
+          </Button>
+          {quizDisabled && (
+            <p className="mt-1.5 text-xs text-slate-500">
+              Add {4 - cards.length} more {4 - cards.length === 1 ? "term" : "terms"} to unlock the quiz.
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Terms section */}
@@ -323,17 +335,17 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
                 <p className="break-words font-medium text-slate-900">{card.front}</p>
                 <p className="break-words text-slate-600">{card.back}</p>
                 <div className="flex shrink-0 items-center gap-1">
-                  <Badge due={due}>{due ? "Due" : nextReviewLabel(card)}</Badge>
+                  <Badge variant={due ? "warning" : "dim"}>{due ? "Due" : nextReviewLabel(card)}</Badge>
                   <button
                     onClick={() => handleEditCard(card)}
-                    aria-label={`Edit card: ${card.front}`}
+                    aria-label={`Edit term: ${card.front}`}
                     className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2"
                   >
                     <PencilIcon />
                   </button>
                   <button
                     onClick={() => handleDeleteCard(card.id)}
-                    aria-label={`Delete card: ${card.front}`}
+                    aria-label={`Delete term: ${card.front}`}
                     className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2"
                   >
                     <TrashIcon />
@@ -348,7 +360,7 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
       <Sheet
         open={sheetOpen}
         onClose={() => { setSheetOpen(false); setEditCardId(null); }}
-        title={editCardId ? "Edit Card" : "Add Card"}
+        title={editCardId ? "Edit term" : "Add term"}
       >
         <div className="space-y-4">
           <div>
@@ -379,7 +391,7 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
             />
           </div>
           <Button onClick={handleSaveCard} className="w-full" disabled={!canSave}>
-            {editCardId ? "Save Changes" : "Add Card"}
+            {editCardId ? "Save Changes" : "Add term"}
           </Button>
         </div>
       </Sheet>

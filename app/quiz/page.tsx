@@ -4,8 +4,26 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Deck } from "@/lib/types";
 import { getDecks, getCardsByDeck } from "@/lib/store";
+import { Badge } from "@/components/ui";
 
 const MIN_CARDS = 4;
+
+function ChevronRightIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="m9 6 6 6-6 6" />
+    </svg>
+  );
+}
 
 export default function QuizIndexPage() {
   const [decks, setDecks] = useState<Deck[]>([]);
@@ -16,7 +34,7 @@ export default function QuizIndexPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">Test</h1>
+      <h1 className="text-2xl font-bold tracking-tight text-slate-900">Quiz</h1>
       <p className="mb-6 mt-1 text-sm text-slate-500">
         Pick a set — at least 4 terms
       </p>
@@ -27,7 +45,7 @@ export default function QuizIndexPage() {
             No sets yet
           </p>
           <p className="text-sm text-slate-500">
-            Create a set to start testing yourself.
+            Create a set to start a quiz.
           </p>
         </div>
       ) : (
@@ -36,30 +54,35 @@ export default function QuizIndexPage() {
             const count = getCardsByDeck(deck.id).length;
             const ready = count >= MIN_CARDS;
             const rowClass =
-              "flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 transition-colors";
+              "flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2";
             const content = (
               <>
                 <span
                   aria-hidden="true"
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-100 text-xl"
+                  className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-indigo-50 text-xl"
                 >
                   {deck.emoji}
                 </span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold text-slate-900">
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-semibold text-slate-900">
                     {deck.name}
-                  </p>
-                  <p className="text-xs text-slate-500">{count} terms</p>
-                </div>
+                  </span>
+                  <span className="mt-0.5 block truncate text-xs text-slate-500">
+                    {count} {count === 1 ? "term" : "terms"} total
+                  </span>
+                </span>
                 {ready ? (
-                  <span className="shrink-0 rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">
+                  <Badge variant="due" className="shrink-0">
                     Ready
-                  </span>
+                  </Badge>
                 ) : (
-                  <span className="shrink-0 rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">
+                  <Badge variant="dim" className="shrink-0">
                     Need {MIN_CARDS - count} more
-                  </span>
+                  </Badge>
                 )}
+                <span className="shrink-0 text-slate-400" aria-hidden="true">
+                  <ChevronRightIcon />
+                </span>
               </>
             );
 
@@ -68,7 +91,8 @@ export default function QuizIndexPage() {
                 <li key={deck.id}>
                   <Link
                     href={`/quiz/${deck.id}`}
-                    className={`${rowClass} hover:border-[#4255FF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2 focus-visible:ring-offset-white`}
+                    aria-label={`Quiz on ${deck.name}, ${count} terms`}
+                    className={`${rowClass} hover:border-slate-300 hover:shadow-md active:scale-[0.99]`}
                   >
                     {content}
                   </Link>
@@ -80,7 +104,7 @@ export default function QuizIndexPage() {
               <li key={deck.id}>
                 <div
                   aria-disabled="true"
-                  title={`Add ${MIN_CARDS - count} more terms to start a test`}
+                  title={`Add ${MIN_CARDS - count} more terms to start a quiz`}
                   className={`${rowClass} cursor-not-allowed opacity-60`}
                 >
                   {content}
