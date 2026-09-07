@@ -2,8 +2,8 @@
 
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-type ButtonVariant = "primary" | "secondary" | "danger" | "ghost";
-type ButtonSize = "sm" | "md" | "lg";
+type ButtonVariant = "primary" | "secondary" | "danger" | "success" | "ghost";
+type ButtonSize = "sm" | "md" | "lg" | "grade";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -23,6 +23,8 @@ const variants: Record<ButtonVariant, string> = {
     "border border-slate-300 bg-white text-slate-700 shadow-sm hover:bg-slate-50 active:bg-slate-100",
   danger:
     "border border-transparent bg-red-500 text-white shadow-sm hover:bg-red-600 active:bg-red-700",
+  success:
+    "border border-transparent bg-emerald-500 text-white shadow-sm hover:bg-emerald-600 active:bg-emerald-700",
   ghost:
     "border border-transparent bg-transparent text-slate-500 hover:bg-slate-100 hover:text-slate-700 active:bg-slate-200",
 };
@@ -31,6 +33,7 @@ const sizes: Record<ButtonSize, string> = {
   sm: "min-h-[40px] rounded-lg px-3 py-1.5 text-sm",
   md: "min-h-[44px] rounded-lg px-4 py-2.5 text-sm",
   lg: "min-h-[48px] rounded-lg px-6 py-3 text-base",
+  grade: "min-h-[68px] rounded-2xl px-6 py-4 text-base",
 };
 
 function Spinner() {

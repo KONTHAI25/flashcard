@@ -349,26 +349,28 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
 
       <div className="mx-auto mt-4 grid max-w-2xl grid-cols-2 gap-3">
         <Button
-          variant="secondary"
+          variant="danger"
+          size="grade"
           onClick={() => handleReview(0)}
           className="w-full"
           aria-label="Still learning (press 1)"
         >
-          <svg className="h-4 w-4 shrink-0 text-rose-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" aria-hidden="true">
+          <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" aria-hidden="true">
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
-          <span className="truncate text-rose-600">Still learning</span>
-          <kbd className="rounded border border-slate-200 bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] font-medium leading-none text-slate-500">
+          <span className="truncate">Still learning</span>
+          <kbd className="rounded border border-white/40 bg-white/20 px-1.5 py-0.5 font-mono text-[10px] font-medium leading-none text-white">
             1
           </kbd>
         </Button>
         <Button
-          variant="primary"
+          variant="success"
+          size="grade"
           onClick={() => handleReview(1)}
           className="w-full"
           aria-label="Know (press 2)"
         >
-          <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M20 6 9 17l-5-5" />
           </svg>
           <span className="truncate">Know</span>
