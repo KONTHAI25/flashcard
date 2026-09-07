@@ -33,13 +33,10 @@ npm run start      # serve locally on :3000
 ### Option A — GitHub → Vercel (recommended)
 
 ```bash
-# 1. Initialize git & push to GitHub
-git init
-git add -A
-git commit -m "feat: flashcard MVP"
-# Create a new repo on GitHub, then:
-git remote add origin https://github.com/<you>/flashcard.git
-git branch -M main
+# Remote already configured:
+git remote -v   # → https://github.com/KONTHAI25/flashcard.git
+
+# Create the empty repo on GitHub (if not yet), then:
 git push -u origin main
 ```
 
