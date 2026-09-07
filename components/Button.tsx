@@ -18,19 +18,19 @@ function cn(...parts: Array<string | false | null | undefined>) {
 
 const variants: Record<ButtonVariant, string> = {
   primary:
-    "border border-transparent bg-indigo-600 text-white shadow-sm shadow-indigo-950/40 hover:bg-indigo-500 active:bg-indigo-700",
+    "border border-transparent bg-[#4255FF] text-white shadow-sm hover:bg-[#3040E6] active:bg-[#3040E6]",
   secondary:
-    "border border-slate-700 bg-slate-800 text-slate-100 shadow-sm hover:bg-slate-700 active:bg-slate-800",
+    "border border-slate-300 bg-white text-slate-700 shadow-sm hover:bg-slate-50 active:bg-slate-100",
   danger:
-    "border border-transparent bg-red-600 text-white shadow-sm hover:bg-red-500 active:bg-red-700",
+    "border border-transparent bg-red-500 text-white shadow-sm hover:bg-red-600 active:bg-red-700",
   ghost:
-    "border border-transparent bg-transparent text-slate-300 hover:bg-slate-800 hover:text-slate-100 active:bg-slate-800",
+    "border border-transparent bg-transparent text-slate-500 hover:bg-slate-100 hover:text-slate-700 active:bg-slate-200",
 };
 
 const sizes: Record<ButtonSize, string> = {
   sm: "min-h-[40px] rounded-lg px-3 py-1.5 text-sm",
-  md: "min-h-[44px] rounded-xl px-4 py-2.5 text-sm",
-  lg: "min-h-[48px] rounded-xl px-6 py-3 text-base",
+  md: "min-h-[44px] rounded-lg px-4 py-2.5 text-sm",
+  lg: "min-h-[48px] rounded-lg px-6 py-3 text-base",
 };
 
 function Spinner() {
@@ -77,7 +77,7 @@ export function Button({
       className={cn(
         "inline-flex min-w-[44px] cursor-pointer items-center justify-center gap-2 font-semibold",
         "transition-all duration-150 active:scale-[0.97]",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2 focus-visible:ring-offset-white",
         "disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-none",
         "disabled:active:scale-100",
         variants[variant],

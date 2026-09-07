@@ -30,7 +30,7 @@ export function PageHeader({
           type="button"
           onClick={onBack}
           aria-label={backLabel}
-          className="inline-flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-xl border border-slate-700 bg-slate-800 text-slate-300 transition-colors hover:bg-slate-700 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+          className="inline-flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
         >
           <svg
             className="h-5 w-5"
@@ -48,11 +48,11 @@ export function PageHeader({
         </button>
       )}
       <div className="min-w-0 flex-1">
-        <h1 className="truncate text-lg font-semibold tracking-tight text-slate-100">
+        <h1 className="truncate text-xl font-bold tracking-tight text-slate-900">
           {title}
         </h1>
         {subtitle && (
-          <p className="truncate text-sm text-slate-400">{subtitle}</p>
+          <p className="truncate text-sm text-slate-500">{subtitle}</p>
         )}
       </div>
       {action && <div className="flex shrink-0 items-center gap-2">{action}</div>}
@@ -89,15 +89,15 @@ function DefaultEmptyIcon() {
 
 export function EmptyState({ title, hint, action, icon }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-700 bg-slate-900/50 px-6 py-12 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-800 text-slate-400">
+    <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center shadow-sm">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
         {icon ?? <DefaultEmptyIcon />}
       </div>
-      <h2 className="text-base font-semibold tracking-tight text-slate-100">
+      <h2 className="text-base font-semibold tracking-tight text-slate-900">
         {title}
       </h2>
       {hint && (
-        <p className="max-w-sm text-sm leading-relaxed text-slate-400">{hint}</p>
+        <p className="max-w-sm text-sm leading-relaxed text-slate-500">{hint}</p>
       )}
       {action && <div className="mt-2">{action}</div>}
     </div>
@@ -115,8 +115,8 @@ interface BadgeProps {
 }
 
 const badgeVariants: Record<BadgeVariant, string> = {
-  due: "border-indigo-500/30 bg-indigo-500/15 text-indigo-300",
-  dim: "border-slate-700 bg-slate-800 text-slate-400",
+  due: "border-indigo-200 bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200",
+  dim: "border-slate-200 bg-slate-100 text-slate-500",
 };
 
 export function Badge({ variant = "dim", children, className }: BadgeProps) {
@@ -146,7 +146,7 @@ export function ProgressBar({ value, label, className }: ProgressBarProps) {
   return (
     <div className={cn("w-full", className)}>
       {label && (
-        <p className="mb-1.5 text-xs font-medium text-slate-400">{label}</p>
+        <p className="mb-1.5 text-xs font-medium text-slate-500">{label}</p>
       )}
       <div
         role="progressbar"
@@ -154,10 +154,10 @@ export function ProgressBar({ value, label, className }: ProgressBarProps) {
         aria-valuemin={0}
         aria-valuemax={100}
         aria-label={label ?? "Progress"}
-        className="h-2 w-full overflow-hidden rounded-full bg-slate-800"
+        className="h-2 w-full overflow-hidden rounded-full bg-slate-200"
       >
         <div
-          className="h-full rounded-full bg-indigo-500 transition-all duration-300"
+          className="h-full rounded-full bg-[#4255FF] transition-all duration-300"
           style={{ width: `${clamped}%` }}
         />
       </div>

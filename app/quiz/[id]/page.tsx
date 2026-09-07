@@ -115,6 +115,24 @@ function XCircleIcon({ className = "h-5 w-5" }: { className?: string }) {
   );
 }
 
+function BackArrowIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="m12 19-7-7 7-7" />
+      <path d="M19 12H5" />
+    </svg>
+  );
+}
+
 function resultMessage(pct: number): string {
   if (pct >= 80) return "Excellent work!";
   if (pct >= 50) return "Good effort — keep going!";
@@ -200,9 +218,9 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
 
   if (questions.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center pt-24 text-center">
-        <h1 className="mb-2 text-xl font-bold">Not enough cards</h1>
-        <p className="mb-4 text-slate-400">You need at least 4 cards to start a quiz.</p>
+      <div className="mx-auto flex w-full max-w-2xl flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-16 text-center">
+        <h1 className="mb-2 text-xl font-bold text-slate-900">Not enough terms</h1>
+        <p className="mb-4 text-sm text-slate-500">You need at least 4 terms to start a test.</p>
         <Button onClick={() => router.push(`/deck/${id}`)}>Back to Deck</Button>
       </div>
     );
@@ -211,42 +229,44 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
   if (finished) {
     const pct = Math.round((score / questions.length) * 100);
     return (
-      <div className="flex flex-col items-center justify-center pt-16 text-center">
-        <div
-          role="status"
-          aria-label={`Quiz complete. Scored ${score} out of ${questions.length}, ${pct} percent.`}
-          className="grid h-36 w-36 place-items-center rounded-full border border-white/10 bg-slate-900"
-        >
-          <div>
-            <p className="text-4xl font-bold">{pct}%</p>
-            <p className="mt-1 text-xs text-slate-400">
-              {score}/{questions.length} correct
-            </p>
+      <div className="mx-auto w-full max-w-2xl">
+        <div className="flex flex-col items-center rounded-2xl border border-slate-200 bg-white px-6 py-10 text-center">
+          <div
+            role="status"
+            aria-label={`Test complete. Scored ${score} out of ${questions.length}, ${pct} percent.`}
+            className="grid h-36 w-36 place-items-center rounded-full border-4 border-[#4255FF] bg-white"
+          >
+            <div>
+              <p className="text-4xl font-bold text-slate-900">{pct}%</p>
+              <p className="mt-1 text-xs text-slate-500">
+                {score}/{questions.length} correct
+              </p>
+            </div>
           </div>
-        </div>
-        <h1 className="mb-1 mt-6 text-2xl font-bold">Quiz Complete!</h1>
-        <p className="text-slate-400">{resultMessage(pct)}</p>
-        <dl className="mt-6 flex items-center gap-6 text-center">
-          <div>
-            <dt className="text-xs text-slate-500">Correct</dt>
-            <dd className="text-lg font-bold text-emerald-300">{score}</dd>
+          <h1 className="mb-1 mt-6 text-2xl font-bold text-slate-900">Test Complete!</h1>
+          <p className="text-sm text-slate-500">{resultMessage(pct)}</p>
+          <dl className="mt-6 flex items-center gap-8 text-center">
+            <div>
+              <dt className="text-xs text-slate-500">Correct</dt>
+              <dd className="text-lg font-bold text-emerald-700">{score}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-slate-500">Total</dt>
+              <dd className="text-lg font-bold text-slate-900">{questions.length}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-slate-500">Accuracy</dt>
+              <dd className="text-lg font-bold text-slate-900">{pct}%</dd>
+            </div>
+          </dl>
+          <div className="mt-8 flex w-full max-w-xs gap-3">
+            <Button variant="secondary" onClick={() => router.push(`/deck/${id}`)} className="flex-1">
+              Back
+            </Button>
+            <Button onClick={resetQuiz} className="flex-1">
+              Try Again
+            </Button>
           </div>
-          <div>
-            <dt className="text-xs text-slate-500">Total</dt>
-            <dd className="text-lg font-bold">{questions.length}</dd>
-          </div>
-          <div>
-            <dt className="text-xs text-slate-500">Accuracy</dt>
-            <dd className="text-lg font-bold">{pct}%</dd>
-          </div>
-        </dl>
-        <div className="mt-8 flex w-full max-w-xs gap-3">
-          <Button variant="secondary" onClick={() => router.push(`/deck/${id}`)} className="flex-1">
-            Back
-          </Button>
-          <Button onClick={resetQuiz} className="flex-1">
-            Try Again
-          </Button>
         </div>
       </div>
     );
@@ -258,29 +278,29 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
   const isLast = currentIdx + 1 >= questions.length;
 
   return (
-    <div>
+    <div className="mx-auto w-full max-w-2xl">
       <div className="mb-6 flex items-center gap-3">
         <button
           onClick={() => router.back()}
           aria-label="Go back"
-          className="grid h-9 w-9 place-items-center rounded-lg text-xl text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
         >
-          ←
+          <BackArrowIcon />
         </button>
-        <h1 className="truncate text-xl font-bold">Quiz · {deck.name}</h1>
-      </div>
-
-      <div className="mb-2 flex items-center justify-between text-sm">
-        <p className="text-slate-400">
-          Question {currentIdx + 1} of {questions.length}
-        </p>
+        <h1 className="min-w-0 flex-1 truncate text-xl font-bold text-slate-900">Test · {deck.name}</h1>
         <span
           role="status"
           aria-label={`Current score ${score}`}
-          className="rounded-full border border-white/10 bg-slate-900 px-2.5 py-1 text-xs font-semibold text-slate-300"
+          className="shrink-0 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700"
         >
           Score {score}
         </span>
+      </div>
+
+      <div className="mb-2 flex items-center justify-between text-sm">
+        <p className="text-slate-500">
+          Question {currentIdx + 1} of {questions.length}
+        </p>
       </div>
 
       {/* Progress */}
@@ -290,17 +310,17 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
         aria-valuemin={1}
         aria-valuemax={questions.length}
         aria-label={`Question ${currentIdx + 1} of ${questions.length}`}
-        className="mb-6 h-2 overflow-hidden rounded-full bg-slate-800"
+        className="mb-6 h-2 overflow-hidden rounded-full bg-slate-200"
       >
         <div
-          className="h-full rounded-full bg-indigo-500 transition-all"
+          className="h-full rounded-full bg-[#4255FF] transition-all"
           style={{ width: `${((currentIdx + 1) / questions.length) * 100}%` }}
         />
       </div>
 
       {/* Question */}
-      <div className="mb-6 grid min-h-[140px] place-items-center rounded-2xl border border-white/5 bg-slate-900 p-6">
-        <p className="text-center text-lg leading-relaxed">{q.card.front}</p>
+      <div className="mb-6 grid min-h-[140px] place-items-center rounded-2xl border border-slate-200 bg-white p-6">
+        <p className="text-center text-lg leading-relaxed text-slate-900">{q.card.front}</p>
       </div>
 
       {/* Options */}
@@ -309,25 +329,25 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
           const isThisCorrect = idx === q.correctIdx;
           const isThisSelected = idx === selected;
           let cls =
-            "flex w-full items-center gap-3 rounded-xl border p-4 text-left text-sm font-medium transition-all ";
+            "flex w-full items-center gap-3 rounded-xl border bg-white p-4 text-left text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2 focus-visible:ring-offset-white ";
           let letterCls =
             "grid h-7 w-7 shrink-0 place-items-center rounded-md text-xs font-bold ";
           let icon = null;
 
           if (!answered) {
-            cls += "border-slate-700/60 bg-slate-900 hover:border-indigo-500/50 hover:bg-slate-800 active:scale-[0.99]";
-            letterCls += "bg-slate-800 text-slate-400";
+            cls += "border-slate-200 text-slate-900 hover:border-[#4255FF] active:scale-[0.99]";
+            letterCls += "bg-slate-100 text-slate-500";
           } else if (isThisCorrect) {
-            cls += "border-emerald-500 bg-emerald-500/10 text-emerald-200";
-            letterCls += "bg-emerald-500/20 text-emerald-200";
-            icon = <CheckIcon className="h-5 w-5 shrink-0 text-emerald-400" />;
+            cls += "border-emerald-500 bg-emerald-50 text-emerald-800";
+            letterCls += "bg-emerald-100 text-emerald-800";
+            icon = <CheckIcon className="h-5 w-5 shrink-0 text-emerald-600" />;
           } else if (isThisSelected) {
-            cls += "border-rose-500 bg-rose-500/10 text-rose-200";
-            letterCls += "bg-rose-500/20 text-rose-200";
-            icon = <XIcon className="h-5 w-5 shrink-0 text-rose-400" />;
+            cls += "border-rose-500 bg-rose-50 text-rose-800";
+            letterCls += "bg-rose-100 text-rose-800";
+            icon = <XIcon className="h-5 w-5 shrink-0 text-rose-500" />;
           } else {
-            cls += "border-slate-800 bg-slate-900/50 opacity-50";
-            letterCls += "bg-slate-800 text-slate-500";
+            cls += "border-slate-200 text-slate-500 opacity-50";
+            letterCls += "bg-slate-100 text-slate-400";
           }
 
           return (
@@ -349,7 +369,7 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
           );
         })}
       </div>
-      <p className="mt-3 text-center text-xs text-slate-600">
+      <p className="mt-3 text-center text-xs text-slate-500">
         Press {LETTERS.slice(0, q.options.length).join("/")} or 1–{q.options.length} to answer
       </p>
 
@@ -357,7 +377,7 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
         <div className="mt-6 flex flex-col items-center gap-3">
           <p
             role="status"
-            className={`flex items-center gap-2 font-semibold ${isCorrect ? "text-emerald-300" : "text-rose-300"}`}
+            className={`flex items-center gap-2 font-semibold ${isCorrect ? "text-emerald-700" : "text-rose-600"}`}
           >
             {isCorrect ? (
               <>

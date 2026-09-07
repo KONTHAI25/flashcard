@@ -27,11 +27,11 @@ function ArrowLeftIcon() {
   );
 }
 
-function BrainIcon() {
+function CardStackIcon() {
   return (
     <svg
-      width="18"
-      height="18"
+      width="22"
+      height="22"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -40,9 +40,29 @@ function BrainIcon() {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z" />
-      <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z" />
-      <path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4" />
+      <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+      <path d="M5 5v2" />
+      <path d="M9 5v2" />
+      <path d="M13 5v2" />
+    </svg>
+  );
+}
+
+function CheckCircleIcon() {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path d="m9 12 2 2 4-4" />
     </svg>
   );
 }
@@ -110,8 +130,8 @@ function Badge({ due, children }: { due: boolean; children: React.ReactNode }) {
     <span
       className={`inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-xs font-medium ${
         due
-          ? "border-amber-500/20 bg-amber-500/10 text-amber-300"
-          : "border-white/5 bg-slate-800 text-slate-500"
+          ? "border-amber-200 bg-amber-50 text-amber-700"
+          : "border-slate-200 bg-slate-100 text-slate-500"
       }`}
     >
       {children}
@@ -121,14 +141,17 @@ function Badge({ due, children }: { due: boolean; children: React.ReactNode }) {
 
 function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (
-    <div className="mt-12 text-center">
-      <p className="mb-2 text-3xl" aria-hidden="true">
-        🃏
-      </p>
-      <p className="font-medium text-slate-300">No cards yet</p>
-      <p className="mb-4 text-sm text-slate-500">Add your first card to start studying.</p>
+    <div className="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center shadow-sm">
+      <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
+        <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+        </svg>
+      </div>
+      <p className="font-semibold text-slate-900">No terms yet</p>
+      <p className="mb-4 text-sm text-slate-500">Add your first term to start studying.</p>
       <Button size="sm" onClick={onAdd}>
-        <PlusIcon /> Add Card
+        <PlusIcon /> Add term
       </Button>
     </div>
   );
@@ -138,21 +161,22 @@ function LoadingSkeleton() {
   return (
     <div aria-busy="true" aria-label="Loading deck">
       <div className="mb-6 flex animate-pulse items-center gap-3">
-        <div className="h-11 w-11 rounded-full bg-slate-800" />
+        <div className="h-11 w-11 rounded-xl bg-slate-200" />
         <div className="flex-1 space-y-2">
-          <div className="h-5 w-40 rounded bg-slate-800" />
-          <div className="h-4 w-24 rounded bg-slate-800" />
+          <div className="h-5 w-40 rounded bg-slate-200" />
+          <div className="h-4 w-24 rounded bg-slate-200" />
         </div>
       </div>
-      <div className="mb-4 flex animate-pulse gap-2">
-        <div className="h-12 flex-1 rounded-xl bg-slate-800" />
-        <div className="h-12 flex-1 rounded-xl bg-slate-800" />
+      <div className="mb-4 flex animate-pulse gap-3">
+        <div className="h-16 flex-1 rounded-xl bg-slate-200" />
+        <div className="h-16 flex-1 rounded-xl bg-slate-200" />
       </div>
-      <div className="animate-pulse space-y-2">
+      <div className="animate-pulse overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="rounded-xl border border-white/5 bg-slate-900/70 p-3.5">
-            <div className="h-4 w-3/4 rounded bg-slate-800" />
-            <div className="mt-2 h-3 w-1/2 rounded bg-slate-800" />
+          <div key={i} className="grid grid-cols-1 gap-2 border-b border-slate-200 p-4 last:border-b-0 sm:grid-cols-[1fr_1fr_auto] sm:gap-4">
+            <div className="h-4 w-3/4 rounded bg-slate-200" />
+            <div className="h-4 w-1/2 rounded bg-slate-200" />
+            <div className="h-6 w-16 rounded-full bg-slate-200" />
           </div>
         ))}
       </div>
@@ -226,92 +250,94 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
 
   return (
     <div>
+      {/* Title block */}
       <div className="mb-6 flex items-center gap-3">
         <button
           onClick={() => router.back()}
           aria-label="Back"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-white/5 hover:text-white"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2"
         >
           <ArrowLeftIcon />
         </button>
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-800 text-2xl">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-2xl shadow-sm">
           {deck.emoji}
         </span>
         <div className="min-w-0">
-          <h1 className="truncate text-xl font-bold tracking-tight">{deck.name}</h1>
-          <p className="text-sm text-slate-400">
-            {cards.length} cards · {dueCount} due
+          <h1 className="truncate text-2xl font-bold tracking-tight text-slate-900">{deck.name}</h1>
+          <p className="text-sm text-slate-500">
+            {cards.length} terms · {dueCount} due
           </p>
         </div>
       </div>
 
-      {/* Action buttons */}
-      <div className="mb-4 flex gap-2">
-        <div className="flex-1">
-          <Button
-            className="w-full"
-            size="lg"
-            disabled={dueCount === 0}
-            title={dueCount === 0 ? "No cards due — come back later" : `Study ${dueCount} due cards`}
-            onClick={() => router.push(`/study/${id}`)}
-          >
-            <BrainIcon /> Study · {dueCount} due
-          </Button>
-        </div>
-        <div className="flex-1">
-          <Button
-            variant="secondary"
-            className="w-full"
-            size="lg"
-            disabled={quizDisabled}
-            title={quizDisabled ? `Add ${4 - cards.length} more card(s) to unlock Quiz` : `Quiz on ${cards.length} cards`}
-            onClick={() => router.push(`/quiz/${id}`)}
-          >
-            Quiz · {cards.length}
-          </Button>
-        </div>
+      {/* Study-modes row */}
+      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <Button
+          className="w-full"
+          size="lg"
+          disabled={dueCount === 0}
+          title={dueCount === 0 ? "No cards due — come back later" : `Study ${dueCount} due cards`}
+          onClick={() => router.push(`/study/${id}`)}
+        >
+          <CardStackIcon />
+          <span className="flex flex-col items-start text-left leading-tight">
+            <span className="font-semibold">Flashcards</span>
+            <span className="text-xs font-normal opacity-80">Study {dueCount} due</span>
+          </span>
+        </Button>
+        <Button
+          variant="secondary"
+          className="w-full"
+          size="lg"
+          disabled={quizDisabled}
+          title={quizDisabled ? `Add ${4 - cards.length} more card(s) to unlock Quiz` : `Quiz on ${cards.length} cards`}
+          onClick={() => router.push(`/quiz/${id}`)}
+        >
+          <CheckCircleIcon />
+          <span className="flex flex-col items-start text-left leading-tight">
+            <span className="font-semibold">Test</span>
+            <span className="text-xs font-normal opacity-80">Quiz · {cards.length}</span>
+          </span>
+        </Button>
       </div>
 
+      {/* Terms section */}
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Cards</h2>
+        <h2 className="text-lg font-bold text-slate-900">Terms ({cards.length})</h2>
         <Button size="sm" onClick={handleOpenAdd}>
-          <PlusIcon /> Add Card
+          <PlusIcon /> Add term
         </Button>
       </div>
 
       {cards.length === 0 ? (
         <EmptyState onAdd={handleOpenAdd} />
       ) : (
-        <div className="space-y-2">
+        <div className="divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           {cards.map((card) => {
             const due = isDue(card);
             return (
               <div
                 key={card.id}
-                className="rounded-xl border border-white/5 bg-slate-900/70 p-3.5"
+                className="grid grid-cols-1 gap-2 p-4 sm:grid-cols-[1fr_1fr_auto] sm:items-center sm:gap-4"
               >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="break-words font-medium line-clamp-2">{card.front}</p>
-                    <p className="break-words text-sm text-slate-400 line-clamp-1">{card.back}</p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-1">
-                    <Badge due={due}>{due ? "due" : nextReviewLabel(card)}</Badge>
-                    <button
-                      onClick={() => handleEditCard(card)}
-                      aria-label={`Edit card: ${card.front}`}
-                      className="flex h-11 w-11 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-white/5 hover:text-white"
-                    >
-                      <PencilIcon />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteCard(card.id)}
-                      aria-label={`Delete card: ${card.front}`}
-                      className="flex h-11 w-11 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-red-500/10 hover:text-red-400"
-                    >
-                      <TrashIcon />
-                    </button>
-                  </div>
+                <p className="break-words font-medium text-slate-900">{card.front}</p>
+                <p className="break-words text-slate-600">{card.back}</p>
+                <div className="flex shrink-0 items-center gap-1">
+                  <Badge due={due}>{due ? "Due" : nextReviewLabel(card)}</Badge>
+                  <button
+                    onClick={() => handleEditCard(card)}
+                    aria-label={`Edit card: ${card.front}`}
+                    className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2"
+                  >
+                    <PencilIcon />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteCard(card.id)}
+                    aria-label={`Delete card: ${card.front}`}
+                    className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2"
+                  >
+                    <TrashIcon />
+                  </button>
                 </div>
               </div>
             );
@@ -326,7 +352,7 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
       >
         <div className="space-y-4">
           <div>
-            <label htmlFor="card-front" className="mb-1 block text-sm text-slate-400">
+            <label htmlFor="card-front" className="mb-1 block text-sm font-medium text-slate-700">
               Front
             </label>
             <textarea
@@ -335,12 +361,12 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
               onChange={(e) => setFront(e.target.value)}
               placeholder="Question or term"
               rows={3}
-              className="w-full resize-none rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none"
+              className="w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#4255FF] focus:outline-none focus:ring-2 focus:ring-[#4255FF]/30"
               autoFocus
             />
           </div>
           <div>
-            <label htmlFor="card-back" className="mb-1 block text-sm text-slate-400">
+            <label htmlFor="card-back" className="mb-1 block text-sm font-medium text-slate-700">
               Back
             </label>
             <textarea
@@ -349,7 +375,7 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
               onChange={(e) => setBack(e.target.value)}
               placeholder="Answer or definition"
               rows={3}
-              className="w-full resize-none rounded-xl border border-slate-700 bg-slate-800 px-4 py-2.5 text-sm text-white placeholder:text-slate-500 focus:border-blue-500 focus:outline-none"
+              className="w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#4255FF] focus:outline-none focus:ring-2 focus:ring-[#4255FF]/30"
             />
           </div>
           <Button onClick={handleSaveCard} className="w-full" disabled={!canSave}>

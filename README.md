@@ -93,7 +93,7 @@ app/
   quiz/page.tsx         # Quiz index
   quiz/[id]/page.tsx    # Multiple-choice quiz
 components/
-  BottomNav.tsx         # Mobile bottom tab bar
+  Header.tsx            # Sticky top nav · Sets/Study/Quiz
   Button.tsx            # Primary/secondary/danger/ghost
   FlashCard.tsx         # CSS perspective flip card
   Sheet.tsx             # Bottom-sheet modal

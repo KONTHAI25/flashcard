@@ -1,16 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #020617;
-  --surface: #0f172a;
-  --border: #1e293b;
-  --accent: #38bdf8;
+  --bg: #f6f7fb;
+  --surface: #ffffff;
+  --border: #e2e8f0;
+  --accent: #4255ff;
+  --accent-hover: #3040e6;
+  --text: #1a1d28;
+  --muted: #64748b;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
-  --bottom-nav-height: 72px;
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html {
@@ -23,7 +25,7 @@ body {
   min-height: 100dvh;
   overscroll-behavior-y: none;
   background-color: var(--bg);
-  color: #f1f5f9;
+  color: var(--text);
   font-family:
     ui-sans-serif,
     system-ui,
@@ -35,16 +37,15 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  /* Single bottom-padding strategy: room for fixed BottomNav (~72px) + safe area */
   padding-top: var(--safe-top);
-  padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
   padding-left: var(--safe-left);
   padding-right: var(--safe-right);
 }
 
 ::selection {
-  background-color: rgba(56, 189, 248, 0.35);
-  color: #f8fafc;
+  background-color: rgba(66, 85, 255, 0.18);
+  color: #1a1d28;
 }
 
 :focus-visible {
@@ -111,30 +112,30 @@ body {
   inset: 0;
 }
 
-/* Slim dark scrollbars */
+/* Slim light scrollbars */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #334155 transparent;
+  scrollbar-color: #cbd5e1 transparent;
 }
 *::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 *::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #cbd5e1;
   border-radius: 8px;
 }
 *::-webkit-scrollbar-track {
   background: transparent;
 }
 
-/* Autofill fix for dark inputs */
+/* Autofill fix for light inputs */
 input:-webkit-autofill,
 textarea:-webkit-autofill,
 select:-webkit-autofill {
-  -webkit-text-fill-color: #f1f5f9;
-  -webkit-box-shadow: 0 0 0 1000px #0f172a inset;
-  box-shadow: 0 0 0 1000px #0f172a inset;
+  -webkit-text-fill-color: #1a1d28;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+  box-shadow: 0 0 0 1000px #ffffff inset;
   transition: background-color 9999s ease-in-out 0s;
 }
 

@@ -32,20 +32,20 @@ export function FlashCard({ front, back }: FlashCardProps) {
             toggle();
           }
         }}
-        className="card-flip w-full cursor-pointer rounded-2xl outline-none select-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 motion-reduce:transition-none"
+        className="card-flip mx-auto w-full max-w-2xl cursor-pointer rounded-xl outline-none select-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2 focus-visible:ring-offset-white motion-reduce:transition-none"
       >
         <div
-          className={`card-flip-inner min-h-[280px] w-full motion-reduce:transform-none motion-reduce:transition-none ${flipped ? "flipped" : ""}`}
+          className={`card-flip-inner min-h-[320px] w-full motion-reduce:transform-none motion-reduce:transition-none ${flipped ? "flipped" : ""}`}
         >
           {/* Front */}
-          <div className="card-flip-front grid min-h-[280px] place-items-center rounded-2xl border border-slate-700 bg-slate-800 p-8 shadow-xl shadow-black/30">
-            <p className="max-h-[240px] w-full overflow-y-auto break-words text-center text-xl leading-relaxed font-medium text-slate-100">
+          <div className="card-flip-front grid min-h-[320px] place-items-center rounded-xl border border-slate-200 bg-white p-8 shadow-md">
+            <p className="max-h-[240px] w-full overflow-y-auto break-words text-center text-2xl leading-relaxed font-semibold text-slate-900">
               {front}
             </p>
           </div>
           {/* Back */}
-          <div className="card-flip-back grid min-h-[280px] place-items-center rounded-2xl border border-indigo-500/40 bg-indigo-950/60 p-8 shadow-xl shadow-indigo-950/30">
-            <p className="max-h-[240px] w-full overflow-y-auto break-words text-center text-xl leading-relaxed font-medium text-indigo-100">
+          <div className="card-flip-back grid min-h-[320px] place-items-center rounded-xl border border-indigo-200 bg-indigo-50 p-8 shadow-md">
+            <p className="max-h-[240px] w-full overflow-y-auto break-words text-center text-2xl leading-relaxed font-semibold text-indigo-900">
               {back}
             </p>
           </div>
@@ -53,7 +53,7 @@ export function FlashCard({ front, back }: FlashCardProps) {
       </div>
       <p className="mt-3 text-center text-xs text-slate-500">
         {flipped ? "Tap to see front" : "Tap to reveal answer"} · press{" "}
-        <kbd className="rounded-md border border-slate-700 bg-slate-800 px-1.5 py-0.5 font-mono text-[11px] text-slate-300">
+        <kbd className="rounded-md border border-slate-200 bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] text-slate-500">
           Space
         </kbd>
       </p>

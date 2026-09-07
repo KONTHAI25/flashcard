@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { BottomNav } from "@/components/BottomNav";
+import { Header } from "@/components/Header";
 
 export const metadata: Metadata = {
   title: {
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "Flashcards",
   },
 };
@@ -20,7 +20,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#020617",
+  themeColor: "#F6F7FB",
 };
 
 export default function RootLayout({
@@ -30,11 +30,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-dvh bg-[#020617] text-slate-100 antialiased">
-        <main className="mx-auto w-full max-w-xl px-4 pt-5">
+      <body className="min-h-dvh bg-[#F6F7FB] text-slate-900 antialiased">
+        <Header />
+        <main className="mx-auto w-full max-w-5xl px-4 pb-16 pt-6">
           {children}
         </main>
-        <BottomNav />
       </body>
     </html>
   );
