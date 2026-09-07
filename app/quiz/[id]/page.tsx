@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Card as CardType, Deck } from "@/lib/types";
 import { getDeck, getCardsByDeck, updateCard } from "@/lib/store";
@@ -45,6 +45,82 @@ function buildQuiz(cards: CardType[]): Question[] {
   });
 }
 
+const LETTERS = ["A", "B", "C", "D"];
+
+function CheckIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M4 10.5l4 4 8-9" />
+    </svg>
+  );
+}
+
+function XIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.5}
+      strokeLinecap="round"
+      className={className}
+    >
+      <path d="M5 5l10 10M15 5L5 15" />
+    </svg>
+  );
+}
+
+function CheckCircleIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M8.5 12.5l2.5 2.5 4.5-5.5" />
+    </svg>
+  );
+}
+
+function XCircleIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      className={className}
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9 9l6 6M15 9l-6 6" />
+    </svg>
+  );
+}
+
+function resultMessage(pct: number): string {
+  if (pct >= 80) return "Excellent work!";
+  if (pct >= 50) return "Good effort — keep going!";
+  return "Keep practicing — you'll get it!";
+}
+
 export default function QuizPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
@@ -85,14 +161,48 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
     }
   }
 
+  function resetQuiz() {
+    setCurrentIdx(0);
+    setSelected(null);
+    setScore(0);
+    setFinished(false);
+    setQuestions(buildQuiz(getCardsByDeck(id)));
+  }
+
+  const handleKey = useCallback(
+    (e: KeyboardEvent) => {
+      if (finished || questions.length === 0) return;
+      const answered = selected !== null;
+      if (!answered) {
+        const key = e.key.toLowerCase();
+        let idx = -1;
+        if (key >= "1" && key <= "4") idx = Number(key) - 1;
+        else if (key >= "a" && key <= "d") idx = key.charCodeAt(0) - 97;
+        if (idx >= 0 && idx < questions[currentIdx].options.length) {
+          e.preventDefault();
+          handleSelect(idx);
+        }
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        handleNext();
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [finished, selected, currentIdx, questions]
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [handleKey]);
+
   if (!deck) return <p className="text-slate-500">Loading…</p>;
 
   if (questions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center pt-24 text-center">
-        <p className="text-3xl mb-3">📝</p>
-        <h1 className="text-xl font-bold mb-2">Not enough cards</h1>
-        <p className="text-slate-400 mb-4">You need at least 4 cards to start a quiz.</p>
+        <h1 className="mb-2 text-xl font-bold">Not enough cards</h1>
+        <p className="mb-4 text-slate-400">You need at least 4 cards to start a quiz.</p>
         <Button onClick={() => router.push(`/deck/${id}`)}>Back to Deck</Button>
       </div>
     );
@@ -101,27 +211,40 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
   if (finished) {
     const pct = Math.round((score / questions.length) * 100);
     return (
-      <div className="flex flex-col items-center justify-center pt-24 text-center">
-        <p className="text-5xl mb-4">
-          {pct >= 80 ? "🏆" : pct >= 50 ? "👍" : "📚"}
-        </p>
-        <h1 className="text-2xl font-bold mb-2">Quiz Complete!</h1>
-        <p className="text-slate-400 mb-1">
-          {score}/{questions.length} correct ({pct}%)
-        </p>
-        <div className="flex gap-3 mt-6">
-          <Button variant="secondary" onClick={() => router.push(`/deck/${id}`)}>
+      <div className="flex flex-col items-center justify-center pt-16 text-center">
+        <div
+          role="status"
+          aria-label={`Quiz complete. Scored ${score} out of ${questions.length}, ${pct} percent.`}
+          className="grid h-36 w-36 place-items-center rounded-full border border-white/10 bg-slate-900"
+        >
+          <div>
+            <p className="text-4xl font-bold">{pct}%</p>
+            <p className="mt-1 text-xs text-slate-400">
+              {score}/{questions.length} correct
+            </p>
+          </div>
+        </div>
+        <h1 className="mb-1 mt-6 text-2xl font-bold">Quiz Complete!</h1>
+        <p className="text-slate-400">{resultMessage(pct)}</p>
+        <dl className="mt-6 flex items-center gap-6 text-center">
+          <div>
+            <dt className="text-xs text-slate-500">Correct</dt>
+            <dd className="text-lg font-bold text-emerald-300">{score}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-slate-500">Total</dt>
+            <dd className="text-lg font-bold">{questions.length}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-slate-500">Accuracy</dt>
+            <dd className="text-lg font-bold">{pct}%</dd>
+          </div>
+        </dl>
+        <div className="mt-8 flex w-full max-w-xs gap-3">
+          <Button variant="secondary" onClick={() => router.push(`/deck/${id}`)} className="flex-1">
             Back
           </Button>
-          <Button
-            onClick={() => {
-              setCurrentIdx(0);
-              setSelected(null);
-              setScore(0);
-              setFinished(false);
-              setQuestions(buildQuiz(getCardsByDeck(id)));
-            }}
-          >
+          <Button onClick={resetQuiz} className="flex-1">
             Try Again
           </Button>
         </div>
@@ -132,62 +255,124 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
   const q = questions[currentIdx];
   const isCorrect = selected === q.correctIdx;
   const answered = selected !== null;
+  const isLast = currentIdx + 1 >= questions.length;
 
   return (
     <div>
       <div className="mb-6 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-2xl text-slate-400 hover:text-white">
+        <button
+          onClick={() => router.back()}
+          aria-label="Go back"
+          className="grid h-9 w-9 place-items-center rounded-lg text-xl text-slate-400 transition-colors hover:bg-slate-800 hover:text-white"
+        >
           ←
         </button>
-        <h1 className="text-xl font-bold">Quiz: {deck.name}</h1>
+        <h1 className="truncate text-xl font-bold">Quiz · {deck.name}</h1>
       </div>
 
-      <p className="mb-2 text-center text-sm text-slate-400">
-        Question {currentIdx + 1} of {questions.length}
-      </p>
+      <div className="mb-2 flex items-center justify-between text-sm">
+        <p className="text-slate-400">
+          Question {currentIdx + 1} of {questions.length}
+        </p>
+        <span
+          role="status"
+          aria-label={`Current score ${score}`}
+          className="rounded-full border border-white/10 bg-slate-900 px-2.5 py-1 text-xs font-semibold text-slate-300"
+        >
+          Score {score}
+        </span>
+      </div>
 
       {/* Progress */}
-      <div className="mb-6 h-2 overflow-hidden rounded-full bg-slate-800">
+      <div
+        role="progressbar"
+        aria-valuenow={currentIdx + 1}
+        aria-valuemin={1}
+        aria-valuemax={questions.length}
+        aria-label={`Question ${currentIdx + 1} of ${questions.length}`}
+        className="mb-6 h-2 overflow-hidden rounded-full bg-slate-800"
+      >
         <div
-          className="h-full rounded-full bg-blue-500 transition-all"
+          className="h-full rounded-full bg-indigo-500 transition-all"
           style={{ width: `${((currentIdx + 1) / questions.length) * 100}%` }}
         />
       </div>
 
       {/* Question */}
-      <div className="mb-6 rounded-2xl border border-slate-700 bg-slate-800 p-6">
-        <p className="text-center text-lg font-medium">{q.card.front}</p>
+      <div className="mb-6 grid min-h-[140px] place-items-center rounded-2xl border border-white/5 bg-slate-900 p-6">
+        <p className="text-center text-lg leading-relaxed">{q.card.front}</p>
       </div>
 
       {/* Options */}
-      <div className="space-y-3">
+      <div role="radiogroup" aria-label={`Answer choices for question ${currentIdx + 1}`} className="space-y-3">
         {q.options.map((opt, idx) => {
+          const isThisCorrect = idx === q.correctIdx;
+          const isThisSelected = idx === selected;
           let cls =
-            "w-full rounded-xl border p-4 text-left text-sm font-medium transition-all ";
+            "flex w-full items-center gap-3 rounded-xl border p-4 text-left text-sm font-medium transition-all ";
+          let letterCls =
+            "grid h-7 w-7 shrink-0 place-items-center rounded-md text-xs font-bold ";
+          let icon = null;
+
           if (!answered) {
-            cls += "border-slate-700 bg-slate-800 hover:border-blue-500 active:scale-[0.98]";
-          } else if (idx === q.correctIdx) {
-            cls += "border-green-500 bg-green-900/30 text-green-300";
-          } else if (idx === selected) {
-            cls += "border-red-500 bg-red-900/30 text-red-300";
+            cls += "border-slate-700/60 bg-slate-900 hover:border-indigo-500/50 hover:bg-slate-800 active:scale-[0.99]";
+            letterCls += "bg-slate-800 text-slate-400";
+          } else if (isThisCorrect) {
+            cls += "border-emerald-500 bg-emerald-500/10 text-emerald-200";
+            letterCls += "bg-emerald-500/20 text-emerald-200";
+            icon = <CheckIcon className="h-5 w-5 shrink-0 text-emerald-400" />;
+          } else if (isThisSelected) {
+            cls += "border-rose-500 bg-rose-500/10 text-rose-200";
+            letterCls += "bg-rose-500/20 text-rose-200";
+            icon = <XIcon className="h-5 w-5 shrink-0 text-rose-400" />;
           } else {
-            cls += "border-slate-700 bg-slate-800/50 opacity-50";
+            cls += "border-slate-800 bg-slate-900/50 opacity-50";
+            letterCls += "bg-slate-800 text-slate-500";
           }
+
           return (
-            <button key={idx} onClick={() => handleSelect(idx)} className={cls}>
-              {opt}
+            <button
+              key={idx}
+              role="radio"
+              aria-checked={isThisSelected}
+              aria-disabled={answered}
+              disabled={answered}
+              onClick={() => handleSelect(idx)}
+              className={cls}
+            >
+              <span aria-hidden="true" className={letterCls}>
+                {LETTERS[idx]}
+              </span>
+              <span className="flex-1">{opt}</span>
+              {icon}
             </button>
           );
         })}
       </div>
+      <p className="mt-3 text-center text-xs text-slate-600">
+        Press {LETTERS.slice(0, q.options.length).join("/")} or 1–{q.options.length} to answer
+      </p>
 
       {answered && (
-        <div className="mt-6 flex flex-col items-center gap-2">
-          <p className={isCorrect ? "text-green-400 font-semibold" : "text-red-400 font-semibold"}>
-            {isCorrect ? "✅ Correct!" : `❌ The answer was: ${q.options[q.correctIdx]}`}
+        <div className="mt-6 flex flex-col items-center gap-3">
+          <p
+            role="status"
+            className={`flex items-center gap-2 font-semibold ${isCorrect ? "text-emerald-300" : "text-rose-300"}`}
+          >
+            {isCorrect ? (
+              <>
+                <CheckCircleIcon />
+                Correct!
+              </>
+            ) : (
+              <>
+                <XCircleIcon />
+                <span>The answer was: {q.options[q.correctIdx]}</span>
+              </>
+            )}
           </p>
           <Button onClick={handleNext} className="w-full">
-            {currentIdx + 1 >= questions.length ? "See Results" : "Next Question"}
+            {isLast ? "See results" : "Next"}
           </Button>
         </div>
       )}

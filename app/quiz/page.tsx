@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Deck } from "@/lib/types";
 import { getDecks, getCardsByDeck } from "@/lib/store";
 
+const MIN_CARDS = 4;
+
 export default function QuizIndexPage() {
   const [decks, setDecks] = useState<Deck[]>([]);
 
@@ -14,40 +16,73 @@ export default function QuizIndexPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">❓ Quiz</h1>
-      <p className="mb-4 text-sm text-slate-400">Select a deck to start a multiple-choice quiz (min. 4 cards).</p>
+      <h1 className="text-2xl font-bold">Quiz</h1>
+      <p className="mb-6 mt-1 text-sm text-slate-400">
+        Test yourself with multiple-choice questions. Decks need at least {MIN_CARDS} cards to start a quiz.
+      </p>
 
       {decks.length === 0 ? (
         <div className="mt-16 text-center text-slate-500">
-          <p className="text-3xl mb-2">📝</p>
-          <p>No decks yet.</p>
+          <p className="mb-2 text-3xl">No decks yet</p>
+          <p className="text-sm">Create a deck to start quizzing yourself.</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <ul className="space-y-3">
           {decks.map((deck) => {
             const count = getCardsByDeck(deck.id).length;
-            return (
-              <Link
-                key={deck.id}
-                href={`/quiz/${deck.id}`}
-                className={`flex items-center gap-3 rounded-xl border p-4 transition-colors ${
-                  count >= 4
-                    ? "border-slate-800 bg-slate-900 hover:border-blue-600"
-                    : "border-slate-800 bg-slate-900/50 opacity-50 pointer-events-none"
-                }`}
-              >
-                <span className="text-2xl">{deck.emoji}</span>
-                <div className="flex-1">
-                  <p className="font-semibold">{deck.name}</p>
+            const ready = count >= MIN_CARDS;
+            const rowClass =
+              "flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 p-4 transition-colors";
+            const content = (
+              <>
+                <span
+                  aria-hidden="true"
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-slate-800 text-xl"
+                >
+                  {deck.emoji}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold">{deck.name}</p>
                   <p className="text-xs text-slate-500">{count} cards</p>
                 </div>
-                {count < 4 && (
-                  <span className="text-xs text-slate-500">need {4 - count} more</span>
+                {ready ? (
+                  <span className="shrink-0 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-300">
+                    Ready
+                  </span>
+                ) : (
+                  <span className="shrink-0 rounded-full border border-slate-700 bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-400">
+                    Need {MIN_CARDS - count} more
+                  </span>
                 )}
-              </Link>
+              </>
+            );
+
+            if (ready) {
+              return (
+                <li key={deck.id}>
+                  <Link
+                    href={`/quiz/${deck.id}`}
+                    className={`${rowClass} hover:border-indigo-500/50 hover:bg-slate-800/80`}
+                  >
+                    {content}
+                  </Link>
+                </li>
+              );
+            }
+
+            return (
+              <li key={deck.id}>
+                <div
+                  aria-disabled="true"
+                  title={`Add ${MIN_CARDS - count} more cards to start a quiz`}
+                  className={`${rowClass} cursor-not-allowed opacity-60`}
+                >
+                  {content}
+                </div>
+              </li>
             );
           })}
-        </div>
+        </ul>
       )}
     </div>
   );
