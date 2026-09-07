@@ -4,10 +4,9 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { Deck, Card as CardType } from "@/lib/types";
 import { getDeck, getCardsByDeck, createCard, deleteCard, restoreCard, updateCard } from "@/lib/store";
-import { isDue, nextReviewLabel } from "@/lib/srs";
+import { isDue } from "@/lib/srs";
 import { Button } from "@/components/Button";
 import { showToast } from "@/components/Toast";
-import { Badge } from "@/components/ui";
 import { Sheet } from "@/components/Sheet";
 
 function ArrowLeftIcon() {
@@ -313,6 +312,50 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
         </div>
       </div>
 
+      {/* Mastery bar: not started · remaining · learned */}
+      {(() => {
+        const total = cards.length;
+        const learned = cards.filter((c) => c.streak >= 3).length;
+        const remaining = cards.filter((c) => c.streak < 3 && isDue(c)).length;
+        const notStarted = total - learned - remaining;
+        const pct = (n: number) => (total > 0 ? Math.round((n / total) * 100) : 0);
+        const learnedPct = total > 0 ? Math.round((learned / total) * 100) : 0;
+        return (
+          <div className="mb-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-sm font-semibold text-slate-900">Mastery</p>
+              <p className="text-xs tabular-nums text-slate-500">{learnedPct}% learned</p>
+            </div>
+            <div
+              className="flex h-2.5 w-full overflow-hidden rounded-full bg-slate-100"
+              role="progressbar"
+              aria-valuenow={learnedPct}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="Set mastery"
+            >
+              <div className="h-full bg-emerald-500 transition-all" style={{ width: `${pct(learned)}%` }} />
+              <div className="h-full bg-amber-400 transition-all" style={{ width: `${pct(remaining)}%` }} />
+              <div className="h-full bg-slate-300 transition-all" style={{ width: `${pct(notStarted)}%` }} />
+            </div>
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
+              <span className="inline-flex items-center gap-1.5">
+                <span aria-hidden="true" className="h-2 w-2 rounded-full bg-slate-300" />
+                {notStarted} not started
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span aria-hidden="true" className="h-2 w-2 rounded-full bg-amber-400" />
+                {remaining} remaining
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span aria-hidden="true" className="h-2 w-2 rounded-full bg-emerald-500" />
+                {learned} learned
+              </span>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Terms section */}
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-lg font-bold text-slate-900">Terms ({cards.length})</h2>
@@ -326,7 +369,6 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
       ) : (
         <div className="divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           {cards.map((card) => {
-            const due = isDue(card);
             return (
               <div
                 key={card.id}
@@ -335,7 +377,6 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
                 <p className="break-words font-medium text-slate-900">{card.front}</p>
                 <p className="break-words text-slate-600">{card.back}</p>
                 <div className="flex shrink-0 items-center gap-1">
-                  <Badge variant={due ? "warning" : "dim"}>{due ? "Due" : nextReviewLabel(card)}</Badge>
                   <button
                     onClick={() => handleEditCard(card)}
                     aria-label={`Edit term: ${card.front}`}
