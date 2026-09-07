@@ -80,6 +80,8 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
   // Number of Still-learning re-queues. Total work = originalLen + requeues, so
   // progress = reviewed / (originalLen + requeues) === reviewed / (reviewed + remaining).
   const [requeues, setRequeues] = useState(0);
+  // Ids ever marked Still learning this round (Quizlet-style missed pile for round replay).
+  const [missedIds, setMissedIds] = useState<string[]>([]);
 
   useEffect(() => {
     const d = getDeck(id);
@@ -103,8 +105,10 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
     setReviewed((r) => r + 1);
 
     if (quality === 0) {
-      // Still learning — re-queue the (updated) card at the end, keep pointer in place.
+      // Still learning — mark missed, re-queue the (updated) card at the end,
+      // keep pointer in place so the NEXT card slides in immediately.
       setRequeues((q) => q + 1);
+      setMissedIds((prev) => (prev.includes(card.id) ? prev : [...prev, card.id]));
       setDueCards((prev) => {
         const next = [...prev];
         next.splice(currentIdx, 1);
@@ -116,6 +120,24 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
     } else {
       setCurrentIdx((i) => i + 1);
     }
+  }
+
+  // Quizlet-style bonus round: drill only the missed pile again.
+  function startRound(cards: CardType[]) {
+    setDueCards(cards);
+    setCurrentIdx(0);
+    setOriginalLen(cards.length);
+    setReviewed(0);
+    setRequeues(0);
+    setMissedIds([]);
+    setFinished(false);
+  }
+
+  function handleReviewMissed() {
+    const round = missedIds
+      .map((mid) => dueCards.find((c) => c.id === mid))
+      .filter((c): c is CardType => Boolean(c));
+    if (round.length > 0) startRound(round);
   }
 
   // Skip for now: move the current card to the end of the queue WITHOUT
@@ -236,7 +258,17 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
             {originalLen === 1 ? "term" : "terms"} due in {deck.name}
           </p>
           <div className="mt-6 flex w-full flex-col gap-2">
-            <Button className="w-full" onClick={() => router.push(`/deck/${id}`)}>
+            {missedIds.length > 0 && (
+              <Button className="w-full" onClick={handleReviewMissed}>
+                Review {missedIds.length} tricky{" "}
+                {missedIds.length === 1 ? "term" : "terms"} again
+              </Button>
+            )}
+            <Button
+              variant={missedIds.length > 0 ? "secondary" : undefined}
+              className="w-full"
+              onClick={() => router.push(`/deck/${id}`)}
+            >
               Back to set
             </Button>
             <Button
