@@ -109,11 +109,17 @@ function seedIfNeeded() {
   }
 }
 
-// ── Oxford 3000 deck (parts 01–06 only) ──
+// ── Oxford 3000 decks (60 decks × 50 cards) ──
 
-const OXFORD_DECK_ID = "deck-oxford-3000";
+const OXFORD_LEGACY_DECK_ID = "deck-oxford-3000";
+const OXFORD_CHUNK_SIZE = 50;
+const OXFORD_PREFIX = "deck-oxford-";
 
-function buildOxfordCards(now: number): Card[] {
+function oxfordDeckId(n: number): string {
+  return `${OXFORD_PREFIX}${String(n).padStart(2, "0")}`;
+}
+
+function buildOxfordSeed(now: number): { decks: Deck[]; cards: Card[] } {
   const all: Array<[string, string, string]> = [
     ...VOCAB_01,
     ...VOCAB_02,
@@ -122,39 +128,84 @@ function buildOxfordCards(now: number): Card[] {
     ...VOCAB_05,
     ...VOCAB_06,
   ];
-  return all.map(([en, th, level], i) => ({
-    id: `ox-${i + 1}`,
-    deckId: OXFORD_DECK_ID,
-    front: en,
-    // Card has no `level` field, so keep CEFR level as a back suffix.
-    back: `${th} [${level}]`,
-    interval: 1,
-    ease: 2.5,
-    due: now,
-    streak: 0,
-    createdAt: now,
-  }));
+  const decks: Deck[] = [];
+  const cards: Card[] = [];
+  const totalDecks = Math.ceil(all.length / OXFORD_CHUNK_SIZE);
+  for (let d = 0; d < totalDecks; d++) {
+    const deckId = oxfordDeckId(d + 1);
+    const start = d * OXFORD_CHUNK_SIZE + 1;
+    const end = Math.min((d + 1) * OXFORD_CHUNK_SIZE, all.length);
+    decks.push({
+      id: deckId,
+      name: `Oxford ${String(d + 1).padStart(2, "0")} · ${start}–${end}`,
+      emoji: "📚",
+      createdAt: now,
+    });
+    all
+      .slice(d * OXFORD_CHUNK_SIZE, (d + 1) * OXFORD_CHUNK_SIZE)
+      .forEach(([en, th, level], i) => {
+        cards.push({
+          id: `${deckId}-c${i + 1}`,
+          deckId,
+          front: en,
+          // Card has no `level` field, so keep CEFR level as a back suffix.
+          back: `${th} [${level}]`,
+          interval: 1,
+          ease: 2.5,
+          due: now,
+          streak: 0,
+          createdAt: now,
+        });
+      });
+  }
+  return { decks, cards };
 }
 
-// Merge-style seed: adds the Oxford deck + cards once, never overwrites.
-// Idempotent: skips if the deck (or any of its cards) already exists.
+// Merge-style seed: adds the 60 Oxford decks once, never overwrites.
+// Idempotent: skips if all 60 decks (with all 3000 cards) already exist.
+// Migration: removes the legacy single "deck-oxford-3000" deck + `ox-<n>`
+// cards from the previous seed scheme, then seeds the 60 × 50 layout.
 // Quota-guarded: writeJSON drops + warns on QuotaExceededError.
 function seedOxfordIfNeeded() {
   if (typeof window === "undefined") return;
   try {
-    const decks = readJSON<Deck[]>(DECKS_KEY, []);
-    if (decks.some((d) => d.id === OXFORD_DECK_ID)) return;
-    const cards = readJSON<Card[]>(CARDS_KEY, []);
-    if (cards.some((c) => c.deckId === OXFORD_DECK_ID)) return;
+    let decks = readJSON<Deck[]>(DECKS_KEY, []);
+    let cards = readJSON<Card[]>(CARDS_KEY, []);
+    let changed = false;
+
+    // Drop legacy single-deck data (old scheme).
+    if (decks.some((d) => d.id === OXFORD_LEGACY_DECK_ID)) {
+      decks = decks.filter((d) => d.id !== OXFORD_LEGACY_DECK_ID);
+      changed = true;
+    }
+    if (cards.some((c) => c.deckId === OXFORD_LEGACY_DECK_ID || /^ox-\d+$/.test(c.id))) {
+      cards = cards.filter(
+        (c) => c.deckId !== OXFORD_LEGACY_DECK_ID && !/^ox-\d+$/.test(c.id)
+      );
+      changed = true;
+    }
+
+    const { decks: oxDecks, cards: oxCards } = buildOxfordSeed(0);
+    const haveAllDecks = oxDecks.every((d) => decks.some((x) => x.id === d.id));
+    const haveAllCards =
+      cards.filter((c) => c.deckId.startsWith(OXFORD_PREFIX)).length ===
+      oxCards.length;
+    if (haveAllDecks && haveAllCards) {
+      if (changed) {
+        writeJSON(DECKS_KEY, decks);
+        writeJSON(CARDS_KEY, cards);
+      }
+      return;
+    }
+
+    // Remove partial Oxford data before (re)seeding to avoid duplicates.
+    decks = decks.filter((d) => !d.id.startsWith(OXFORD_PREFIX));
+    cards = cards.filter((c) => !c.deckId.startsWith(OXFORD_PREFIX));
+
     const now = Date.now();
-    const deck: Deck = {
-      id: OXFORD_DECK_ID,
-      name: "Oxford 3000",
-      emoji: "📚",
-      createdAt: now,
-    };
-    writeJSON(DECKS_KEY, [...decks, deck]);
-    writeJSON(CARDS_KEY, [...cards, ...buildOxfordCards(now)]);
+    const fresh = buildOxfordSeed(now);
+    writeJSON(DECKS_KEY, [...decks, ...fresh.decks]);
+    writeJSON(CARDS_KEY, [...cards, ...fresh.cards]);
   } catch {
     // Never break existing deck/card flows if the Oxford merge fails.
   }
