@@ -75,10 +75,7 @@ export default function StudyAllPage() {
   const [originalLen, setOriginalLen] = useState(0);
   // Total grade attempts (Still learning + Know). Used for session stats and progress.
   const [reviewed, setReviewed] = useState(0);
-  // Number of Still-learning re-queues. Total work = originalLen + requeues, so
-  // progress = reviewed / (originalLen + requeues) === reviewed / (reviewed + remaining).
-  const [requeues, setRequeues] = useState(0);
-  // Ids ever marked Still learning this round (Quizlet-style missed pile for round replay).
+  // Ids marked Still learning this round — Quizlet's missed pile, replayed as the next round.
   const [missedIds, setMissedIds] = useState<string[]>([]);
 
   useEffect(() => {
@@ -96,6 +93,9 @@ export default function StudyAllPage() {
     setLoading(false);
   }, []);
 
+  // Quizlet official style: single pass per round. Grading always moves to the
+  // NEXT card; Still learning files the card into the missed pile for the
+  // next round. No same-round re-drill, no skip.
   function handleReview(quality: number) {
     const card = dueCards[currentIdx];
     if (!card || finished) return;
@@ -104,30 +104,21 @@ export default function StudyAllPage() {
     setReviewed((r) => r + 1);
 
     if (quality === 0) {
-      // Still learning — mark missed, re-queue the (updated) card at the end,
-      // keep pointer in place so the NEXT card slides in immediately.
-      setRequeues((q) => q + 1);
       setMissedIds((prev) => (prev.includes(card.id) ? prev : [...prev, card.id]));
-      setDueCards((prev) => {
-        const next = [...prev];
-        next.splice(currentIdx, 1);
-        next.push(updated);
-        return next;
-      });
-    } else if (currentIdx + 1 >= dueCards.length) {
+    }
+    if (currentIdx + 1 >= dueCards.length) {
       setFinished(true);
     } else {
       setCurrentIdx((i) => i + 1);
     }
   }
 
-  // Quizlet-style bonus round: drill only the missed pile again.
+  // Quizlet-style next round: drill only the missed pile.
   function startRound(cards: CardType[]) {
     setDueCards(cards);
     setCurrentIdx(0);
     setOriginalLen(cards.length);
     setReviewed(0);
-    setRequeues(0);
     setMissedIds([]);
     setFinished(false);
   }
@@ -137,21 +128,6 @@ export default function StudyAllPage() {
       .map((mid) => dueCards.find((c) => c.id === mid))
       .filter((c): c is CardType => Boolean(c));
     if (round.length > 0) startRound(round);
-  }
-
-  // Skip for now: move the current card to the end of the queue WITHOUT
-  // writing SRS and without touching reviewed/requeues accounting.
-  // Pointer stays — the next card slides into place.
-  function handleSkip() {
-    const card = dueCards[currentIdx];
-    if (!card || finished) return;
-    if (dueCards.length <= 1) return;
-    setDueCards((prev) => {
-      const next = [...prev];
-      next.splice(currentIdx, 1);
-      next.push(card);
-      return next;
-    });
   }
 
   // Keyboard shortcuts: 1 / ArrowLeft = Still learning, 2 / ArrowRight = Know.
@@ -250,17 +226,16 @@ export default function StudyAllPage() {
             <TrophyIcon />
           </div>
           <h1 className="mt-4 text-2xl font-bold tracking-tight text-slate-900">
-            Session complete
+            {missedIds.length > 0 ? "Round complete" : "Session complete"}
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Reviewed {reviewed} · {originalLen}{" "}
-            {originalLen === 1 ? "term" : "terms"} due across all sets
+            {originalLen - missedIds.length} known · {missedIds.length} still
+            learning across all sets
           </p>
           <div className="mt-6 flex w-full flex-col gap-2">
             {missedIds.length > 0 && (
               <Button className="w-full" onClick={handleReviewMissed}>
-                Review {missedIds.length} tricky{" "}
-                {missedIds.length === 1 ? "term" : "terms"} again
+                Continue · {missedIds.length} remaining
               </Button>
             )}
             <Button
@@ -283,13 +258,11 @@ export default function StudyAllPage() {
     );
   }
 
-  // Queue accounting: Still learning splices + pushes, so length is stable and the
-  // pointer only advances on Know. Remaining excludes resolved cards.
+  // Single pass per round: position is progress.
   const remaining = Math.max(0, dueCards.length - currentIdx);
   const position = Math.min(currentIdx + 1, dueCards.length);
-  const total = originalLen + requeues;
   const progress =
-    total > 0 ? Math.min(100, Math.round((reviewed / total) * 100)) : 100;
+    originalLen > 0 ? Math.min(100, Math.round((reviewed / originalLen) * 100)) : 100;
   const deckName = getDeck(card.deckId)?.name;
 
   return (
@@ -326,17 +299,8 @@ export default function StudyAllPage() {
       </div>
 
       <p className="mt-3 text-center text-xs text-slate-500">
-        Tap card to flip · {remaining} left in queue
+        Tap card to flip · {remaining} left in this round
       </p>
-      <div className="mt-1 text-center">
-        <button
-          type="button"
-          onClick={handleSkip}
-          className="inline-flex min-h-[44px] items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-slate-500 underline decoration-slate-300 underline-offset-4 transition-colors hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2"
-        >
-          Skip for now
-        </button>
-      </div>
 
       <div
         className="sticky bottom-0 bg-[#F6F7FB]/95 py-3 backdrop-blur"
