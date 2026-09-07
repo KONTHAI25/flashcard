@@ -109,7 +109,7 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
   const [finished, setFinished] = useState(false);
   const [loading, setLoading] = useState(true);
   const [originalLen, setOriginalLen] = useState(0);
-  // Total grade attempts (Still learning + Got it + Easy). Used for session stats and progress.
+  // Total grade attempts (Still learning + Know). Used for session stats and progress.
   const [reviewed, setReviewed] = useState(0);
   // Number of Still-learning re-queues. Total work = originalLen + requeues, so
   // progress = reviewed / (originalLen + requeues) === reviewed / (reviewed + remaining).
@@ -161,7 +161,7 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
     setCurrentIdx((i) => Math.min(dueCards.length - 1, i + 1));
   }
 
-  // Keyboard shortcuts: 1 = Still learning, 2 = Got it, 3 = Easy.
+  // Keyboard shortcuts: 1 = Still learning, 2 = Know.
   // (Space/Enter flips the card via the focused FlashCard button.)
   // Re-subscribes every render so the handler never closes over stale state.
   useEffect(() => {
@@ -179,7 +179,6 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
         return;
       if (e.key === "1") handleReview(0);
       else if (e.key === "2") handleReview(1);
-      else if (e.key === "3") handleReview(2);
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -203,8 +202,8 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
           <div className="min-h-[280px] flex-1 animate-pulse rounded-2xl border border-slate-200 bg-white shadow-sm" />
           <div className="hidden h-11 w-11 shrink-0 animate-pulse rounded-xl bg-slate-200 sm:block" />
         </div>
-        <div className="mx-auto mt-6 grid max-w-2xl grid-cols-3 gap-3">
-          {[0, 1, 2].map((i) => (
+        <div className="mx-auto mt-6 grid max-w-2xl grid-cols-2 gap-3">
+          {[0, 1].map((i) => (
             <div
               key={i}
               className="h-11 animate-pulse rounded-xl bg-slate-200"
@@ -286,7 +285,7 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
   }
 
   // Queue accounting: Still learning splices + pushes, so length is stable and the
-  // pointer only advances on Got it / Easy. Remaining excludes resolved cards.
+  // pointer only advances on Know. Remaining excludes resolved cards.
   const remaining = Math.max(0, dueCards.length - currentIdx);
   const position = Math.min(currentIdx + 1, dueCards.length);
   const total = originalLen + requeues;
@@ -348,17 +347,16 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
         Tap card to flip · {remaining} left in queue
       </p>
 
-      <div className="mx-auto mt-4 grid max-w-2xl grid-cols-3 gap-3">
+      <div className="mx-auto mt-4 grid max-w-2xl grid-cols-2 gap-3">
         <Button
           variant="secondary"
           onClick={() => handleReview(0)}
           className="w-full"
           aria-label="Still learning (press 1)"
         >
-          <span
-            aria-hidden="true"
-            className="h-2 w-2 shrink-0 rounded-full bg-rose-500"
-          />
+          <svg className="h-4 w-4 shrink-0 text-rose-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" aria-hidden="true">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
           <span className="truncate text-rose-600">Still learning</span>
           <kbd className="rounded border border-slate-200 bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] font-medium leading-none text-slate-500">
             1
@@ -368,26 +366,14 @@ export default function StudyPage({ params }: { params: Promise<{ id: string }> 
           variant="primary"
           onClick={() => handleReview(1)}
           className="w-full"
-          aria-label="Got it (press 2)"
+          aria-label="Know (press 2)"
         >
-          <span className="truncate">Got it</span>
+          <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+          <span className="truncate">Know</span>
           <kbd className="rounded border border-white/40 bg-white/20 px-1.5 py-0.5 font-mono text-[10px] font-medium leading-none text-white">
             2
-          </kbd>
-        </Button>
-        <Button
-          variant="secondary"
-          onClick={() => handleReview(2)}
-          className="w-full"
-          aria-label="Easy (press 3)"
-        >
-          <span
-            aria-hidden="true"
-            className="h-2 w-2 shrink-0 rounded-full bg-emerald-500"
-          />
-          <span className="truncate text-emerald-600">Easy</span>
-          <kbd className="rounded border border-slate-200 bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] font-medium leading-none text-slate-500">
-            3
           </kbd>
         </Button>
       </div>
