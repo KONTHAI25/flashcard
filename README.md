@@ -25,7 +25,7 @@ npm start
 
 - Search, sort, and filter sets with progressive loading.
 - Create sets and edit, search, delete, or restore terms.
-- Review due terms by set or across the library. Reveal the answer before grading; retry missed terms afterward.
+- Practice any nonempty set at any time. Continue learning includes due and previously missed terms; choose Still learning only, All terms, or Due now only. Missed terms remain available after leaving or reloading. Reveal answers before grading and replay rounds without resetting saved progress.
 - Quiz questions use distinct answers and exclude ambiguous alternatives for the same prompt.
 - Keyboard navigation, native modal dialogs, reduced-motion support, and visible storage errors.
 

@@ -176,3 +176,28 @@ test('ambiguous prompts never produce fewer than four quiz choices', () => {
   assert.equal(questions.length, 2);
   assert.ok(questions.every(question => question.options.length === 4));
 });
+
+const { selectStudyCards, isStillLearning } = load('lib/study-queue.ts');
+test('missed terms remain playable after leaving or reloading a round before their due date', () => {
+  const missed = srs.reviewCard(card({ createdAt: 1 }), 0, 100);
+  const known = srs.reviewCard(card({ id: 'known', createdAt: 1 }), 1, 100);
+  const saved = JSON.parse(JSON.stringify([missed, known]));
+  assert.equal(isStillLearning(saved[0]), true);
+  assert.deepEqual(selectStudyCards(saved, 'continue', 200).map(c => c.id), ['one']);
+  assert.deepEqual(selectStudyCards(saved, 'learning', 200).map(c => c.id), ['one']);
+  assert.deepEqual(selectStudyCards(saved, 'due', 200), []);
+});
+test('mastered sets can be played again without resetting schedules on entry', () => {
+  const saved = [srs.reviewCard(card(), 1, 100)];
+  const before = structuredClone(saved);
+  assert.deepEqual(selectStudyCards(saved, 'continue', 200), saved);
+  assert.deepEqual(selectStudyCards(saved, 'all', 200), saved);
+  assert.deepEqual(selectStudyCards(saved, 'learning', 200), []);
+  assert.deepEqual(saved, before);
+});
+test('continue combines due and missed terms once, while excluding future known terms', () => {
+  const input = [card({ id: 'new', createdAt: 100, due: 100 }), card({ id: 'missed', due: 500 }), card({ id: 'known', streak: 2, due: 500 })];
+  assert.deepEqual(selectStudyCards(input, 'continue', 100).map(c => c.id), ['new', 'missed']);
+  assert.equal(isStillLearning(input[0]), false);
+  assert.deepEqual(selectStudyCards([], 'all', 100), []);
+});

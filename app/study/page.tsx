@@ -1,151 +1,34 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useLibrary } from "@/lib/use-library";
 import { LoadError } from "@/components/LoadError";
-import { Button } from "@/components/Button";
-import { Badge } from "@/components/ui";
-
-function CheckCircleIcon({ className = "h-8 w-8" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="9" />
-      <path d="m8.5 12.5 2.5 2.5 4.5-5.5" />
-    </svg>
-  );
-}
-
-function ChevronRightIcon({ className = "h-5 w-5" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="m9 6 6 6-6 6" />
-    </svg>
-  );
-}
+import { Icon } from "@/components/Icon";
 
 export default function StudyIndexPage() {
-  const router = useRouter();
   const { summaries, loading, error, refresh } = useLibrary();
-  const decksWithDue = summaries.filter(row => row.due > 0).map(row => ({ ...row, dueCount: row.due }));
   if (error) return <LoadError message={error} onRetry={refresh} />;
+  if (loading) return <p role="status">Loading flashcards…</p>;
+  const sets = summaries.filter(row => row.total > 0).sort((a, b) => (b.reviewed - b.learned) - (a.reviewed - a.learned) || b.due - a.due);
+  const totalDue = sets.reduce((sum, row) => sum + row.due, 0);
+  const learning = sets.reduce((sum, row) => sum + row.reviewed - row.learned, 0);
 
-  if (loading) {
-    return (
-      <div aria-busy="true" aria-label="Loading study sets">
-        <div className="mb-2 h-8 w-28 animate-pulse rounded-lg bg-slate-200" />
-        <div className="mb-6 h-4 w-48 animate-pulse rounded bg-slate-200" />
-        <div className="space-y-3">
-          {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
-            >
-              <div className="h-11 w-11 animate-pulse rounded-lg bg-slate-200" />
-              <div className="flex-1 space-y-2">
-                <div className="h-4 w-2/3 animate-pulse rounded bg-slate-200" />
-                <div className="h-3 w-1/3 animate-pulse rounded bg-slate-100" />
-              </div>
-              <div className="h-6 w-16 animate-pulse rounded-full bg-slate-200" />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  const totalDue = decksWithDue.reduce((s, d) => s + d.dueCount, 0);
-
-  return (
-    <div>
-      <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-        Study
-      </h1>
-      <p className="mb-6 mt-1 text-sm text-slate-500">
-        {totalDue === 0
-          ? "Nothing due right now"
-          : `${totalDue} ${totalDue === 1 ? "term" : "terms"} due across ${decksWithDue.length} ${decksWithDue.length === 1 ? "set" : "sets"}`}
-      </p>
-
-      {totalDue === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center shadow-sm">
-          <div
-            className="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-emerald-50 text-emerald-500"
-            aria-hidden="true"
-          >
-            <CheckCircleIcon />
-          </div>
-          <p className="mt-4 font-semibold tracking-tight text-slate-900">
-            All caught up
-          </p>
-          <p className="mx-auto mt-1 max-w-sm text-sm text-slate-500">
-            No terms due for review. Come back later or add new terms.
-          </p>
-          <Button onClick={() => router.push("/")} className="mt-5">
-            Browse sets
-          </Button>
-        </div>
-      ) : (
-        <>
-          {totalDue > 0 && (
-            <Button
-              onClick={() => router.push("/study/all")}
-              className="mb-4 w-full"
-            >
-              Study all due ({totalDue})
-            </Button>
-          )}
-          <div className="space-y-3">
-            {decksWithDue.map(({ deck, total, dueCount }) => (
-              <Link
-                key={deck.id}
-                href={`/study/${deck.id}`}
-                aria-label={`Study ${deck.name}, ${dueCount} due`}
-                className="flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition-all hover:border-slate-300 hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2"
-              >
-                <span
-                  className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-indigo-50 text-xl"
-                  aria-hidden="true"
-                >
-                  {deck.emoji}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate font-semibold text-slate-900">
-                    {deck.name}
-                  </span>
-                  <span className="mt-0.5 block truncate text-xs text-slate-500">
-                    {total} {total === 1 ? "term" : "terms"} total
-                  </span>
-                </span>
-                <Badge variant="warning" className="shrink-0">
-                  {dueCount} due
-                </Badge>
-                <span className="shrink-0 text-slate-400" aria-hidden="true">
-                  <ChevronRightIcon />
-                </span>
-              </Link>
-            ))}
-          </div>
-        </>
-      )}
+  return <div>
+    <h1 className="text-2xl font-bold tracking-tight text-slate-900">Flashcards</h1>
+    <p className="mt-2 text-sm text-slate-500">Practice any set, anytime. Pick up the terms you’re still learning or play again.</p>
+    <div className="my-6 flex flex-wrap items-center gap-4 text-sm">
+      <span className="rounded-full bg-indigo-50 px-3 py-2 font-medium text-indigo-700">{learning} still learning</span>
+      <span className="text-slate-500">{totalDue} due for review · {sets.length} sets</span>
+      {totalDue > 0 && <Link href="/study/all" className="inline-flex min-h-11 items-center gap-2 font-semibold text-indigo-600">Review all due <Icon name="arrow" width="17" height="17" /></Link>}
     </div>
-  );
+    {sets.length === 0 ? <div className="rounded-xl border border-slate-200 bg-white p-8 text-center"><h2 className="font-semibold">Add a few terms to start</h2><Link href="/" className="mt-4 inline-flex min-h-11 items-center font-semibold text-indigo-600">Back to your library</Link></div> :
+      <ul className="space-y-3">{sets.map(({ deck, total, due, reviewed, learned }) => {
+        const remaining = reviewed - learned;
+        return <li key={deck.id}><Link href={`/study/${deck.id}`} aria-label={`${remaining ? "Continue learning" : "Practice"} ${deck.name}`} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 hover:border-indigo-300">
+          <span aria-hidden="true" className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-indigo-50 text-xl">{deck.emoji}</span>
+          <span className="min-w-0 flex-1"><span className="block break-words font-semibold">{deck.name}</span><span className="mt-1 block text-xs text-slate-500">{total} terms · {remaining} still learning · {due} due</span></span>
+          <span className="text-sm font-semibold text-indigo-600">{remaining ? "Continue" : "Practice"}</span><Icon name="arrow" className="shrink-0 text-indigo-500" width="18" height="18" />
+        </Link></li>;
+      })}</ul>}
+  </div>;
 }

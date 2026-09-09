@@ -300,7 +300,7 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
 
       <nav className={styles.modes} aria-label="Study this set">
         <div>
-          {dueCount > 0 ? (
+          {cards.length > 0 ? (
             <Link href={`/study/${id}`} className={`${styles.mode} ${styles.modePrimary}`}>
               <CardStackIcon /> Flashcards <span className={styles.modeArrow} aria-hidden="true">→</span>
             </Link>
@@ -310,7 +310,7 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
             </span>
           )}
           {dueCount === 0 && <p id="study-help" className={styles.modeHelp}>
-            {cards.length === 0 ? "Add a term to start studying." : "All caught up. Browse the preview or return when terms are due."}
+            {cards.length === 0 ? "Add a term to start studying." : "Nothing due right now. You can still practice this set anytime."}
           </p>}
         </div>
         <div>

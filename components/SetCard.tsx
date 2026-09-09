@@ -11,6 +11,6 @@ export function SetCard({ summary, onDelete }: { summary: DeckSummary; onDelete:
       <button type="button" onClick={onDelete} aria-label={`Delete ${deck.name}`} className="set-delete"><Icon name="trash" width="16" height="16" /></button>
     </div>
     <div className="set-metadata"><span className="term-count">{total} {total === 1 ? "term" : "terms"}</span>{due > 0 && <span className="due-count">{due} to review</span>}</div>
-    <div className="set-card-bottom"><span className="set-source"><span aria-hidden="true">{deck.emoji}</span>{source}</span><Link href={due ? `/study/${deck.id}` : `/deck/${deck.id}`} className="set-study" aria-label={`${due ? "Study" : "Open"} ${deck.name}`}><span>{due ? "Study" : "Open"}</span><Icon name="arrow" width="17" height="17" /></Link></div>
+    <div className="set-card-bottom"><span className="set-source"><span aria-hidden="true">{deck.emoji}</span>{source}</span><Link href={total > 0 ? `/study/${deck.id}` : `/deck/${deck.id}`} className="set-study" aria-label={`${total > 0 ? "Study" : "Open"} ${deck.name}`}><span>{total > 0 ? "Study" : "Open"}</span><Icon name="arrow" width="17" height="17" /></Link></div>
   </li>;
 }

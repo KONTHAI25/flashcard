@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Card as CardType, Deck } from "@/lib/types";
 import { getDecks, getCards } from "@/lib/store";
-import { isDue } from "@/lib/srs";
+import { selectStudyCards, type StudyMode } from "@/lib/study-queue";
 import { StudyPrompt } from "./StudyPrompt";
 import { saveReview } from "../study-quiz/saveReview";
 import { shouldIgnoreShortcut } from "../study-quiz/keyboard";
@@ -70,6 +70,22 @@ function CheckCircleIcon({ className = "h-8 w-8" }: { className?: string }) {
 }
 
 export function StudySession({ id }: { id?: string }) {
+  const [mode, setMode] = useState<StudyMode>(id ? "continue" : "due");
+  return <div>
+    <label className="mx-auto mb-5 flex max-w-3xl items-center justify-end gap-3 text-sm text-slate-600">
+      Practice
+      <select aria-label="Flashcard selection" value={mode} onChange={event => setMode(event.target.value as StudyMode)} className="field w-auto">
+        <option value="continue">Continue learning</option>
+        <option value="learning">Still learning only</option>
+        <option value="all">All terms</option>
+        <option value="due">Due now only</option>
+      </select>
+    </label>
+    <StudyRound key={`${id ?? "all"}:${mode}`} id={id} mode={mode} />
+  </div>;
+}
+
+function StudyRound({ id, mode }: { id?: string; mode: StudyMode }) {
   const router = useRouter();
   const [decks, setDecks] = useState<Deck[]>([]);
   const deck = decks.find(d => d.id === id);
@@ -98,13 +114,13 @@ export function StudySession({ id }: { id?: string }) {
     }
     setDecks(sets);
     const names = new Map(sets.map(d => [d.id, d.name]));
-    const due = getCards().filter(c => names.has(c.deckId) && (!id || c.deckId === id) && isDue(c))
+    const due = selectStudyCards(getCards().filter(c => names.has(c.deckId) && (!id || c.deckId === id)), mode)
       .sort((a, b) => (names.get(a.deckId) ?? "").localeCompare(names.get(b.deckId) ?? "") || a.due - b.due);
     startRound(due);
     setLoadError("");
     } catch (cause) { setLoadError(cause instanceof Error ? cause.message : "Could not read saved cards."); }
     finally { setLoading(false); }
-  }, [id, router, attempt]);
+  }, [id, mode, router, attempt]);
 
   useEffect(() => {
     if (finished) heading.current?.focus();
@@ -146,6 +162,13 @@ export function StudySession({ id }: { id?: string }) {
     const ids = new Set(missedIds);
     try { startRound(getCards().filter(c => ids.has(c.id))); }
     catch (cause) { setLoadError(cause instanceof Error ? cause.message : "Could not read saved cards."); }
+  }
+
+  function handleRestart() {
+    try {
+      const existingDecks = new Set(getDecks().map(deck => deck.id));
+      startRound(getCards().filter(card => existingDecks.has(card.deckId) && (!id || card.deckId === id)));
+    } catch (cause) { setLoadError(cause instanceof Error ? cause.message : "Could not read saved cards."); }
   }
 
   useEffect(() => {
@@ -203,12 +226,13 @@ export function StudySession({ id }: { id?: string }) {
             <CheckCircleIcon />
           </div>
           <h1 ref={heading} tabIndex={-1} className="mt-4 text-2xl font-bold tracking-tight text-slate-900">
-            All caught up
+            {mode === "learning" ? "No terms still learning" : "Nothing to review"}
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            No terms due in {deck?.name ?? "any set"} right now.
+            {mode === "learning" ? "You can practice the full set again at any time." : "No terms match this selection. Choose All terms to practice anytime."}
           </p>
           <div className="mt-6 flex w-full flex-col gap-2">
+            <Button className="w-full" onClick={handleRestart}>Practice all terms</Button>
             <Button className="w-full" onClick={() => router.push(id ? `/deck/${id}` : "/study")}>
               {id ? "Back to set" : "Back to study"}
             </Button>
@@ -247,9 +271,10 @@ export function StudySession({ id }: { id?: string }) {
           <div className="mt-6 flex w-full flex-col gap-2">
             {missedIds.length > 0 && (
               <Button className="w-full" onClick={handleReviewMissed}>
-                Continue · {missedIds.length} remaining
+                Practice still learning · {missedIds.length} remaining
               </Button>
             )}
+            <Button variant="secondary" className="w-full" onClick={handleRestart}>Study all terms again</Button>
             <Button
               variant={missedIds.length > 0 ? "secondary" : undefined}
               className="w-full"
