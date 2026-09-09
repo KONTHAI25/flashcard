@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useLibrary } from "@/lib/use-library";
+import { summaryRemaining } from "@/lib/library";
 import { LoadError } from "@/components/LoadError";
 import { Icon } from "@/components/Icon";
 
@@ -9,9 +10,9 @@ export default function StudyIndexPage() {
   const { summaries, loading, error, refresh } = useLibrary();
   if (error) return <LoadError message={error} onRetry={refresh} />;
   if (loading) return <p role="status">Loading flashcards…</p>;
-  const sets = summaries.filter(row => row.total > 0).sort((a, b) => (b.reviewed - b.learned) - (a.reviewed - a.learned) || b.due - a.due);
+  const sets = summaries.filter(row => row.total > 0).sort((a, b) => summaryRemaining(b) - summaryRemaining(a) || b.due - a.due);
   const totalDue = sets.reduce((sum, row) => sum + row.due, 0);
-  const learning = sets.reduce((sum, row) => sum + row.reviewed - row.learned, 0);
+  const learning = sets.reduce((sum, row) => sum + summaryRemaining(row), 0);
 
   return <div>
     <h1 className="text-2xl font-bold tracking-tight text-slate-900">Flashcards</h1>
@@ -22,8 +23,9 @@ export default function StudyIndexPage() {
       {totalDue > 0 && <Link href="/study/all" className="inline-flex min-h-11 items-center gap-2 font-semibold text-indigo-600">Review all due <Icon name="arrow" width="17" height="17" /></Link>}
     </div>
     {sets.length === 0 ? <div className="rounded-xl border border-slate-200 bg-white p-8 text-center"><h2 className="font-semibold">Add a few terms to start</h2><Link href="/" className="mt-4 inline-flex min-h-11 items-center font-semibold text-indigo-600">Back to your library</Link></div> :
-      <ul className="space-y-3">{sets.map(({ deck, total, due, reviewed, learned }) => {
-        const remaining = reviewed - learned;
+      <ul className="space-y-3">{sets.map((row) => {
+        const { deck, total, due } = row;
+        const remaining = summaryRemaining(row);
         return <li key={deck.id}><Link href={`/study/${deck.id}`} aria-label={`${remaining ? "Continue learning" : "Practice"} ${deck.name}`} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 hover:border-indigo-300">
           <span aria-hidden="true" className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-indigo-50 text-xl">{deck.emoji}</span>
           <span className="min-w-0 flex-1"><span className="block break-words font-semibold">{deck.name}</span><span className="mt-1 block text-xs text-slate-500">{total} terms · {remaining} still learning · {due} due</span></span>

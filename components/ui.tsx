@@ -2,62 +2,8 @@
 
 import type { ReactNode } from "react";
 
-function cn(...parts: Array<string | false | null | undefined>) {
+export function cn(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(" ");
-}
-
-/* ---------- PageHeader ---------- */
-
-interface PageHeaderProps {
-  title: string;
-  subtitle?: string;
-  onBack?: () => void;
-  backLabel?: string;
-  action?: ReactNode;
-}
-
-export function PageHeader({
-  title,
-  subtitle,
-  onBack,
-  backLabel = "Go back",
-  action,
-}: PageHeaderProps) {
-  return (
-    <header className="mb-6 flex items-center gap-3">
-      {onBack && (
-        <button
-          type="button"
-          onClick={onBack}
-          aria-label={backLabel}
-          className="inline-flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-        >
-          <svg
-            className="h-5 w-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="m12 19-7-7 7-7" />
-            <path d="M19 12H5" />
-          </svg>
-        </button>
-      )}
-      <div className="min-w-0 flex-1">
-        <h1 className="truncate text-xl font-bold tracking-tight text-slate-900">
-          {title}
-        </h1>
-        {subtitle && (
-          <p className="truncate text-sm text-slate-500">{subtitle}</p>
-        )}
-      </div>
-      {action && <div className="flex shrink-0 items-center gap-2">{action}</div>}
-    </header>
-  );
 }
 
 /* ---------- EmptyState ---------- */

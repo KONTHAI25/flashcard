@@ -2,12 +2,13 @@
 
 import { useState, useEffect, use, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Deck } from "@/lib/types";
+import { Deck, normalizeCard, isBilingualCard } from "@/lib/types";
 import { getDeck, getCardsByDeck } from "@/lib/store";
 import { buildQuiz, type Question } from "../quiz";
 import { saveReview } from "@/components/study-quiz/saveReview";
 import { shouldIgnoreShortcut } from "@/components/study-quiz/keyboard";
 import { Button } from "@/components/Button";
+import { PairBadges } from "@/components/PairMeta";
 import { LoadError } from "@/components/LoadError";
 
 const LETTERS = ["A", "B", "C", "D"];
@@ -319,7 +320,15 @@ function QuizSession({ id }: { id: string }) {
 
       {/* Question */}
       <div className="mb-6 grid min-h-[140px] place-items-center rounded-2xl border border-slate-200 bg-white p-6">
-        <h2 ref={questionHeading} tabIndex={-1} className="text-center text-lg leading-relaxed text-slate-900"><span className="sr-only">Question {currentIdx + 1} of {questions.length}: </span>{q.card.front}</h2>
+        <div className="w-full">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <span className="text-[11px] font-bold tracking-[0.14em] text-slate-400 uppercase">
+              {isBilingualCard(q.card) ? "English → Thai" : "Question"}
+            </span>
+            {(() => { const n = normalizeCard(q.card); return <PairBadges level={n.level} source={n.source} />; })()}
+          </div>
+          <h2 ref={questionHeading} tabIndex={-1} className="text-center text-lg leading-relaxed text-slate-900"><span className="sr-only">Question {currentIdx + 1} of {questions.length}: </span>{q.card.front}</h2>
+        </div>
       </div>
 
       {/* Options */}

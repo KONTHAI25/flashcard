@@ -1,4 +1,4 @@
-import { Card, Deck } from "./types";
+import { Card, Deck, isCEFRLevel } from "./types";
 import { buildInitialData } from "./storage-seed";
 
 export const STORAGE_KEY = "fc_storage";
@@ -39,6 +39,17 @@ export function validateCard(value: unknown): asserts value is Card {
   for (const field of ["interval", "due", "streak", "createdAt"]) number(value[field], field);
   number(value.ease, "ease", Number.MIN_VALUE);
   if (!Number.isInteger(value.streak)) invalid("streak must be an integer.");
+  validateCardExtras(value);
+}
+
+/** Apply the same metadata rules to patches, restored cards and loaded snapshots. */
+export function validateCardExtras(value: unknown): void {
+  record(value);
+  if (value.level !== undefined && !isCEFRLevel(value.level)) invalid("Invalid CEFR level.");
+  if (value.source !== undefined && !["oxford", "longdo", "manual"].includes(value.source as string)) invalid("Invalid card source.");
+  for (const field of ["wordEng", "wordThai"]) {
+    if (value[field] !== undefined) text(value[field], field);
+  }
 }
 function validateData(value: unknown): asserts value is StorageData {
   record(value);
@@ -101,6 +112,10 @@ function load(target: Storage): Snapshot {
     if (target === cachedStorage && raw === cachedRaw && cachedSnapshot) return cachedSnapshot;
     const snapshot = parse(raw);
     record(snapshot);
+    // Schema policy (F12): additive-only. New fields must be optional and
+    // readers must tolerate them. A breaking migration requires a user-visible
+    // export/backup first and a downgrade reader; refusing unknown versions
+    // here is safe-by-design (data retained, app shows recovery UI).
     if (snapshot.version !== 1) throw new StorageError("unsupported-version", "Unsupported flashcard storage version; saved data was retained.");
     validateData(snapshot);
     cachedStorage = target;

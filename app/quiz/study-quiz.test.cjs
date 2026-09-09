@@ -19,7 +19,8 @@ function load(relativePath, dependencies = {}) {
 }
 
 const srs = load('lib/srs.ts');
-const { buildQuiz, distinctAnswerCount } = load('app/quiz/quiz.ts');
+const types = load('lib/types.ts');
+const { buildQuiz, distinctAnswerCount, displayAnswer } = load('app/quiz/quiz.ts', { '../../lib/types': types });
 const { shouldIgnoreShortcut } = load('components/study-quiz/keyboard.ts');
 const DAY = 86_400_000;
 const card = (patch = {}) => ({
@@ -28,6 +29,31 @@ const card = (patch = {}) => ({
 });
 const cards = ['Paris', 'London', 'Rome', 'Berlin', ' PARIS ', 'London'].map((back, i) =>
   card({ id: String(i), front: `Prompt ${i}`, back }));
+
+test('all legacy levels use one display normalization without changing schedules', () => {
+  for (const level of types.CEFR_LEVELS) {
+    const original = card({ back: `คำ [${level}]`, interval: 30, streak: 5 });
+    const normalized = types.normalizeCard(original);
+    assert.equal(displayAnswer(original), 'คำ');
+    assert.deepEqual(normalized, { ...original, back: 'คำ', level });
+    assert.equal(original.back, `คำ [${level}]`);
+    assert.equal(types.isBilingualCard(original), true);
+  }
+  assert.equal(types.isBilingualCard(card({ source: 'manual', level: 'B1' })), false);
+  assert.equal(types.isBilingualCard(card({ wordEng: 'cat', wordThai: 'แมว' })), true);
+});
+
+test('CEFR scope is applied before Continue fallback and to refreshed missed IDs', () => {
+  const known = card({ id: 'b1', level: 'B1', due: 2000, streak: 3 });
+  const pending = card({ id: 'b2', level: 'B2', due: 999 });
+  const scope = { deckIds: new Set(['deck']), deckId: 'deck', level: 'B1' };
+  const queue = selectStudyCards(filterStudyCards([known, pending], scope), 'continue', 1000);
+  assert.deepEqual(queue.map(c => c.id), ['b1']);
+  const moved = { ...known, level: 'C2' };
+  const otherDeck = { ...known, id: 'other', deckId: 'outside' };
+  assert.deepEqual(filterStudyCards([moved, otherDeck], { ...scope, cardIds: new Set(['b1', 'other']) }), []);
+  assert.deepEqual(filterStudyCards([card({ back: 'คำ [A1]' })], { ...scope, level: 'A1' }).map(c => c.id), ['one']);
+});
 
 test('review grades retain the existing SM-2-lite schedule without mutating the card', () => {
   const original = card({ interval: 8, streak: 4 });
@@ -67,10 +93,13 @@ test('missed-card retries use the persisted schedule and preserve concurrent con
   let current = card({ interval: 20, streak: 8 });
   const patches = [];
   const { saveReview } = load('components/study-quiz/saveReview.ts', {
-    '@/lib/srs': srs,
     '@/lib/store': {
-      getCard: () => current,
-      updateCard: (id, patch) => { patches.push(patch); current = { ...current, ...patch }; return current; },
+      updateCardReview: (id, quality) => {
+        const { interval, ease, due, streak } = srs.reviewCard(current, quality);
+        patches.push({ interval, ease, due, streak });
+        current = { ...current, interval, ease, due, streak };
+        return current;
+      },
     },
   });
   saveReview(current.id, 0);
@@ -86,16 +115,14 @@ test('missed-card retries use the persisted schedule and preserve concurrent con
 
 test('reviewing a deleted card does not recreate it', () => {
   const { saveReview } = load('components/study-quiz/saveReview.ts', {
-    '@/lib/srs': srs,
-    '@/lib/store': { getCard: () => undefined, updateCard: () => assert.fail('must not write') },
+    '@/lib/store': { updateCardReview: () => null },
   });
   assert.equal(saveReview('deleted', 1), null);
 });
 
 test('persistence failure is propagated so the session can retain the current question', () => {
   const { saveReview } = load('components/study-quiz/saveReview.ts', {
-    '@/lib/srs': srs,
-    '@/lib/store': { getCard: () => card(), updateCard: () => { throw new Error('storage unavailable'); } },
+    '@/lib/store': { updateCardReview: () => { throw new Error('storage unavailable'); } },
   });
   assert.throws(() => saveReview('one', 1), /storage unavailable/);
 });
@@ -177,7 +204,7 @@ test('ambiguous prompts never produce fewer than four quiz choices', () => {
   assert.ok(questions.every(question => question.options.length === 4));
 });
 
-const { selectStudyCards, isStillLearning } = load('lib/study-queue.ts');
+const { selectStudyCards, isStillLearning, filterStudyCards } = load('lib/study-queue.ts', { './types': types });
 test('missed terms remain playable after leaving or reloading a round before their due date', () => {
   const missed = srs.reviewCard(card({ createdAt: 1 }), 0, 100);
   const known = srs.reviewCard(card({ id: 'known', createdAt: 1 }), 1, 100);

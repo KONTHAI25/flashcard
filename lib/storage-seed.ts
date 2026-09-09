@@ -1,12 +1,5 @@
-import { Deck, Card } from "./types";
-import {
-  VOCAB_01,
-  VOCAB_02,
-  VOCAB_03,
-  VOCAB_04,
-  VOCAB_05,
-  VOCAB_06,
-} from "../data/vocab";
+import { Deck, Card, B1_C2_LEVELS, type CEFRLevel } from "./types";
+import { VOCAB_B1_C2 } from "../data/vocab";
 
 const SEED_DECK: Deck = {
   id: "deck-demo",
@@ -70,14 +63,11 @@ function oxfordDeckId(n: number): string {
 }
 
 function buildOxfordSeed(now: number): { decks: Deck[]; cards: Card[] } {
-  const all: Array<[string, string, string]> = [
-    ...VOCAB_01,
-    ...VOCAB_02,
-    ...VOCAB_03,
-    ...VOCAB_04,
-    ...VOCAB_05,
-    ...VOCAB_06,
-  ];
+  // B1–C2 only: VOCAB_B1_C2 already excludes A1/A2 (part-01/02 retained on
+  // disk but not seeded). Re-filter by allowlist so future C1/C2 rows flow
+  // through without code changes.
+  const allowed = new Set<string>(B1_C2_LEVELS);
+  const all = VOCAB_B1_C2.filter(([, , level]) => allowed.has(level));
   const decks: Deck[] = [];
   const cards: Card[] = [];
   const totalDecks = Math.ceil(all.length / OXFORD_CHUNK_SIZE);
@@ -97,9 +87,13 @@ function buildOxfordSeed(now: number): { decks: Deck[]; cards: Card[] } {
         cards.push({
           id: `${deckId}-c${i + 1}`,
           deckId,
+          // Structured bilingual pair: front = English, back = plain Thai.
           front: en,
-          // Card has no `level` field, so keep CEFR level as a back suffix.
-          back: `${th} [${level}]`,
+          back: th,
+          level: level as CEFRLevel,
+          source: "oxford",
+          wordEng: en,
+          wordThai: th,
           interval: 1,
           ease: 2.5,
           due: now,

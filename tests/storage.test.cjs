@@ -19,6 +19,7 @@ try {
 }
 const store = require(path.join(output, 'lib/store.js'));
 const { STORAGE_KEY } = require(path.join(output, 'lib/storage.js'));
+const vocabulary = require(path.join(output, 'data/vocab/index.js'));
 after(() => { delete global.window; rmSync(output, { recursive: true, force: true }); });
 
 class MemoryStorage {
@@ -42,6 +43,44 @@ function setup(data = { decks: [deck], cards: [card] }) {
   return storage;
 }
 function errorCode(code) { return error => error instanceof store.StorageError && error.code === code; }
+
+test('all vocabulary source tuples and newly seeded pairs are unique', () => {
+  const rows = ['01', '02', '03', '04', '05', '06'].flatMap(n => vocabulary['VOCAB_' + n]);
+  assert.equal(rows.length, new Set(rows.map(row => JSON.stringify(row))).size);
+  setup(null);
+  const seeded = store.getCards().filter(c => c.source === 'oxford');
+  assert.ok(seeded.length > 0);
+  assert.equal(seeded.length, new Set(seeded.map(c => JSON.stringify([c.front, c.back, c.level]))).size);
+  assert.ok(seeded.every(c => ['B1', 'B2', 'C1', 'C2'].includes(c.level)));
+});
+
+test('metadata is validated at load, create, update, and restore boundaries without writes', () => {
+  const invalids = [{ level: {} }, { level: 'Z9' }, { source: 'unknown' }, { wordEng: 42 }, { wordThai: ' ' }];
+  for (const extras of invalids) {
+    let storage = setup({ decks: [deck], cards: [{ ...card, ...extras }] });
+    const raw = storage.getItem(STORAGE_KEY);
+    assert.throws(() => store.getCards(), errorCode('invalid-data'));
+    assert.equal(storage.getItem(STORAGE_KEY), raw);
+    assert.equal(storage.writes, 0);
+    storage = setup();
+    assert.throws(() => store.createCard(deck.id, 'Q', 'A', extras), errorCode('invalid-data'));
+    assert.throws(() => store.updateCard(card.id, extras), errorCode('invalid-data'));
+    assert.throws(() => store.restoreCard({ ...card, id: 'restore', ...extras }), errorCode('invalid-data'));
+    assert.throws(() => store.restoreDeck(deck, [{ ...card, ...extras }]), errorCode('invalid-data'));
+    assert.equal(storage.writes, 0);
+  }
+});
+
+test('legacy levels and existing duplicate cards retain IDs and schedules', () => {
+  const original = [{ ...card, id: 'old-one', back: 'คำ [A1]' }, { ...card, id: 'old-two', back: 'คำ [A1]' }];
+  const storage = setup({ decks: [deck], cards: original });
+  assert.deepEqual(store.getCards(), original);
+  assert.equal(storage.writes, 0);
+  const updated = store.updateCard('old-one', { level: 'A1' });
+  assert.equal(updated.interval, card.interval);
+  assert.equal(updated.streak, card.streak);
+  assert.deepEqual(store.getCards().map(c => c.id), ['old-one', 'old-two']);
+});
 
 test('fresh installation seeds once; Oxford deletions and progress survive reload', () => {
   const storage = setup(null);

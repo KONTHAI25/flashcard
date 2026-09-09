@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Card as CardType, Deck } from "@/lib/types";
 import { getDecks, getCards } from "@/lib/store";
-import { selectStudyCards, type StudyMode } from "@/lib/study-queue";
+import { selectStudyCards, filterStudyCards, type StudyMode } from "@/lib/study-queue";
+import { CefrFilter, type CefrFilterValue } from "@/components/PairMeta";
 import { StudyPrompt } from "./StudyPrompt";
 import { saveReview } from "../study-quiz/saveReview";
 import { shouldIgnoreShortcut } from "../study-quiz/keyboard";
@@ -69,23 +70,27 @@ function CheckCircleIcon({ className = "h-8 w-8" }: { className?: string }) {
   );
 }
 
-export function StudySession({ id }: { id?: string }) {
-  const [mode, setMode] = useState<StudyMode>(id ? "continue" : "due");
+export function StudySession({ id, initialMode }: { id?: string; initialMode?: StudyMode }) {
+  const [mode, setMode] = useState<StudyMode>(initialMode ?? (id ? "continue" : "due"));
+  const [level, setLevel] = useState<CefrFilterValue>("All");
   return <div>
-    <label className="mx-auto mb-5 flex max-w-3xl items-center justify-end gap-3 text-sm text-slate-600">
-      Practice
-      <select aria-label="Flashcard selection" value={mode} onChange={event => setMode(event.target.value as StudyMode)} className="field w-auto">
-        <option value="continue">Continue learning</option>
-        <option value="learning">Still learning only</option>
-        <option value="all">All terms</option>
-        <option value="due">Due now only</option>
-      </select>
-    </label>
-    <StudyRound key={`${id ?? "all"}:${mode}`} id={id} mode={mode} />
+    <div className="mx-auto mb-5 flex max-w-3xl flex-wrap items-center justify-end gap-x-4 gap-y-3">
+      <label className="flex items-center gap-3 text-sm text-slate-600">
+        Practice
+        <select aria-label="Flashcard selection" value={mode} onChange={event => setMode(event.target.value as StudyMode)} className="field w-auto">
+          <option value="continue">Continue learning</option>
+          <option value="learning">Still learning only</option>
+          <option value="all">All terms</option>
+          <option value="due">Due now only</option>
+        </select>
+      </label>
+      <CefrFilter value={level} onChange={setLevel} idPrefix="study-cefr" />
+    </div>
+    <StudyRound key={`${id ?? "all"}:${mode}:${level}`} id={id} mode={mode} levelFilter={level} />
   </div>;
 }
 
-function StudyRound({ id, mode }: { id?: string; mode: StudyMode }) {
+function StudyRound({ id, mode, levelFilter }: { id?: string; mode: StudyMode; levelFilter: CefrFilterValue }) {
   const router = useRouter();
   const [decks, setDecks] = useState<Deck[]>([]);
   const deck = decks.find(d => d.id === id);
@@ -102,7 +107,9 @@ function StudyRound({ id, mode }: { id?: string; mode: StudyMode }) {
   const [originalLen, setOriginalLen] = useState(0);
   // Total grade attempts (Still learning + Know). Used for session stats and progress.
   const [reviewed, setReviewed] = useState(0);
-  // Ids marked Still learning this round — Quizlet's missed pile, replayed as the next round.
+  // Session-scoped "missed this round" pile (Quizlet-style replay queue).
+  // Distinct from persistent still-learning progress (lib/library.ts
+  // cardProgress/deckProgress): this list resets every round.
   const [missedIds, setMissedIds] = useState<string[]>([]);
 
   useEffect(() => {
@@ -114,13 +121,13 @@ function StudyRound({ id, mode }: { id?: string; mode: StudyMode }) {
     }
     setDecks(sets);
     const names = new Map(sets.map(d => [d.id, d.name]));
-    const due = selectStudyCards(getCards().filter(c => names.has(c.deckId) && (!id || c.deckId === id)), mode)
+    const due = selectStudyCards(filterStudyCards(getCards(), { deckIds: new Set(names.keys()), deckId: id, level: levelFilter }), mode)
       .sort((a, b) => (names.get(a.deckId) ?? "").localeCompare(names.get(b.deckId) ?? "") || a.due - b.due);
     startRound(due);
     setLoadError("");
     } catch (cause) { setLoadError(cause instanceof Error ? cause.message : "Could not read saved cards."); }
     finally { setLoading(false); }
-  }, [id, mode, router, attempt]);
+  }, [id, mode, levelFilter, router, attempt]);
 
   useEffect(() => {
     if (finished) heading.current?.focus();
@@ -160,14 +167,14 @@ function StudyRound({ id, mode }: { id?: string; mode: StudyMode }) {
   function handleReviewMissed() {
     // Reload both content and schedule; deleted cards must not be resurrected.
     const ids = new Set(missedIds);
-    try { startRound(getCards().filter(c => ids.has(c.id))); }
+    try { startRound(filterStudyCards(getCards(), { deckIds: new Set(getDecks().map(deck => deck.id)), deckId: id, level: levelFilter, cardIds: ids })); }
     catch (cause) { setLoadError(cause instanceof Error ? cause.message : "Could not read saved cards."); }
   }
 
   function handleRestart() {
     try {
       const existingDecks = new Set(getDecks().map(deck => deck.id));
-      startRound(getCards().filter(card => existingDecks.has(card.deckId) && (!id || card.deckId === id)));
+      startRound(filterStudyCards(getCards(), { deckIds: existingDecks, deckId: id, level: levelFilter }));
     } catch (cause) { setLoadError(cause instanceof Error ? cause.message : "Could not read saved cards."); }
   }
 
@@ -229,7 +236,9 @@ function StudyRound({ id, mode }: { id?: string; mode: StudyMode }) {
             {mode === "learning" ? "No terms still learning" : "Nothing to review"}
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            {mode === "learning" ? "You can practice the full set again at any time." : "No terms match this selection. Choose All terms to practice anytime."}
+            {levelFilter !== "All"
+              ? `No ${levelFilter} terms match this selection. Try All levels or add more ${levelFilter} terms.`
+              : mode === "learning" ? "You can practice the full set again at any time." : "No terms match this selection. Choose All terms to practice anytime."}
           </p>
           <div className="mt-6 flex w-full flex-col gap-2">
             <Button className="w-full" onClick={handleRestart}>Practice all terms</Button>
