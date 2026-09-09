@@ -4,17 +4,19 @@ export { VOCAB_03 } from "./part-03";
 export { VOCAB_04 } from "./part-04";
 export { VOCAB_05 } from "./part-05";
 export { VOCAB_06 } from "./part-06";
+export { VOCAB_07 } from "./part-07";
 
 import { VOCAB_03 } from "./part-03";
 import { VOCAB_04 } from "./part-04";
 import { VOCAB_05 } from "./part-05";
 import { VOCAB_06 } from "./part-06";
+import { VOCAB_07 } from "./part-07";
 
 // Dataset scope: B1–C2 only.
 // part-01 (A1, 500 rows) and part-02 (A2, 500 rows) are intentionally retained
 // on disk but EXCLUDED from the seed below. Exact repeated tuples have been
-// removed from part-03..06; no C1/C2 rows exist yet.
-// The filter below is an allowlist (not a denylist) so future C1/C2 rows pass
+// removed from part-03..06. part-07 holds the C1/C2 advanced rows.
+// The filter below is an allowlist (not a denylist) so future levels pass
 // through without code changes.
 export type VocabRow = [en: string, th: string, level: string];
 export const B1_C2_LEVELS = ["B1", "B2", "C1", "C2"] as const;
@@ -30,4 +32,5 @@ export const VOCAB_B1_C2: VocabRow[] = [
   ...VOCAB_04,
   ...VOCAB_05,
   ...VOCAB_06,
+  ...VOCAB_07,
 ].filter((row): row is [string, string, B1C2Level] => isB1C2Level(row[2]));
