@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 import { FlashCard } from "@/components/FlashCard";
-import type { Card } from "@/lib/types";
+import { normalizeCard, getDisplayBack, isBilingualCard, type Card } from "@/lib/types";
 import styles from "@/app/deck/[id]/deck.module.css";
 
 export function DeckPreview({ cards }: { cards: Card[] }) {
@@ -11,7 +11,8 @@ export function DeckPreview({ cards }: { cards: Card[] }) {
   const restoreCardFocus = useRef(false);
   const selectedIndex = cards.findIndex((card) => card.id === selectedId);
   const index = selectedIndex < 0 ? 0 : selectedIndex;
-  const card = cards[index];
+  const raw = cards[index];
+  const card = raw ? normalizeCard(raw) : undefined;
 
   useLayoutEffect(() => {
     if (restoreCardFocus.current) {
@@ -42,10 +43,17 @@ export function DeckPreview({ cards }: { cards: Card[] }) {
     >
       <div className={styles.previewHeading}>
         <h2>Preview this set</h2>
-        <span>Explore at your own pace</span>
+        <span>{raw && isBilingualCard(raw) ? "English → Thai · " : ""}Explore at your own pace</span>
       </div>
       <div ref={stageRef} className={styles.cardStage}>
-        <FlashCard key={card.id} front={card.front} back={card.back} />
+        <FlashCard
+          key={card.id}
+          front={card.front}
+          back={getDisplayBack(card)}
+          level={card.level}
+          source={card.source}
+          bilingual={isBilingualCard(raw)}
+        />
       </div>
       <div className={styles.previewControls}>
         <button type="button" onClick={() => move(-1)} disabled={index === 0} aria-label="Previous card">

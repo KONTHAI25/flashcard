@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { getCards, getDecks } from "./store";
 import { summarizeDecks, type DeckSummary } from "./library";
+import { useStorageRefresh } from "./use-storage-refresh";
 
 export function useLibrary() {
   const [summaries, setSummaries] = useState<DeckSummary[]>([]);
@@ -17,19 +18,6 @@ export function useLibrary() {
     } finally { setLoading(false); }
   }, []);
 
-  useEffect(() => {
-    refresh();
-    const onVisible = () => { if (document.visibilityState === "visible") refresh(); };
-    window.addEventListener("storage", refresh);
-    window.addEventListener("flashcards:change", refresh);
-    document.addEventListener("visibilitychange", onVisible);
-    const timer = window.setInterval(onVisible, 60_000);
-    return () => {
-      window.removeEventListener("storage", refresh);
-      window.removeEventListener("flashcards:change", refresh);
-      document.removeEventListener("visibilitychange", onVisible);
-      window.clearInterval(timer);
-    };
-  }, [refresh]);
+  useStorageRefresh(refresh);
   return { summaries, loading, error, refresh };
 }

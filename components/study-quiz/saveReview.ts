@@ -1,10 +1,6 @@
-import { getCard, updateCard } from "@/lib/store";
-import { reviewCard } from "@/lib/srs";
+import { updateCardReview } from "@/lib/store";
 
-/** Read the latest schedule and patch only review fields, preserving concurrent edits. */
+/** Persist a review atomically; deleted cards resolve to null (never resurrected). */
 export function saveReview(id: string, quality: number) {
-  const current = getCard(id);
-  if (!current) return null;
-  const { interval, ease, due, streak } = reviewCard(current, quality);
-  return updateCard(id, { interval, ease, due, streak });
+  return updateCardReview(id, quality);
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { cn } from "./ui";
 
 type ButtonVariant = "primary" | "secondary" | "danger" | "success" | "ghost";
 type ButtonSize = "sm" | "md" | "lg" | "grade";
@@ -10,10 +11,6 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: ButtonSize;
   loading?: boolean;
   children: ReactNode;
-}
-
-function cn(...parts: Array<string | false | null | undefined>) {
-  return parts.filter(Boolean).join(" ");
 }
 
 const variants: Record<ButtonVariant, string> = {

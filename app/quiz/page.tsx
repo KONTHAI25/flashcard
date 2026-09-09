@@ -7,7 +7,7 @@ import { getDecks, getCards } from "@/lib/store";
 import { Badge } from "@/components/ui";
 import { LoadError } from "@/components/LoadError";
 
-import { buildQuiz } from "./quiz";
+import { canBuildQuiz } from "./quiz";
 
 function ChevronRightIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (
@@ -38,7 +38,7 @@ export default function QuizIndexPage() {
     const cards = getCards();
     setDecks(sets.map(deck => {
       const terms = cards.filter(c => c.deckId === deck.id);
-      return { deck, count: terms.length, ready: buildQuiz(terms).length > 0 };
+      return { deck, count: terms.length, ready: canBuildQuiz(terms) };
     }));
     setError("");
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Could not read saved sets."); }

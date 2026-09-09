@@ -7,6 +7,7 @@ import { deleteDeck, restoreDeck } from "@/lib/store";
 import { useLibrary } from "@/lib/use-library";
 import type { DeckSummary } from "@/lib/library";
 import { SetCard } from "@/components/SetCard";
+import { BackupButtons } from "@/components/BackupButtons";
 import { CreateSetSheet } from "@/components/CreateSetSheet";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/ui";
@@ -56,7 +57,7 @@ function Library() {
   }
 
   if (loading) return <LibraryLoading />;
-  if (error) return <EmptyState title="Your library could not load" hint={error} action={<Button onClick={refresh}>Try again</Button>} />;
+  if (error) return <EmptyState title="Your library could not load" hint={error} action={<div className="flex flex-wrap items-center justify-center gap-2"><Button onClick={refresh}>Try again</Button><BackupButtons recovery onRestored={refresh} /></div>} />;
 
   return <div className="library-page">
     <header className="library-intro"><div><h1>Good things take practice.</h1><p>Pick a set. Find your rhythm. Make it stick.</p></div><span className="intro-doodle" aria-hidden="true">✳</span></header>
@@ -67,7 +68,11 @@ function Library() {
     </section>
 
     <section aria-labelledby="library-heading" className="sets-section">
-      <div className="sets-title-row"><h2 id="library-heading">Your study sets <span>{summaries.length}</span></h2><Link href="/study/all" className="review-all">{totalDue ? "Review all due" : "Review progress"}<Icon name="arrow" width="16" height="16" /></Link></div>
+      <div className="sets-title-row"><h2 id="library-heading">Your study sets <span>{summaries.length}</span></h2><Link href={totalDue ? "/study/all" : "/study/all?mode=all"} className="review-all">{totalDue ? "Review all due" : "Practice all terms"}<Icon name="arrow" width="16" height="16" /></Link></div>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs text-slate-500">Stored only in this browser. Export a backup before clearing site data.</p>
+        <BackupButtons onRestored={refresh} />
+      </div>
       <div className="library-tabs" role="group" aria-label="Filter sets">{FILTERS.map(item => <button type="button" key={item.value} aria-pressed={filter === item.value} onClick={() => setFilter(item.value)} className={filter === item.value ? "library-tab active" : "library-tab"}>{item.label}</button>)}</div>
       <div className="library-toolbar">
         <label className="sort-control"><span>Sort by</span><select aria-label="Sort sets" value={sort} onChange={event => setSort(event.target.value)}><option value="recent">Recently created</option><option value="due">Most due</option><option value="az">Alphabetical</option></select></label>

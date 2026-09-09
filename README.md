@@ -39,6 +39,18 @@ Existing `fc_decks` and `fc_cards` data migrates without changing IDs, edits, de
 
 Parsing is cached. Consumers receive copies, and successful writes publish `flashcards:change`. The library also refreshes on storage events, visibility changes, and once a minute. Concurrent tabs remain last-writer-wins; this is not a synchronization service.
 
+Use **Export backup** on the library page before clearing site data or switching devices. The download is the raw versioned snapshot; **Import backup** replaces the current library after validating it (invalid files are rejected without touching existing data).
+
+Schema policy: additive-only. New card/deck fields must be optional and readers must tolerate them. Any breaking migration requires an export-first flow and a downgrade reader.
+
+## Translation (EN→TH lookup)
+
+Existing answers are protected when the editor opens. Changing a bilingual word invalidates its previous translation, and delayed lookups cannot overwrite a later manual answer. Generic cards retain Front/Back labels and can be edited without automatic translation. Existing A1/A2 metadata is preserved alongside B1–C2; fresh vocabulary seeds exclude exact duplicate tuples without rewriting saved cards or progress.
+
+The deck editor looks up Thai meanings through `GET /api/translate?word=`, a thin server proxy (`app/api/translate/route.ts` → `lib/translate-server.ts`) over Longdo's `mobile.php` HTML. There is no dictionary contract: parsing is regex-based and can break if Longdo changes markup. Failures return a manual-entry-friendly fallback (`word_thai` echoes the query plus `error`) and are never cached as successes; only `200` responses send `Cache-Control: public, max-age=86400`.
+
+Limits are per server instance (in-memory): 60/min per IP + 120 requests/min and 30 upstream fetches/min globally, max 4 concurrent upstream requests, 6 s fetch timeout, 256 KB body cap, 24 h positive / 30 s negative cache. For public deploys, add edge per-IP rate limiting (e.g. Vercel WAF); in-process budgets are defense-in-depth only.
+
 ## Structure
 
 - `app/`: library, deck editor, study and quiz routes.
@@ -47,6 +59,9 @@ Parsing is cached. Consumers receive copies, and successful writes publish `flas
 - `lib/storage.ts`: validated persistence, migration, caching, and storage errors.
 - `lib/storage-seed.ts`: initial content.
 - `lib/library.ts` and `lib/use-library.ts`: library summaries and refresh lifecycle.
+- `lib/editor-state.ts`: pure editor race guards plus the shared save-source resolver.
+- `lib/export-import.ts`: JSON backup export/import for browser-only data.
+- `lib/translate-types.ts`: shared EN–TH contracts (client + server).
 - `lib/srs.ts`: review scheduling.
 - `app/quiz/quiz.ts`: pure quiz generation.
 - `tests/` and `app/quiz/study-quiz.test.cjs`: regression tests.

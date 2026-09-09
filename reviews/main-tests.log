@@ -1,0 +1,37 @@
+✔ review grades retain the existing SM-2-lite schedule without mutating the card (1.8925ms)
+✔ new cards, ease limits, malformed schedules and invalid grades (0.6264ms)
+✔ due boundary and future labels do not display zero minutes (0.6879ms)
+✔ missed-card retries use the persisted schedule and preserve concurrent content edits (7.1499ms)
+✔ reviewing a deleted card does not recreate it (4.6398ms)
+✔ persistence failure is propagated so the session can retain the current question (5.4268ms)
+✔ quiz options are unique, retain the right answer and never mutate source cards (1.7794ms)
+✔ quiz eligibility counts distinct nonblank answers rather than card count (0.2955ms)
+✔ quiz normalization handles Unicode compatibility forms and repeated whitespace (0.1322ms)
+✔ alternate definitions of the same prompt never appear as wrong choices (0.4177ms)
+✔ global keyboard shortcuts ignore repeats, composition and modifier combinations (0.1758ms)
+✔ global keyboard shortcuts leave native controls and editable descendants alone (0.1595ms)
+✔ library aggregates due boundaries, empty sets and review state without counting orphan cards (0.1918ms)
+✔ ambiguous prompts never produce fewer than four quiz choices (0.1065ms)
+✔ missed terms remain playable after leaving or reloading a round before their due date (0.1989ms)
+✔ mastered sets can be played again without resetting schedules on entry (0.1102ms)
+✔ continue combines due and missed terms once, while excluding future known terms (0.0964ms)
+✔ fresh installation seeds once; Oxford deletions and progress survive reload (47.9875ms)
+✔ migration retains legacy single Oxford IDs, edits and review progress (1.092ms)
+✔ partial Oxford and empty legacy collections are never replenished (0.3536ms)
+✔ deck deletion and restoration each use one atomic write and event (0.491ms)
+✔ quota failure preserves persisted data and cache and emits no event (0.5994ms)
+✔ failed initialization and migration remain retryable without losing legacy data (13.8118ms)
+✔ invalid input, ID changes and orphan cards fail without writing (4.5627ms)
+✔ corrupt and future data are surfaced without overwriting either format (0.4319ms)
+✔ unchanged reads avoid parsing and returned objects cannot mutate the cache (0.464ms)
+✔ external writes are observed on reads and retained by subsequent mutations (0.3671ms)
+✔ restores deduplicate and create/update results do not alias cached records (0.3796ms)
+✔ SSR reads are empty and writes fail explicitly; browser access errors surface (0.3535ms)
+ℹ tests 29
+ℹ suites 0
+ℹ pass 29
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2274.5537

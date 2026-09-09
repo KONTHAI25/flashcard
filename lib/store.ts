@@ -1,12 +1,20 @@
 "use client";
 
-import { Deck, Card } from "./types";
-import { changeStorage, readStorage, StorageError, validateCard, validateDeck, validatePatch } from "./storage";
+import { Deck, Card, type CEFRLevel, type CardSource } from "./types";
+import { changeStorage, readStorage, StorageError, validateCard, validateCardExtras, validateDeck, validatePatch } from "./storage";
+import { reviewCard } from "./srs";
 export { StorageError } from "./storage";
 export type { StorageErrorCode } from "./storage";
 
 function uid(): string {
-  return globalThis.crypto.randomUUID();
+  try {
+    const uuid = globalThis.crypto?.randomUUID?.();
+    if (typeof uuid === "string" && uuid) return uuid;
+  } catch {
+    // crypto.randomUUID throws on non-secure origins (e.g. http://LAN-IP).
+  }
+  // Fallback: timestamp + random, sufficient for local-only IDs.
+  return `id-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}${Math.random().toString(36).slice(2, 6)}`;
 }
 
 export function getDecks(): Deck[] { return readStorage().decks; }
@@ -59,22 +67,72 @@ export function restoreDeck(deck: Deck, cards: Card[]): void {
   });
 }
 
-export function createCard(deckId: string, front: string, back: string): Card {
+export type NewCardExtras = Partial<Pick<Card, "level" | "source" | "wordEng" | "wordThai">>;
+
+const CARD_PATCH_FIELDS = ["id", "deckId", "front", "back", "interval", "ease", "due", "streak", "createdAt", "level", "source", "wordEng", "wordThai"] as const;
+
+function validateExtras(extras: NewCardExtras | undefined): void {
+  if (extras !== undefined) validateCardExtras(extras);
+}
+
+export function createCard(deckId: string, front: string, back: string, extras?: NewCardExtras): Card {
+  validateExtras(extras);
   const now = Date.now();
-  const card: Card = { id: uid(), deckId, front, back, interval: 1, ease: 2.5, due: now, streak: 0, createdAt: now };
+  const card: Card = {
+    id: uid(),
+    deckId,
+    front,
+    back,
+    interval: 1,
+    ease: 2.5,
+    due: now,
+    streak: 0,
+    createdAt: now,
+    ...(extras?.level ? { level: extras.level as CEFRLevel } : {}),
+    ...(extras?.source ? { source: extras.source as CardSource } : {}),
+    ...(extras?.wordEng ? { wordEng: extras.wordEng } : {}),
+    ...(extras?.wordThai ? { wordThai: extras.wordThai } : {}),
+  };
   validateCard(card);
   return changeStorage(data => { data.cards.push(card); return card; });
 }
 
 export function updateCard(id: string, patch: Partial<Card>): Card | null {
-  validatePatch(patch, id, ["id", "deckId", "front", "back", "interval", "ease", "due", "streak", "createdAt"]);
+  validatePatch(patch, id, CARD_PATCH_FIELDS);
+  validateExtras(patch);
   return changeStorage(data => {
     const index = data.cards.findIndex(card => card.id === id);
     if (index < 0) return null;
-    const card = { ...data.cards[index], ...patch };
+    const current = data.cards[index];
+    // Keep bilingual aliases in sync with front/back (F18). An explicit
+    // wordEng/wordThai in the patch wins; otherwise a front/back edit carries
+    // the existing alias along so they cannot silently drift apart.
+    const synced: Partial<Card> = { ...patch };
+    if (patch.front !== undefined && patch.wordEng === undefined && current.wordEng !== undefined) {
+      synced.wordEng = patch.front;
+    }
+    if (patch.back !== undefined && patch.wordThai === undefined && current.wordThai !== undefined) {
+      synced.wordThai = patch.back;
+    }
+    const card = { ...current, ...synced };
     validateCard(card);
     data.cards[index] = card;
     return card;
+  });
+}
+
+/**
+ * Computes the schedule from the latest stored card in one synchronous
+ * read/modify/write. Independent tabs still use last-writer-wins storage.
+ */
+export function updateCardReview(id: string, quality: number): Card | null {
+  return changeStorage(data => {
+    const index = data.cards.findIndex(card => card.id === id);
+    if (index < 0) return null;
+    const next = reviewCard(data.cards[index], quality);
+    validateCard(next);
+    data.cards[index] = next;
+    return next;
   });
 }
 

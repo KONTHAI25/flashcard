@@ -1,0 +1,15 @@
+{
+  "status": 200,
+  "candidates": [
+    {
+      "headword": "take off",
+      "pos": "phrv",
+      "thai": "ถอด"
+    },
+    {
+      "headword": "take off",
+      "pos": "phrv",
+      "thai": "ปลด"
+    }
+  ]
+}

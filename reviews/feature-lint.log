@@ -1,0 +1,8 @@
+
+C:\Users\acer\Downloads\flashcard\lib\storage-seed.ts
+  70:36  warning  'en' is defined but never used  @typescript-eslint/no-unused-vars
+  70:40  warning  'th' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 2 problems (0 errors, 2 warnings)
+
+ESLint found too many warnings (maximum: 0).

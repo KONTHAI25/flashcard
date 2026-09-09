@@ -1,0 +1,188 @@
+npm notice run flashcard-mvp@0.1.0 test
+npm notice run node --test tests/*.test.cjs app/quiz/*.test.cjs
+✔ all legacy levels use one display normalization without changing schedules (2.4802ms)
+✔ CEFR scope is applied before Continue fallback and to refreshed missed IDs (0.6755ms)
+✔ review grades retain the existing SM-2-lite schedule without mutating the card (0.4234ms)
+✔ new cards, ease limits, malformed schedules and invalid grades (0.666ms)
+✔ due boundary and future labels do not display zero minutes (1.1191ms)
+✔ missed-card retries use the persisted schedule and preserve concurrent content edits (5.9633ms)
+✔ reviewing a deleted card does not recreate it (4.5486ms)
+✔ persistence failure is propagated so the session can retain the current question (3.8945ms)
+✔ quiz options are unique, retain the right answer and never mutate source cards (1.6271ms)
+✔ quiz eligibility counts distinct nonblank answers rather than card count (0.312ms)
+✔ quiz normalization handles Unicode compatibility forms and repeated whitespace (0.7366ms)
+✔ alternate definitions of the same prompt never appear as wrong choices (0.6418ms)
+✔ global keyboard shortcuts ignore repeats, composition and modifier combinations (0.263ms)
+✔ global keyboard shortcuts leave native controls and editable descendants alone (0.2546ms)
+✔ library aggregates due boundaries, empty sets and review state without counting orphan cards (0.2468ms)
+✔ ambiguous prompts never produce fewer than four quiz choices (0.153ms)
+✔ missed terms remain playable after leaving or reloading a round before their due date (0.1575ms)
+✔ mastered sets can be played again without resetting schedules on entry (0.0993ms)
+✔ continue combines due and missed terms once, while excluding future known terms (0.0737ms)
+✔ lookup generation advances and stays current only for the exact open word (3.0016ms)
+✔ answer binding requires the exact current word (0.2599ms)
+✔ auto-replace protects hand-entered answers (0.1737ms)
+✔ save source is shared by display and persistence (F15) (0.1988ms)
+✔ route rejects missing and oversized ?word= with 400 (3.9569ms)
+✔ backup replacement recovers corrupt or absent storage in one write and preserves progress (2.7457ms)
+✔ invalid backups never seed or overwrite existing data (1.0341ms)
+✔ failed backup writes preserve the previous snapshot (0.4165ms)
+✔ all vocabulary source tuples and newly seeded pairs are unique (12.4839ms)
+✔ metadata is validated at load, create, update, and restore boundaries without writes (1.9517ms)
+✔ legacy levels and existing duplicate cards retain IDs and schedules (0.5771ms)
+✔ fresh installation seeds once; Oxford deletions and progress survive reload (27.2888ms)
+✔ migration retains legacy single Oxford IDs, edits and review progress (0.5844ms)
+✔ partial Oxford and empty legacy collections are never replenished (0.3341ms)
+✔ deck deletion and restoration each use one atomic write and event (0.8602ms)
+✔ quota failure preserves persisted data and cache and emits no event (0.3121ms)
+✔ failed initialization and migration remain retryable without losing legacy data (10.8055ms)
+✔ invalid input, ID changes and orphan cards fail without writing (3.4503ms)
+✔ corrupt and future data are surfaced without overwriting either format (0.3439ms)
+✔ unchanged reads avoid parsing and returned objects cannot mutate the cache (0.1735ms)
+✔ external writes are observed on reads and retained by subsequent mutations (0.1633ms)
+✔ restores deduplicate and create/update results do not alias cached records (0.2249ms)
+✔ SSR reads are empty and writes fail explicitly; browser access errors surface (0.9125ms)
+✔ client hints cannot grow the budget map beyond capacity; expired slots recover (2.6941ms)
+✔ oversized client hints share a bounded key instead of retaining arbitrary strings (0.8848ms)
+✔ client helper deduplicates concurrent words and keeps the public result shape (37.8489ms)
+✔ client fallback remains manual-entry friendly and failed responses are retried (1.0639ms)
+✔ phrase parsing keeps the complete headword and safely decodes numeric entities (3.3873ms)
+✔ concurrent identical misses share one upstream request and expire from the negative cache (24.0161ms)
+✔ different words are bounded by upstream concurrency and completed entries are capacity evicted (2.6427ms)
+✔ cache entries expire at their TTL and request budget returns 429 with Retry-After (2.107ms)
+✔ oversize upstream bodies fail with a manual-entry fallback and no cache entry (1.5633ms)
+✔ rejected headers, bodies, and upstream statuses abort and cancel the response (1.4025ms)
+✔ unique misses are blocked by the upstream rolling budget and recover after its window (0.6452ms)
+{"route":"translate","status":200,"latencyMs":1,"wordLen":6,"wordHash":"258dba1e","cacheSize":1,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":0,"wordLen":6,"wordHash":"258dba1f","cacheSize":2,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":0,"wordLen":6,"wordHash":"258dba20","cacheSize":3,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":0,"wordLen":6,"wordHash":"258dba21","cacheSize":4,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":0,"wordLen":6,"wordHash":"258dba22","cacheSize":5,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":0,"wordLen":6,"wordHash":"258dba23","cacheSize":6,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":0,"wordLen":6,"wordHash":"258dba24","cacheSize":7,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":0,"wordLen":6,"wordHash":"258dba25","cacheSize":8,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":0,"wordLen":6,"wordHash":"258dba26","cacheSize":9,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":1,"wordLen":6,"wordHash":"258dba27","cacheSize":10,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":0,"wordLen":7,"wordHash":"d744fe2f","cacheSize":11,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":1,"wordLen":7,"wordHash":"d744fe30","cacheSize":12,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":0,"wordLen":7,"wordHash":"d744fe31","cacheSize":13,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":0,"wordLen":7,"wordHash":"d744fe32","cacheSize":14,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":1,"wordLen":7,"wordHash":"d744fe33","cacheSize":15,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":0,"wordLen":7,"wordHash":"d744fe34","cacheSize":16,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":0,"wordLen":7,"wordHash":"d744fe35","cacheSize":17,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":1,"wordLen":7,"wordHash":"d744fe36","cacheSize":18,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":0,"wordLen":7,"wordHash":"d744fe37","cacheSize":19,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":0,"wordLen":7,"wordHash":"d744fe38","cacheSize":20,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":1,"wordLen":7,"wordHash":"d744fe50","cacheSize":21,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":0,"wordLen":7,"wordHash":"d744fe51","cacheSize":22,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":1,"wordLen":7,"wordHash":"d744fe52","cacheSize":23,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":0,"wordLen":7,"wordHash":"d744fe53","cacheSize":24,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":0,"wordLen":7,"wordHash":"d744fe54","cacheSize":25,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":1,"wordLen":7,"wordHash":"d744fe55","cacheSize":26,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":0,"wordLen":7,"wordHash":"d744fe56","cacheSize":27,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":0,"wordLen":7,"wordHash":"d744fe57","cacheSize":28,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":1,"wordLen":7,"wordHash":"d744fe58","cacheSize":29,"inFlight":0}
+{"route":"translate","status":200,"latencyMs":0,"wordLen":7,"wordHash":"d744fe59","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fe71","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fe72","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fe73","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fe74","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fe75","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fe76","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fe77","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fe78","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fe79","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fe7a","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fe92","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fe93","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fe94","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fe95","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fe96","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fe97","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fe98","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fe99","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fe9a","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fe9b","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744feb3","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744feb4","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744feb5","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744feb6","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":1,"wordLen":7,"wordHash":"d744feb7","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744feb8","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744feb9","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744feba","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744febb","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744febc","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fed4","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fed5","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fed6","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fed7","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fed8","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fed9","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744feda","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fedb","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fedc","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fedd","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fef5","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fef6","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fef7","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fef8","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fef9","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fefa","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fefb","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fefc","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fefd","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744fefe","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744ff16","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744ff17","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744ff18","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744ff19","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744ff1a","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744ff1b","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744ff1c","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744ff1d","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744ff1e","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744ff1f","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744ff37","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744ff38","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744ff39","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744ff3a","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744ff3b","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744ff3c","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744ff3d","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744ff3e","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744ff3f","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":7,"wordHash":"d744ff40","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":8,"wordHash":"bfe4c43f","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":8,"wordHash":"bfe4c440","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":8,"wordHash":"bfe4c441","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":8,"wordHash":"bfe4c442","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":8,"wordHash":"bfe4c443","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":8,"wordHash":"bfe4c444","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":8,"wordHash":"bfe4c445","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":8,"wordHash":"bfe4c446","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":1,"wordLen":8,"wordHash":"bfe4c447","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":8,"wordHash":"bfe4c448","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":8,"wordHash":"bfe4c460","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":8,"wordHash":"bfe4c461","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":8,"wordHash":"bfe4c462","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":8,"wordHash":"bfe4c463","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":8,"wordHash":"bfe4c464","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":8,"wordHash":"bfe4c465","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":8,"wordHash":"bfe4c466","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":8,"wordHash":"bfe4c467","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":8,"wordHash":"bfe4c468","cacheSize":30,"inFlight":0}
+{"route":"translate","status":503,"latencyMs":0,"wordLen":8,"wordHash":"bfe4c469","cacheSize":30,"inFlight":0}
+{"route":"translate","status":429,"latencyMs":0,"wordLen":5,"wordHash":"101903e7","cacheSize":30,"inFlight":0}
+✔ fetch timeout covers a response body that never finishes (30.4811ms)
+✔ route exposes the bounded request budget as 429 with Retry-After (1196.5081ms)
+✔ parser hardening: no entity double-decode and Thai sanity gate (F17) (1.1592ms)
+✔ cached responses are copies that callers cannot mutate (F17) (0.6022ms)
+ℹ tests 57
+ℹ suites 0
+ℹ pass 57
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2607.9311
