@@ -1,13 +1,17 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, useCallback, useMemo, use } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { DeckPreview } from "@/components/DeckPreview";
+import styles from "./deck.module.css";
 import { Deck, Card as CardType } from "@/lib/types";
 import { getDeck, getCardsByDeck, createCard, deleteCard, restoreCard, updateCard } from "@/lib/store";
 import { isDue } from "@/lib/srs";
 import { Button } from "@/components/Button";
 import { showToast } from "@/components/Toast";
 import { Sheet } from "@/components/Sheet";
+import { buildQuiz } from "@/app/quiz/quiz";
 
 function ArrowLeftIcon() {
   return (
@@ -160,7 +164,7 @@ function LoadingSkeleton() {
       </div>
       <div className="animate-pulse overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="grid grid-cols-1 gap-2 border-b border-slate-200 p-4 last:border-b-0 sm:grid-cols-[1fr_1fr_auto] sm:gap-4">
+          <div key={i} className="grid grid-cols-1 gap-2 border-b border-slate-200 p-4 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:gap-4">
             <div className="h-4 w-3/4 rounded bg-slate-200" />
             <div className="h-4 w-1/2 rounded bg-slate-200" />
             <div className="h-6 w-16 rounded-full bg-slate-200" />
@@ -181,35 +185,50 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
   const [back, setBack] = useState("");
   const [editCardId, setEditCardId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const d = getDeck(id);
-    if (!d) {
-      router.push("/");
-      return;
-    }
-    setDeck(d);
-    setCards(getCardsByDeck(id));
-  }, [id, router]);
-
-  function refresh() {
-    setCards(getCardsByDeck(id));
-  }
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [readError, setReadError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const loadDeck = useCallback(() => {
+    setLoading(true);
+    setReadError(null);
+    try {
+      const nextDeck = getDeck(id);
+      const nextCards = nextDeck ? getCardsByDeck(id) : [];
+      setDeck(nextDeck ?? null);
+      setCards(nextCards);
+    } catch {
+      setReadError("Could not read this set from browser storage. Try again.");
+    } finally { setLoading(false); }
+  }, [id]);
+  useEffect(() => { loadDeck(); }, [loadDeck]);
 
   function handleSaveCard() {
-    if (!front.trim() || !back.trim()) return;
-    if (editCardId) {
-      updateCard(editCardId, { front: front.trim(), back: back.trim() });
-    } else {
-      createCard(id, front.trim(), back.trim());
+    if (!front.trim() || !back.trim()) {
+      setFormError("Enter both sides before saving.");
+      return;
     }
-    setFront("");
-    setBack("");
-    setEditCardId(null);
-    setSheetOpen(false);
-    refresh();
+    try {
+      const saved = editCardId
+        ? updateCard(editCardId, { front: front.trim(), back: back.trim() })
+        : createCard(id, front.trim(), back.trim());
+      if (!saved) {
+        setFormError("This term no longer exists. Close the editor and reload the set.");
+        return;
+      }
+      setCards((previous) => editCardId
+        ? previous.map((card) => card.id === saved.id ? saved : card)
+        : [...previous, saved]);
+      setFront(""); setBack(""); setEditCardId(null); setSheetOpen(false);
+      setFormError(null); setQuery("");
+      showToast(editCardId ? "Changes saved" : "Term added");
+    } catch {
+      setFormError("Could not save. Your text is still here. Check browser storage and try again.");
+    }
   }
 
   function handleEditCard(card: CardType) {
+    setFormError(null);
     setFront(card.front);
     setBack(card.back);
     setEditCardId(card.id);
@@ -217,18 +236,27 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
   }
 
   function handleDeleteCard(cardId: string) {
-    const removed = deleteCard(cardId);
-    refresh();
-    showToast("Deleted term", {
-      label: "Undo",
-      onUndo: () => {
-        if (removed) restoreCard(removed);
-        refresh();
-      },
-    });
+    try {
+      const removed = deleteCard(cardId);
+      if (!removed) {
+        showToast("This term no longer exists. Reload the set to update the list.");
+        return;
+      }
+      setCards((previous) => previous.filter((card) => card.id !== cardId));
+      showToast("Deleted term", {
+        label: "Undo",
+        onUndo: () => {
+          // Restoration failures must reach ToastHost, which keeps Undo available.
+          restoreCard(removed);
+          setCards((previous) => previous.some((card) => card.id === removed.id)
+            ? previous : [...previous, removed]);
+        },
+      });
+    } catch { showToast("Could not delete this term. Please try again."); }
   }
 
   function handleOpenAdd() {
+    setFormError(null);
     setFront("");
     setBack("");
     setEditCardId(null);
@@ -237,80 +265,71 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
 
   const dueCount = cards.filter(isDue).length;
   const canSave = front.trim().length > 0 && back.trim().length > 0;
-  const quizDisabled = cards.length < 4;
+  const quizDisabled = useMemo(() => buildQuiz(cards).length === 0, [cards]);
 
-  if (!deck) return <LoadingSkeleton />;
+  const search = query.trim().toLocaleLowerCase();
+  const visibleCards = cards.filter((card) =>
+    card.front.toLocaleLowerCase().includes(search) || card.back.toLocaleLowerCase().includes(search));
+  if (loading) return <LoadingSkeleton />;
+  if (readError || !deck) return (
+    <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
+      <h1 className="text-xl font-bold">{readError ? "Unable to load set" : "Set not found"}</h1>
+      <p role={readError ? "alert" : undefined}>{readError ?? "This set may have been deleted."}</p>
+      <div className="flex flex-wrap gap-3">
+        <Button onClick={loadDeck}>Try again</Button>
+        <Button variant="secondary" onClick={() => router.push("/")}>Back to sets</Button>
+      </div>
+    </div>
+  );
 
   return (
-    <div>
-      {/* Title block */}
-      <div className="mb-6 flex items-center gap-3">
-        <button
-          onClick={() => router.back()}
-          aria-label="Back"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2"
-        >
-          <ArrowLeftIcon />
-        </button>
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-2xl shadow-sm">
-          {deck.emoji}
-        </span>
+    <div className={styles.page}>
+      <Link href="/" className={styles.breadcrumb}>
+        <ArrowLeftIcon /> Your library
+      </Link>
+      <header className={styles.title}>
+        <span className={styles.emoji} aria-hidden="true">{deck.emoji}</span>
         <div className="min-w-0">
-          <h1 className="truncate text-2xl font-bold tracking-tight text-slate-900">{deck.name}</h1>
-          <p className="text-sm text-slate-500">
-            {cards.length} terms · {dueCount} due
-          </p>
+          <h1>{deck.name}</h1>
+          <div className={styles.metadata}>
+            <span className={styles.termCount}>{cards.length} terms</span>
+            <span>{dueCount} due for review</span>
+          </div>
         </div>
-      </div>
+      </header>
 
-      {/* Study-modes row */}
-      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <nav className={styles.modes} aria-label="Study this set">
         <div>
-          <Button
-            className="w-full"
-            size="lg"
-            onClick={() => router.push(`/study/${id}`)}
-          >
-            <CardStackIcon />
-            <span className="font-semibold">Study · {dueCount} due</span>
-          </Button>
-          {dueCount === 0 && (
-            <p className="mt-1.5 flex items-center gap-1 text-xs text-emerald-700">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-                className="shrink-0 text-emerald-600"
-              >
-                <path d="M20 6 9 17l-5-5" />
-              </svg>
-              No terms due — you&apos;re all caught up. New terms become due later.
-            </p>
+          {dueCount > 0 ? (
+            <Link href={`/study/${id}`} className={`${styles.mode} ${styles.modePrimary}`}>
+              <CardStackIcon /> Flashcards <span className={styles.modeArrow} aria-hidden="true">→</span>
+            </Link>
+          ) : (
+            <span className={styles.mode} role="link" aria-disabled="true" aria-describedby="study-help">
+              <CardStackIcon /> Flashcards
+            </span>
           )}
+          {dueCount === 0 && <p id="study-help" className={styles.modeHelp}>
+            {cards.length === 0 ? "Add a term to start studying." : "All caught up. Browse the preview or return when terms are due."}
+          </p>}
         </div>
         <div>
-          <Button
-            variant="secondary"
-            className="w-full"
-            size="lg"
-            onClick={() => router.push(`/quiz/${id}`)}
-          >
-            <CheckCircleIcon />
-            <span className="font-semibold">Quiz · {cards.length}</span>
-          </Button>
-          {quizDisabled && (
-            <p className="mt-1.5 text-xs text-slate-500">
-              Add {4 - cards.length} more {4 - cards.length === 1 ? "term" : "terms"} to unlock the quiz.
-            </p>
+          {!quizDisabled ? (
+            <Link href={`/quiz/${id}`} className={styles.mode}>
+              <CheckCircleIcon /> Practice quiz <span className={styles.modeArrow} aria-hidden="true">→</span>
+            </Link>
+          ) : (
+            <span className={styles.mode} role="link" aria-disabled="true" aria-describedby="quiz-help">
+              <CheckCircleIcon /> Practice quiz
+            </span>
           )}
+          {quizDisabled && <p id="quiz-help" className={styles.modeHelp}>
+            Add at least 4 distinct answers with unambiguous prompts to unlock the quiz.
+          </p>}
         </div>
-      </div>
+      </nav>
+
+      <DeckPreview key={id} cards={cards} />
 
       {/* Mastery bar: not started · remaining (played, not yet Know) · learned */}
       {(() => {
@@ -360,25 +379,36 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
       })()}
 
       {/* Terms section */}
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-slate-900">Terms ({cards.length})</h2>
+      <div className={`${styles.terms} mb-4 flex items-center justify-between gap-3`}>
+        <h2 className="text-lg font-bold text-slate-900">Terms in this set ({cards.length})</h2>
         <Button size="sm" onClick={handleOpenAdd}>
           <PlusIcon /> Add term
         </Button>
       </div>
 
+      {cards.length > 0 && <div className="mb-4 space-y-2">
+        <label htmlFor="term-search" className="block text-sm font-medium text-slate-700">Search terms and definitions</label>
+        <div className="flex gap-2">
+          <input id="term-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)}
+            placeholder="Find a term" className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-base" />
+          {query && <Button variant="secondary" onClick={() => setQuery("")}>Clear</Button>}
+        </div>
+        <p role="status" className="text-sm text-slate-500">Showing {visibleCards.length} of {cards.length} terms</p>
+      </div>}
       {cards.length === 0 ? (
         <EmptyState onAdd={handleOpenAdd} />
+      ) : visibleCards.length === 0 ? (
+        <p className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-slate-600">No matching terms. Try another search.</p>
       ) : (
         <div className="divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          {cards.map((card) => {
+          {visibleCards.map((card) => {
             return (
               <div
                 key={card.id}
-                className="grid grid-cols-1 gap-2 p-4 sm:grid-cols-[1fr_1fr_auto] sm:items-center sm:gap-4"
+                className="grid grid-cols-1 gap-3 px-5 py-6 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)_auto] sm:items-center sm:gap-6"
               >
-                <p className="break-words font-medium text-slate-900">{card.front}</p>
-                <p className="break-words text-slate-600">{card.back}</p>
+                <p className="min-w-0 whitespace-pre-wrap [overflow-wrap:anywhere] break-words font-medium text-slate-900">{card.front}</p>
+                <p className="min-w-0 whitespace-pre-wrap [overflow-wrap:anywhere] break-words text-slate-600 sm:border-l sm:border-slate-200 sm:pl-6">{card.back}</p>
                 <div className="flex shrink-0 items-center gap-1">
                   <button
                     onClick={() => handleEditCard(card)}
@@ -406,7 +436,14 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
         onClose={() => { setSheetOpen(false); setEditCardId(null); }}
         title={editCardId ? "Edit term" : "Add term"}
       >
-        <div className="space-y-4">
+        <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); handleSaveCard(); }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && (event.ctrlKey || event.metaKey) && !event.nativeEvent.isComposing) {
+              event.preventDefault(); event.currentTarget.requestSubmit();
+            }
+          }}>
+          <p className="text-sm text-slate-500">Both sides are required. Use Ctrl+Enter or Command+Enter to save.</p>
+          {formError && <p role="alert" className="text-sm text-red-700">{formError}</p>}
           <div>
             <label htmlFor="card-front" className="mb-1 block text-sm font-medium text-slate-700">
               Front
@@ -416,8 +453,9 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
               value={front}
               onChange={(e) => setFront(e.target.value)}
               placeholder="Question or term"
-              rows={3}
-              className="w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#4255FF] focus:outline-none focus:ring-2 focus:ring-[#4255FF]/30"
+              rows={4}
+              required
+              className="w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#4255FF] focus:outline-none focus:ring-2 focus:ring-[#4255FF]/30"
               autoFocus
             />
           </div>
@@ -430,14 +468,16 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
               value={back}
               onChange={(e) => setBack(e.target.value)}
               placeholder="Answer or definition"
-              rows={3}
-              className="w-full resize-none rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#4255FF] focus:outline-none focus:ring-2 focus:ring-[#4255FF]/30"
+              rows={4}
+              required
+              className="w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#4255FF] focus:outline-none focus:ring-2 focus:ring-[#4255FF]/30"
             />
           </div>
-          <Button onClick={handleSaveCard} className="w-full" disabled={!canSave}>
+          <Button type="submit" className="w-full" disabled={!canSave}>
             {editCardId ? "Save Changes" : "Add term"}
           </Button>
-        </div>
+          <Button variant="secondary" className="w-full" onClick={() => setSheetOpen(false)}>Cancel</Button>
+        </form>
       </Sheet>
     </div>
   );

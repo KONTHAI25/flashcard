@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useEffect, useRef } from "react";
+import { type ReactNode, useEffect, useRef, useId } from "react";
 
 interface SheetProps {
   open: boolean;
@@ -10,81 +10,43 @@ interface SheetProps {
 }
 
 export function Sheet({ open, onClose, title, children }: SheetProps) {
-  const overlayRef = useRef<HTMLDivElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
-  const prevFocusRef = useRef<Element | null>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
 
+  // Only opening/closing owns focus and scroll locking. Inline callbacks and
+  // form input renders must not restart this lifecycle.
   useEffect(() => {
-    if (!open) return;
-    prevFocusRef.current = document.activeElement;
-    const raf = requestAnimationFrame(() => {
-      const panel = panelRef.current;
-      if (!panel) return;
-      const first = panel.querySelector<HTMLElement>(
-        'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      );
-      (first ?? panel).focus();
-    });
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-        return;
-      }
-      if (e.key === "Tab") {
-        const panel = panelRef.current;
-        if (!panel) return;
-        const items = Array.from(
-          panel.querySelectorAll<HTMLElement>(
-            'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
-          )
-        );
-        if (items.length === 0) {
-          e.preventDefault();
-          return;
-        }
-        const first = items[0];
-        const last = items[items.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-    document.addEventListener("keydown", onKeyDown);
-    const prevOverflow = document.body.style.overflow;
+    const dialog = dialogRef.current;
+    if (!open || !dialog) return;
+    const previousFocus = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
+    dialog.showModal();
     document.body.style.overflow = "hidden";
     return () => {
-      cancelAnimationFrame(raf);
-      document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = prevOverflow;
-      const prev = prevFocusRef.current as HTMLElement | null;
-      prev?.focus?.();
+      dialog.close();
+      document.body.style.overflow = previousOverflow;
+      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) {
+        previousFocus.focus();
+      }
     };
-  }, [open, onClose]);
-
-  if (!open) return null;
+  }, [open]);
 
   return (
-    <div
-      ref={overlayRef}
-      className="animate-fade-in fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center sm:p-4"
-      onClick={(e) => {
-        if (e.target === overlayRef.current) onClose();
+    <dialog
+      ref={dialogRef}
+      aria-labelledby={titleId}
+      onCancel={(event) => { event.preventDefault(); onClose(); }}
+      onClick={(event) => {
+        if (event.target !== event.currentTarget) return;
+        const bounds = event.currentTarget.getBoundingClientRect();
+        if (event.clientX < bounds.left || event.clientX > bounds.right ||
+            event.clientY < bounds.top || event.clientY > bounds.bottom) onClose();
       }}
+      className="fixed inset-x-0 bottom-0 top-auto m-0 mx-auto max-h-[90dvh] w-full max-w-lg overflow-y-auto overscroll-contain rounded-t-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-xl backdrop:bg-black/60 backdrop:backdrop-blur-sm sm:inset-0 sm:m-auto sm:w-[calc(100%-2rem)] sm:rounded-2xl"
     >
-      <div
-        ref={panelRef}
-        tabIndex={-1}
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        className="animate-sheet-up max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-t-2xl border border-slate-200 bg-white p-6 shadow-xl sm:rounded-2xl"
-      >
+      {open && <>
         <div className="mb-4 flex items-center justify-between gap-4">
-          <h2 className="text-lg font-semibold tracking-tight text-slate-900">
+          <h2 id={titleId} className="text-lg font-semibold tracking-tight text-slate-900">
             {title}
           </h2>
           <button
@@ -109,7 +71,7 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
           </button>
         </div>
         {children}
-      </div>
-    </div>
+      </>}
+    </dialog>
   );
 }

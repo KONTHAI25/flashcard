@@ -1,113 +1,58 @@
-# Flashcards — Mobile-First Spaced Repetition MVP
+# Flashcards
 
-Next.js 15 App Router · TypeScript · Tailwind v4 · localStorage · PWA-ready
+A mobile-friendly flashcard library with spaced repetition and multiple-choice quizzes. Built with Next.js 15, React 19, TypeScript, and Tailwind CSS 4.
 
-## Local Development
+## Development
 
-```bash
-npm install
-npm run dev        # → http://localhost:3000
+Requires Node.js 22 or later.
+
+```sh
+npm ci
+npm run dev
 ```
 
-## Production Build
+Open http://localhost:3000.
 
-```bash
-npm run build      # passes — 8 routes, ~108 kB first load
-npm run start      # serve locally on :3000
+```sh
+npm run lint
+npm run typecheck
+npm test
+npm run build
+npm start
 ```
 
-### Route Map
+## Features
 
-| Route | Type | Purpose |
-|-------|------|---------|
-| `/` | Static | Deck list — create, delete |
-| `/deck/[id]` | Dynamic | Cards CRUD per deck |
-| `/study` | Static | Decks with due cards |
-| `/study/[id]` | Dynamic | Flip-card SRS session |
-| `/quiz` | Static | Quiz deck picker |
-| `/quiz/[id]` | Dynamic | 4-option multiple choice |
-| `/manifest.webmanifest` | Static | PWA install prompt |
+- Search, sort, and filter sets with progressive loading.
+- Create sets and edit, search, delete, or restore terms.
+- Review due terms by set or across the library. Reveal the answer before grading; retry missed terms afterward.
+- Quiz questions use distinct answers and exclude ambiguous alternatives for the same prompt.
+- Keyboard navigation, native modal dialogs, reduced-motion support, and visible storage errors.
 
-## Deploy to Vercel (Free Hobby Tier)
+## Data and persistence
 
-### Option A — GitHub → Vercel (recommended)
+This project has no server database or account system. Data is stored only in the current browser. Clearing site data removes it; other devices and browser profiles do not share progress.
 
-```bash
-# Remote already configured:
-git remote -v   # → https://github.com/KONTHAI25/flashcard.git
+The data layer writes decks and cards together in a versioned `fc_storage` snapshot. Each mutation validates records before a single atomic localStorage write. Failed writes preserve the previous snapshot and surface an error to the UI.
 
-# Create the empty repo on GitHub (if not yet), then:
-git push -u origin main
-```
+Existing `fc_decks` and `fc_cards` data migrates without changing IDs, edits, deletions, or review schedules. Legacy keys remain as a recovery copy. New installations receive the demo and Oxford vocabulary sets once; subsequent reads never replenish deleted content.
 
-Then on [vercel.com/new](https://vercel.com/new):
+Parsing is cached. Consumers receive copies, and successful writes publish `flashcards:change`. The library also refreshes on storage events, visibility changes, and once a minute. Concurrent tabs remain last-writer-wins; this is not a synchronization service.
 
-1. **Import** the `flashcard` repo
-2. Framework = **Next.js** (auto-detected)
-3. No env vars needed for MVP (localStorage only)
-4. Click **Deploy** — done in ~30 s
+## Structure
 
-### Option B — Vercel CLI
+- `app/`: library, deck editor, study and quiz routes.
+- `components/`: shared controls, library cards, modal forms, and study session UI.
+- `lib/store.ts`: synchronous deck/card operations.
+- `lib/storage.ts`: validated persistence, migration, caching, and storage errors.
+- `lib/storage-seed.ts`: initial content.
+- `lib/library.ts` and `lib/use-library.ts`: library summaries and refresh lifecycle.
+- `lib/srs.ts`: review scheduling.
+- `app/quiz/quiz.ts`: pure quiz generation.
+- `tests/` and `app/quiz/study-quiz.test.cjs`: regression tests.
 
-```bash
-npx vercel          # interactive deploy (prompts for project name)
-npx vercel --prod   # deploy as production
-```
+## Deployment
 
-### Hobby Tier Limits
+Use a Next.js-compatible host or run `npm run build` followed by `npm start`. No environment variables are required. The web manifest supplies app metadata; a service worker and offline route caching are not implemented.
 
-| Resource | Free limit |
-|----------|-----------|
-| Bandwidth | 100 GB / month |
-| Serverless invocations | 100,000 / month |
-| Build minutes | 6,000 / month |
-| Concurrent builds | 1 |
-| Custom domains | 50 |
-| Edge Middleware | Included |
-
-> This app is fully client-side — bandwidth is the only limit that matters.
-> localStorage caps at ~5 MB per origin, plenty for flashcard decks.
-
-## Future: Neon Postgres
-
-When you outgrow localStorage:
-
-1. Sign up at [neon.tech](https://neon.tech) (Hobby: 0.5 GB free)
-2. Copy the connection string into `.env.local`:
-   ```
-   DATABASE_URL="postgresql://...@ep-xxx.us-east-2.aws.neon.tech/db?sslmode=require"
-   ```
-3. Wire `lib/store.ts` → Prisma or Drizzle ORM (update `.env.example` has the placeholder)
-
-## Project Structure
-
-```
-app/
-  layout.tsx            # Root layout · PWA metadata · viewportFit=cover
-  page.tsx              # Deck CRUD list
-  manifest.ts           # PWA manifest
-  globals.css           # Tailwind v4 · card-flip animation
-  deck/[id]/page.tsx    # Cards CRUD
-  study/page.tsx        # Study index
-  study/[id]/page.tsx   # Flip + Again/Good/Easy
-  quiz/page.tsx         # Quiz index
-  quiz/[id]/page.tsx    # Multiple-choice quiz
-components/
-  Header.tsx            # Sticky top nav · Sets/Study/Quiz
-  Button.tsx            # Primary/secondary/danger/ghost
-  FlashCard.tsx         # CSS perspective flip card
-  Sheet.tsx             # Bottom-sheet modal
-lib/
-  types.ts              # Deck, Card interfaces
-  store.ts              # localStorage CRUD + seed demo deck
-  srs.ts                # SM-2-lite: reviewCard, isDue, nextReviewLabel
-```
-
-## Tech Stack
-
-- **Framework:** Next.js 15 (App Router)
-- **Language:** TypeScript (strict)
-- **Styling:** Tailwind CSS v4
-- **Storage:** localStorage
-- **SRS:** Custom SM-2-lite (interval + ease + streak)
-- **PWA:** manifest.ts + viewportFit=cover + safe-area padding
+PostCSS is overridden to 8.5.28 to avoid the vulnerable version pinned by Next.js 15. Keep the override until upgrading to a framework release with a patched dependency.

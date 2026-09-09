@@ -1,49 +1,14 @@
 "use client";
 
-import { useState, useEffect, use, useCallback } from "react";
+import { useState, useEffect, use, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Card as CardType, Deck } from "@/lib/types";
-import { getDeck, getCardsByDeck, updateCard } from "@/lib/store";
-import { reviewCard } from "@/lib/srs";
+import { Deck } from "@/lib/types";
+import { getDeck, getCardsByDeck } from "@/lib/store";
+import { buildQuiz, type Question } from "../quiz";
+import { saveReview } from "@/components/study-quiz/saveReview";
+import { shouldIgnoreShortcut } from "@/components/study-quiz/keyboard";
 import { Button } from "@/components/Button";
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-interface Question {
-  card: CardType;
-  options: string[];
-  correctIdx: number;
-}
-
-function shuffleIndices(n: number): number[] {
-  const indices = Array.from({ length: n }, (_, i) => i);
-  return shuffle(indices);
-}
-
-function buildQuiz(cards: CardType[]): Question[] {
-  if (cards.length < 4) return [];
-  const shuffled = shuffle(cards);
-  return shuffled.map((card) => {
-    // Get 3 wrong answers from other cards
-    const others = cards.filter((c) => c.id !== card.id);
-    const wrongOptions = shuffle(others)
-      .slice(0, 3)
-      .map((c) => c.back);
-    const raw = [card.back, ...wrongOptions];
-    // Shuffle via index tracking to avoid indexOf ambiguity
-    const order = shuffleIndices(raw.length);
-    const options = order.map((i) => raw[i]);
-    const correctIdx = order.indexOf(0); // 0 = correct answer slot
-    return { card, options, correctIdx };
-  });
-}
+import { LoadError } from "@/components/LoadError";
 
 const LETTERS = ["A", "B", "C", "D"];
 
@@ -141,6 +106,10 @@ function resultMessage(pct: number): string {
 
 export default function QuizPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  return <QuizSession key={id} id={id} />;
+}
+
+function QuizSession({ id }: { id: string }) {
   const router = useRouter();
   const [deck, setDeck] = useState<Deck | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -148,47 +117,79 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
   const [selected, setSelected] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
+  const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
+  const [attempt, setAttempt] = useState(0);
+  const answerLock = useRef(false);
+  const nextLock = useRef(false);
+  const questionHeading = useRef<HTMLHeadingElement>(null);
+  const feedback = useRef<HTMLParagraphElement>(null);
+  const resultsHeading = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
+    if (finished) resultsHeading.current?.focus();
+    else if (selected !== null) feedback.current?.focus();
+    else questionHeading.current?.focus();
+  }, [finished, selected, currentIdx, questions]);
+
+  useEffect(() => { nextLock.current = false; }, [currentIdx, questions]);
+
+  useEffect(() => {
+    try {
     const d = getDeck(id);
     if (!d) { router.push("/"); return; }
     setDeck(d);
     const allCards = getCardsByDeck(id);
     setQuestions(buildQuiz(allCards));
-  }, [id, router]);
+    setLoadError("");
+    } catch (cause) { setLoadError(cause instanceof Error ? cause.message : "Could not read saved cards."); }
+  }, [id, router, attempt]);
 
   function handleSelect(idx: number) {
-    if (selected !== null) return; // already answered
-    setSelected(idx);
     const q = questions[currentIdx];
+    if (!q || finished || selected !== null || answerLock.current || idx < 0 || idx >= q.options.length) return;
+    answerLock.current = true;
     const correct = idx === q.correctIdx;
-    if (correct) setScore((s) => s + 1);
-
-    // Update SRS
-    const quality = correct ? 2 : 0;
-    const updated = reviewCard(q.card, quality);
-    updateCard(q.card.id, updated);
+    try {
+      saveReview(q.card.id, correct ? 2 : 0);
+    } catch {
+      answerLock.current = false;
+      setError("Could not save your answer. Please try again.");
+      return;
+    }
+    setError("");
+    setSelected(idx);
+    if (correct) setScore(s => s + 1);
   }
 
   function handleNext() {
-    if (currentIdx + 1 >= questions.length) {
-      setFinished(true);
-    } else {
-      setCurrentIdx((i) => i + 1);
+    if (selected === null || finished || nextLock.current) return;
+    nextLock.current = true;
+    if (currentIdx + 1 >= questions.length) setFinished(true);
+    else {
+      setCurrentIdx(i => i + 1);
       setSelected(null);
+      answerLock.current = false;
     }
   }
 
   function resetQuiz() {
+    let nextQuestions: Question[];
+    try { nextQuestions = buildQuiz(getCardsByDeck(id)); }
+    catch (cause) { setLoadError(cause instanceof Error ? cause.message : "Could not read saved cards."); return; }
+    answerLock.current = false;
+    nextLock.current = false;
+    setError("");
     setCurrentIdx(0);
     setSelected(null);
     setScore(0);
     setFinished(false);
-    setQuestions(buildQuiz(getCardsByDeck(id)));
+    setQuestions(nextQuestions);
   }
 
-  const handleKey = useCallback(
-    (e: KeyboardEvent) => {
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (shouldIgnoreShortcut(e)) return;
       if (finished || questions.length === 0) return;
       const answered = selected !== null;
       if (!answered) {
@@ -204,23 +205,20 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
         e.preventDefault();
         handleNext();
       }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [finished, selected, currentIdx, questions]
-  );
+    }
 
-  useEffect(() => {
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [handleKey]);
+  });
 
+  if (loadError) return <LoadError message={loadError} onRetry={() => { setAttempt(value => value + 1); setCurrentIdx(0); setSelected(null); setScore(0); setFinished(false); answerLock.current = false; nextLock.current = false; }} />;
   if (!deck) return <p className="text-slate-500">Loading…</p>;
 
   if (questions.length === 0) {
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-16 text-center">
         <h1 className="mb-2 text-xl font-bold text-slate-900">Not enough terms</h1>
-        <p className="mb-4 text-sm text-slate-500">You need at least 4 terms to start a quiz.</p>
+        <p className="mb-4 text-sm text-slate-500">Use at least 4 distinct, nonblank answers and prompts with unambiguous choices to start a quiz.</p>
         <Button onClick={() => router.push(`/deck/${id}`)}>Back to set</Button>
       </div>
     );
@@ -243,7 +241,7 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
               </p>
             </div>
           </div>
-          <h1 className="mb-1 mt-6 text-2xl font-bold text-slate-900">Quiz Complete!</h1>
+          <h1 ref={resultsHeading} tabIndex={-1} className="mb-1 mt-6 text-2xl font-bold text-slate-900">Quiz Complete!</h1>
           <p className="text-sm text-slate-500">{resultMessage(pct)}</p>
           <dl className="mt-6 flex items-center gap-8 text-center">
             <div>
@@ -281,7 +279,8 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
     <div className="mx-auto w-full max-w-2xl">
       <div className="mb-6 flex items-center gap-3">
         <button
-          onClick={() => router.back()}
+          type="button"
+          onClick={() => router.push(`/deck/${id}`)}
           aria-label="Go back"
           className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
         >
@@ -306,25 +305,25 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
       {/* Progress */}
       <div
         role="progressbar"
-        aria-valuenow={currentIdx + 1}
-        aria-valuemin={1}
+        aria-valuenow={currentIdx + (answered ? 1 : 0)}
+        aria-valuemin={0}
         aria-valuemax={questions.length}
-        aria-label={`Question ${currentIdx + 1} of ${questions.length}`}
+        aria-label="Questions answered"
         className="mb-6 h-2 overflow-hidden rounded-full bg-slate-200"
       >
         <div
           className="h-full rounded-full bg-[#4255FF] transition-all"
-          style={{ width: `${((currentIdx + 1) / questions.length) * 100}%` }}
+          style={{ width: `${((currentIdx + (answered ? 1 : 0)) / questions.length) * 100}%` }}
         />
       </div>
 
       {/* Question */}
       <div className="mb-6 grid min-h-[140px] place-items-center rounded-2xl border border-slate-200 bg-white p-6">
-        <p className="text-center text-lg leading-relaxed text-slate-900">{q.card.front}</p>
+        <h2 ref={questionHeading} tabIndex={-1} className="text-center text-lg leading-relaxed text-slate-900"><span className="sr-only">Question {currentIdx + 1} of {questions.length}: </span>{q.card.front}</h2>
       </div>
 
       {/* Options */}
-      <div role="radiogroup" aria-label={`Answer choices for question ${currentIdx + 1}`} className="space-y-3">
+      <div role="group" aria-label={`Answer choices for question ${currentIdx + 1}`} className="space-y-3">
         {q.options.map((opt, idx) => {
           const isThisCorrect = idx === q.correctIdx;
           const isThisSelected = idx === selected;
@@ -353,10 +352,11 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
           return (
             <button
               key={idx}
-              role="radio"
-              aria-checked={isThisSelected}
+              type="button"
+              aria-pressed={isThisSelected}
               aria-disabled={answered}
               disabled={answered}
+              onKeyDown={e => { if (e.repeat && (e.key === "Enter" || e.key === " ")) e.preventDefault(); }}
               onClick={() => handleSelect(idx)}
               className={cls}
             >
@@ -373,10 +373,12 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
         Press {LETTERS.slice(0, q.options.length).join("/")} or 1–{q.options.length} to answer
       </p>
 
+      {error && <p role="alert" className="mt-3 text-rose-700">{error}</p>}
       {answered && (
         <div className="sticky bottom-0 mt-6 flex flex-col items-center gap-3 border-t border-slate-200/70 bg-white/85 py-4 backdrop-blur supports-[backdrop-filter]:bg-white/70 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <p
-            role="status"
+            ref={feedback}
+            tabIndex={-1}
             className={`flex items-center gap-2 font-semibold ${isCorrect ? "text-emerald-700" : "text-rose-600"}`}
           >
             {isCorrect ? (
@@ -391,7 +393,7 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
               </>
             )}
           </p>
-          <Button onClick={handleNext} className="w-full">
+          <Button onKeyDown={e => { if (e.repeat && (e.key === "Enter" || e.key === " ")) e.preventDefault(); }} onClick={handleNext} className="w-full">
             {isLast ? "See results" : "Next"}
           </Button>
         </div>

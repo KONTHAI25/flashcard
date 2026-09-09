@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   },
   description: "Mobile-first spaced repetition flashcards",
   manifest: "/manifest.webmanifest",
+  icons: { icon: "/icon.svg" },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -31,10 +32,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-dvh bg-[#F6F7FB] text-slate-900 antialiased">
+      <body className="min-h-dvh text-slate-900 antialiased">
+        <a href="#main-content" className="skip-link">Skip to content</a>
         <Header />
         <ToastHost />
-        <main className="mx-auto w-full max-w-5xl px-4 pb-16 pt-6">
+        <main id="main-content" tabIndex={-1} className="app-main">
           {children}
         </main>
       </body>

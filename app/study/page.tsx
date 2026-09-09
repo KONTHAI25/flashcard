@@ -1,11 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Deck } from "@/lib/types";
-import { getDecks, getCardsByDeck } from "@/lib/store";
-import { isDue } from "@/lib/srs";
+import { useLibrary } from "@/lib/use-library";
+import { LoadError } from "@/components/LoadError";
 import { Button } from "@/components/Button";
 import { Badge } from "@/components/ui";
 
@@ -46,13 +44,9 @@ function ChevronRightIcon({ className = "h-5 w-5" }: { className?: string }) {
 
 export default function StudyIndexPage() {
   const router = useRouter();
-  const [decks, setDecks] = useState<Deck[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setDecks(getDecks());
-    setLoading(false);
-  }, []);
+  const { summaries, loading, error, refresh } = useLibrary();
+  const decksWithDue = summaries.filter(row => row.due > 0).map(row => ({ ...row, dueCount: row.due }));
+  if (error) return <LoadError message={error} onRetry={refresh} />;
 
   if (loading) {
     return (
@@ -77,17 +71,6 @@ export default function StudyIndexPage() {
       </div>
     );
   }
-
-  const decksWithDue = decks
-    .map((d) => {
-      const cards = getCardsByDeck(d.id);
-      return {
-        deck: d,
-        total: cards.length,
-        dueCount: cards.filter(isDue).length,
-      };
-    })
-    .filter((d) => d.dueCount > 0);
 
   const totalDue = decksWithDue.reduce((s, d) => s + d.dueCount, 0);
 

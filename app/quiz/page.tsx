@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Deck } from "@/lib/types";
-import { getDecks, getCardsByDeck } from "@/lib/store";
+import { getDecks, getCards } from "@/lib/store";
 import { Badge } from "@/components/ui";
+import { LoadError } from "@/components/LoadError";
 
-const MIN_CARDS = 4;
+import { buildQuiz } from "./quiz";
 
 function ChevronRightIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (
@@ -26,17 +27,32 @@ function ChevronRightIcon({ className = "h-5 w-5" }: { className?: string }) {
 }
 
 export default function QuizIndexPage() {
-  const [decks, setDecks] = useState<Deck[]>([]);
+  const [decks, setDecks] = useState<{ deck: Deck; count: number; ready: boolean }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    setDecks(getDecks());
-  }, []);
+    try {
+    const sets = getDecks();
+    const cards = getCards();
+    setDecks(sets.map(deck => {
+      const terms = cards.filter(c => c.deckId === deck.id);
+      return { deck, count: terms.length, ready: buildQuiz(terms).length > 0 };
+    }));
+    setError("");
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Could not read saved sets."); }
+    finally { setLoading(false); }
+  }, [attempt]);
+
+  if (error) return <LoadError message={error} onRetry={() => setAttempt(value => value + 1)} />;
+  if (loading) return <p role="status">Loading quiz sets…</p>;
 
   return (
     <div>
       <h1 className="text-2xl font-bold tracking-tight text-slate-900">Quiz</h1>
       <p className="mb-6 mt-1 text-sm text-slate-500">
-        Pick a set — at least 4 terms
+        Pick a set — at least 4 distinct answers
       </p>
 
       {decks.length === 0 ? (
@@ -50,9 +66,7 @@ export default function QuizIndexPage() {
         </div>
       ) : (
         <ul className="space-y-3">
-          {decks.map((deck) => {
-            const count = getCardsByDeck(deck.id).length;
-            const ready = count >= MIN_CARDS;
+          {decks.map(({ deck, count, ready }) => {
             const rowClass =
               "flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2";
             const content = (
@@ -77,7 +91,7 @@ export default function QuizIndexPage() {
                   </Badge>
                 ) : (
                   <Badge variant="dim" className="shrink-0">
-                    Need {MIN_CARDS - count} more
+                    Needs distinct answers
                   </Badge>
                 )}
                 <span className="shrink-0 text-slate-400" aria-hidden="true">
@@ -104,7 +118,7 @@ export default function QuizIndexPage() {
               <li key={deck.id}>
                 <div
                   aria-disabled="true"
-                  title={`Add ${MIN_CARDS - count} more terms to start a quiz`}
+                  title="Use at least 4 distinct answers and unambiguous prompts to start a quiz"
                   className={`${rowClass} cursor-not-allowed opacity-60`}
                 >
                   {content}
