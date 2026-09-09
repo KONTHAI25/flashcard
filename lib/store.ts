@@ -122,9 +122,8 @@ export function updateCard(id: string, patch: Partial<Card>): Card | null {
 }
 
 /**
- * Atomic review write (F3 in review): computes the SM-2-lite schedule and
- * persists it inside a single read/modify/write transaction, so a concurrent
- * tab edit cannot be silently overwritten by a stale read.
+ * Computes the schedule from the latest stored card in one synchronous
+ * read/modify/write. Independent tabs still use last-writer-wins storage.
  */
 export function updateCardReview(id: string, quality: number): Card | null {
   return changeStorage(data => {

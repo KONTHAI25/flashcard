@@ -1,6 +1,6 @@
 "use client";
 
-import { changeStorage, readStorage, STORAGE_KEY, StorageError } from "./storage";
+import { replaceStorage, readStorage, STORAGE_KEY, StorageError } from "./storage";
 import type { Card, Deck } from "./types";
 
 export interface SnapshotImportResult {
@@ -55,9 +55,6 @@ export function importSnapshotJson(raw: string): SnapshotImportResult {
   assertCardArray(snapshot.cards);
   const decks = snapshot.decks.map((d) => ({ ...d }));
   const cards = snapshot.cards.map((c) => ({ ...c }));
-  changeStorage((data) => {
-    data.decks = decks;
-    data.cards = cards;
-  });
+  replaceStorage({ decks, cards });
   return { decks: decks.length, cards: cards.length, mode: "replace" };
 }

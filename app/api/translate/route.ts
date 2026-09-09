@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClientBudget } from "@/lib/translate-client-budget";
 import {
   TranslationServer,
 } from "@/lib/translate-server";
@@ -16,39 +17,19 @@ const translationServer = new TranslationServer();
 
 // Minimal per-IP fairness bucket (in-process defense-in-depth only).
 // Replicas each hold their own map; use edge rate limiting as the real gate.
-const ipHits = new Map<string, number[]>();
-const IP_WINDOW_MS = 60_000;
-const IP_MAX_REQUESTS = 60;
+const takeIpBudget = createClientBudget();
 
 function clientIp(request: NextRequest): string {
+  // Forwarded headers are only fairness hints, not authenticated identities.
+  // Process-wide budgets still apply if a direct caller spoofs these headers.
   const headers = (request as { headers?: { get?: (name: string) => string | null } }).headers;
   const forwarded = headers?.get?.("x-forwarded-for");
   if (forwarded) return forwarded.split(",")[0].trim() || "unknown";
   return headers?.get?.("x-real-ip")?.trim() || "unknown";
 }
 
-function takeIpBudget(ip: string, now: number): number | undefined {
-  const hits = ipHits.get(ip) ?? [];
-  const fresh = hits.filter((t) => t + IP_WINDOW_MS > now);
-  if (fresh.length >= IP_MAX_REQUESTS) {
-    const oldest = fresh[0];
-    ipHits.set(ip, fresh);
-    return Math.max(1, Math.ceil((oldest + IP_WINDOW_MS - now) / 1000));
-  }
-  fresh.push(now);
-  ipHits.set(ip, fresh);
-  // Bound memory: drop idle entries opportunistically.
-  if (ipHits.size > 2048) {
-    for (const [key, times] of ipHits) {
-      if (times.length === 0 || times[times.length - 1] + IP_WINDOW_MS <= now) ipHits.delete(key);
-      if (ipHits.size <= 1024) break;
-    }
-  }
-  return undefined;
-}
-
 function wordHash(word: string): string {
-  // Log a non-reversible fingerprint, never the raw word.
+  // Compact diagnostic fingerprint, not an anonymization mechanism.
   let hash = 5381;
   for (let i = 0; i < word.length; i++) {
     hash = ((hash << 5) + hash + word.charCodeAt(i)) | 0;

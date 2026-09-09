@@ -57,7 +57,7 @@ function Library() {
   }
 
   if (loading) return <LibraryLoading />;
-  if (error) return <EmptyState title="Your library could not load" hint={error} action={<Button onClick={refresh}>Try again</Button>} />;
+  if (error) return <EmptyState title="Your library could not load" hint={error} action={<div className="flex flex-wrap items-center justify-center gap-2"><Button onClick={refresh}>Try again</Button><BackupButtons recovery onRestored={refresh} /></div>} />;
 
   return <div className="library-page">
     <header className="library-intro"><div><h1>Good things take practice.</h1><p>Pick a set. Find your rhythm. Make it stick.</p></div><span className="intro-doodle" aria-hidden="true">✳</span></header>

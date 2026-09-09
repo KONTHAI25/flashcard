@@ -10,7 +10,7 @@ const root = path.resolve(__dirname, '..');
 const output = mkdtempSync(path.join(tmpdir(), 'flashcard-storage-'));
 try {
   execFileSync(process.execPath, [require.resolve('typescript/bin/tsc'),
-    'lib/store.ts', '--outDir', output, '--module', 'commonjs', '--target', 'ES2020',
+    'lib/store.ts', 'lib/export-import.ts', '--outDir', output, '--module', 'commonjs', '--target', 'ES2020',
     '--lib', 'ES2020,DOM', '--strict', '--skipLibCheck', '--esModuleInterop',
   ], { cwd: root, stdio: 'pipe' });
 } catch (error) {
@@ -19,6 +19,7 @@ try {
 }
 const store = require(path.join(output, 'lib/store.js'));
 const { STORAGE_KEY } = require(path.join(output, 'lib/storage.js'));
+const { importSnapshotJson } = require(path.join(output, 'lib/export-import.js'));
 const vocabulary = require(path.join(output, 'data/vocab/index.js'));
 after(() => { delete global.window; rmSync(output, { recursive: true, force: true }); });
 
@@ -43,6 +44,38 @@ function setup(data = { decks: [deck], cards: [card] }) {
   return storage;
 }
 function errorCode(code) { return error => error instanceof store.StorageError && error.code === code; }
+
+test('backup replacement recovers corrupt or absent storage in one write and preserves progress', () => {
+  for (const previous of [null, '{broken', JSON.stringify({ version: 99 })]) {
+    const storage = setup(null);
+    if (previous !== null) storage.values.set(STORAGE_KEY, previous);
+    assert.deepEqual(importSnapshotJson(JSON.stringify({ version: 1, decks: [deck], cards: [card] })), { decks: 1, cards: 1, mode: 'replace' });
+    assert.equal(storage.writes, 1);
+    assert.deepEqual(store.getCards(), [card]);
+  }
+});
+
+test('invalid backups never seed or overwrite existing data', () => {
+  const invalid = ['{', JSON.stringify({ version: 2 }), JSON.stringify({ version: 1, decks: [deck], cards: [{ ...card, deckId: 'missing' }] })];
+  for (const previous of [null, '{broken', JSON.stringify({ version: 1, decks: [deck], cards: [card] })]) {
+    for (const raw of invalid) {
+      const storage = setup(null);
+      if (previous !== null) storage.values.set(STORAGE_KEY, previous);
+      assert.throws(() => importSnapshotJson(raw), store.StorageError);
+      assert.equal(storage.writes, 0);
+      assert.equal(storage.getItem(STORAGE_KEY), previous);
+    }
+  }
+});
+
+test('failed backup writes preserve the previous snapshot', () => {
+  const storage = setup();
+  const previous = storage.getItem(STORAGE_KEY);
+  storage.fail = true;
+  assert.throws(() => importSnapshotJson(JSON.stringify({ version: 1, decks: [], cards: [] })), errorCode('write'));
+  assert.equal(storage.getItem(STORAGE_KEY), previous);
+  assert.deepEqual(store.getCards(), [card]);
+});
 
 test('all vocabulary source tuples and newly seeded pairs are unique', () => {
   const rows = ['01', '02', '03', '04', '05', '06'].flatMap(n => vocabulary['VOCAB_' + n]);

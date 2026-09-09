@@ -3,16 +3,17 @@
 import { useRef, useState } from "react";
 import { Button } from "./Button";
 import { showToast } from "./Toast";
-import { exportSnapshotJson, importSnapshotJson } from "@/lib/export-import";
+import { exportSnapshotJson, importSnapshotJson, readRawSnapshot } from "@/lib/export-import";
 
 /** Backup / restore for browser-only persistence (F1). */
-export function BackupButtons({ onRestored }: { onRestored?: () => void }) {
+export function BackupButtons({ onRestored, recovery = false }: { onRestored?: () => void; recovery?: boolean }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
 
   function handleExport() {
     try {
-      const json = exportSnapshotJson();
+      const json = recovery ? readRawSnapshot() : exportSnapshotJson();
+      if (json === null) throw new Error("No saved snapshot is available to download.");
       const blob = new Blob([json], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -31,6 +32,7 @@ export function BackupButtons({ onRestored }: { onRestored?: () => void }) {
     setBusy(true);
     try {
       const text = await file.text();
+      if (!window.confirm("Replace all current sets and study progress with this backup? Export a backup first if you want to keep them.")) return;
       const result = importSnapshotJson(text);
       onRestored?.();
       showToast(`Restored ${result.decks} sets and ${result.cards} terms.`);
@@ -45,7 +47,7 @@ export function BackupButtons({ onRestored }: { onRestored?: () => void }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Button type="button" size="sm" variant="secondary" onClick={handleExport}>
-        Export backup
+        {recovery ? "Download raw data" : "Export backup"}
       </Button>
       <Button
         type="button"

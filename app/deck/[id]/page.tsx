@@ -259,6 +259,8 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
     };
   }, [loadDeck]);
 
+  const pairEditor = !editCardId || editingBilingual || usedLongdo || Boolean(level);
+
   const runLookup = useCallback(async (word: string, auto: boolean) => {
     const trimmed = word.trim();
     if (!trimmed || !sheetOpenRef.current || trimmed !== frontRef.current.trim()) return;
@@ -326,13 +328,13 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
   // Debounced auto-lookup: fills the Thai field shortly after the user stops
   // typing English, but never clobbers a hand-edited translation.
   useEffect(() => {
-    if (!sheetOpen) return;
+    if (!sheetOpen || !pairEditor) return;
     const word = front.trim();
     if (word.length < 2 || word === lastAutoWord.current) return;
     if (thaiTouched && back.trim()) return;
     const timer = setTimeout(() => { void runLookup(word, true); }, 650);
     return () => clearTimeout(timer);
-  }, [front, back, thaiTouched, sheetOpen, runLookup]);
+  }, [front, back, thaiTouched, sheetOpen, pairEditor, runLookup]);
 
   function resetTranslateState() {
     lookupSeq.current += 1;
@@ -347,6 +349,15 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
   }
 
   function handleFrontChange(value: string) {
+    // Editing a generic question does not invalidate its independent answer.
+    if (!pairEditor) {
+      resetTranslateState();
+      frontRef.current = value;
+      answerWordRef.current = value.trim() || null;
+      setFront(value);
+      setAnswerWord(answerWordRef.current);
+      return;
+    }
     // A front edit makes every pending response and prior answer association
     // stale. Clear the displayed meaning so a failed replacement lookup can
     // never be saved against the new word.
@@ -437,7 +448,7 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
       return;
     }
     const original = editCardId ? cards.find((c) => c.id === editCardId) : undefined;
-    const pairSelected = editingBilingual || usedLongdo || Boolean(level);
+    const pairSelected = !editCardId || editingBilingual || usedLongdo || Boolean(level);
     const saveSource = resolveSaveSource({
       usedLongdo,
       answerEdited,
@@ -455,7 +466,7 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
       : {};
     try {
       const saved = editCardId
-        ? updateCard(editCardId, { front: wordEng, back: wordThai, ...metadata })
+        ? updateCard(editCardId, { front: wordEng, back: wordThai, ...metadata, level: level || undefined })
         : createCard(id, wordEng, wordThai, metadata);
       if (!saved) {
         setFormError("This term no longer exists. Close the editor and reload the set.");
@@ -754,11 +765,11 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
               event.preventDefault(); event.currentTarget.requestSubmit();
             }
           }}>
-          <p className="text-sm text-slate-500">Type English, look up the Thai meaning, then confirm the level. Use Ctrl+Enter or Command+Enter to save.</p>
+          <p className="text-sm text-slate-500">{pairEditor ? "Type English, look up the Thai meaning, then confirm the level." : "Edit the question and answer. Choose a CEFR level or use lookup to make an English–Thai pair."} Use Ctrl+Enter or Command+Enter to save.</p>
           {formError && <p role="alert" className="text-sm text-red-700">{formError}</p>}
           <div>
             <label htmlFor="card-front" className="mb-1 block text-sm font-medium text-slate-700">
-              English word
+              {pairEditor ? "English word" : "Front"}
             </label>
             <textarea
               id="card-front"
@@ -767,7 +778,7 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
               placeholder="e.g. provide"
               rows={2}
               required
-              lang="en"
+              lang={pairEditor ? "en" : undefined}
               autoComplete="off"
               className="w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#4255FF] focus:outline-none focus:ring-2 focus:ring-[#4255FF]/30"
               autoFocus
@@ -821,7 +832,7 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
           </div>
           <div>
             <label htmlFor="card-back" className="mb-1 block text-sm font-medium text-slate-700">
-              Thai meaning <span className="font-normal text-slate-400">(editable)</span>
+              {pairEditor ? "Thai meaning" : "Back"} <span className="font-normal text-slate-400">(editable)</span>
             </label>
             <textarea
               id="card-back"
@@ -830,7 +841,7 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
               placeholder="e.g. จัดหาให้"
               rows={2}
               required
-              lang="th"
+              lang={pairEditor ? "th" : undefined}
               autoComplete="off"
               className="w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-base text-slate-900 placeholder:text-slate-400 focus:border-[#4255FF] focus:outline-none focus:ring-2 focus:ring-[#4255FF]/30"
             />

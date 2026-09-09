@@ -72,6 +72,8 @@ findings:
 
 # Code review and production readiness
 
+> Historical pre-fix findings. See [REVIEW-FIX.md](./REVIEW-FIX.md) for implemented fixes and current validation.
+
 This is the final, adjudicated report. It supersedes the severity counts and release verdicts in the three preliminary agent reports. Source code was not changed.
 
 ## Verdict

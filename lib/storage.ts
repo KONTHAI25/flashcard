@@ -142,6 +142,14 @@ export function readStorage(): StorageData {
   return target ? copy(load(target)) : { decks: [], cards: [] };
 }
 
+/** Validate and replace directly, including when the old snapshot is damaged. */
+export function replaceStorage(data: StorageData): void {
+  validateData(data);
+  const target = storage();
+  if (!target) throw new StorageError("unavailable", "Flashcards can only be saved in a browser.");
+  persist(target, data);
+}
+
 /** One synchronous read/modify/write; independent tabs are last-writer-wins. */
 export function changeStorage<T>(change: (data: StorageData) => T): T {
   const target = storage();
