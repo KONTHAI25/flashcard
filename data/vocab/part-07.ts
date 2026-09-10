@@ -1,4 +1,6 @@
-// Oxford C1–C2 advanced vocabulary with Thai glosses.
+// Oxford advanced vocabulary with Thai glosses.
+// Levels verified against the official Oxford 3000/5000 by-CEFR PDFs
+// (oxfordlearnersdictionaries.com) with Cambridge sense data as backup.
 // Flows into VOCAB_B1_C2 via data/vocab/index.ts (allowlist, no code change).
 export const VOCAB_07: Array<[string, string, string]> = [
   ["abrupt", "กะทันหัน", "C2"],
@@ -8,10 +10,10 @@ export const VOCAB_07: Array<[string, string, string]> = [
   ["acute", "เฉียบพลัน", "C1"],
   ["adjacent", "ติดกัน", "C1"],
   ["administer", "บริหารจัดการ", "C1"],
-  ["admire", "ชื่นชม", "B2"],
+  ["admire", "ชื่นชม", "B1"],
   ["adverse", "ในทางลบ", "C1"],
   ["aesthetic", "เชิงสุนทรียะ", "C1"],
-  ["affection", "ความรักใคร่", "B2"],
+  ["affection", "ความรักใคร่", "C1"],
   ["affirm", "ยืนยัน", "C1"],
   ["agenda", "วาระการประชุม", "B2"],
   ["aggravate", "ทำให้แย่ลง", "C1"],
@@ -24,7 +26,7 @@ export const VOCAB_07: Array<[string, string, string]> = [
   ["allure", "เสน่ห์", "C1"],
   ["ally", "พันธมิตร", "C1"],
   ["ambiguous", "กำกวม", "C2"],
-  ["ambition", "ความทะเยอทะยาน", "B2"],
+  ["ambition", "ความทะเยอทะยาน", "B1"],
   ["amiable", "เป็นมิตร", "C1"],
   ["ample", "มากมาย", "C1"],
   ["amplify", "ขยายเสียง", "C1"],
@@ -89,14 +91,14 @@ export const VOCAB_07: Array<[string, string, string]> = [
   ["besiege", "ปิดล้อม", "C1"],
   ["bestow", "มอบให้", "C1"],
   ["bewilder", "ทำให้งง", "C1"],
-  ["bizarre", "แปลกประหลาด", "B2"],
+  ["bizarre", "แปลกประหลาด", "C1"],
   ["blacklist", "บัญชีดำ", "C1"],
   ["blackmail", "ขู่กรรโชก", "C2"],
   ["bliss", "ความสุขยิ่ง", "C1"],
   ["bluff", "การหลอกลวง", "C1"],
   ["blunder", "ความผิดพลาด", "C1"],
   ["blunt", "ทื่อ", "C2"],
-  ["boast", "โอ้อวด", "B2"],
+  ["boast", "โอ้อวด", "C1"],
   ["bogus", "ปลอม", "C1"],
   ["boisterous", "เอะอะ", "C1"],
   ["bolster", "หนุนช่วย", "C1"],
