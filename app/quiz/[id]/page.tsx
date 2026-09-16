@@ -196,8 +196,8 @@ function QuizSession({ id }: { id: string }) {
       if (!answered) {
         const key = e.key.toLowerCase();
         let idx = -1;
-        if (key >= "1" && key <= "4") idx = Number(key) - 1;
-        else if (key >= "a" && key <= "d") idx = key.charCodeAt(0) - 97;
+        if (/^[1-4]$/.test(key)) idx = Number(key) - 1;
+        else if (/^[a-d]$/.test(key)) idx = key.charCodeAt(0) - 97;
         if (idx >= 0 && idx < questions[currentIdx].options.length) {
           e.preventDefault();
           handleSelect(idx);

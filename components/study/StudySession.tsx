@@ -169,7 +169,7 @@ function StudyRound({ id, mode, levelFilter, settings }: { id?: string; mode: St
   useEffect(() => {
     if (!settings.shuffle) return;
     setDueCards(previous => {
-      const index = Math.min(currentIdxRef.current, previous.length);
+      const index = Math.min(currentIdxRef.current + 1, previous.length);
       return [...previous.slice(0, index), ...shuffleCards(previous.slice(index))];
     });
   }, [settings.shuffle]);
