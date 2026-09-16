@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { DeckSummary } from "@/lib/library";
+import { summaryRemaining, type DeckSummary } from "@/lib/library";
 import { Icon } from "./Icon";
 
 const ACCENTS = ["#eef0ff", "#e6f7f0", "#fff1de", "#e8f4ff", "#fdeef5", "#f1ecff"];
@@ -14,6 +14,8 @@ function accentFor(id: string): string {
 
 export function SetCard({ summary, onDelete }: { summary: DeckSummary; onDelete: () => void }) {
   const { deck, total, due } = summary;
+  const remaining = summaryRemaining(summary);
+  const remainPct = total > 0 ? Math.min(100, Math.round((remaining / total) * 100)) : 0;
   const source = deck.id.startsWith("deck-oxford-") ? "Oxford collection" : deck.id === "deck-demo" ? "Starter set" : "Personal set";
   return <li className="set-card">
     <div className="set-cover" style={{ backgroundColor: accentFor(deck.id) }} aria-hidden="true">
@@ -29,6 +31,14 @@ export function SetCard({ summary, onDelete }: { summary: DeckSummary; onDelete:
         <span className="term-count">{total} {total === 1 ? "term" : "terms"}</span>
         {due > 0 && <span className="due-count">{due} to review</span>}
       </div>
+      {remaining > 0 && (
+        <Link href={`/study/${deck.id}?mode=learning`} className="set-remain" aria-label={`Remain ${remaining}/${total} still learning · play again`}>
+          <span className="set-remain-track" aria-hidden="true">
+            <span className="set-remain-fill" style={{ width: `${remainPct}%` }} />
+          </span>
+          <span className="set-remain-label">Remain {remaining}/{total}</span>
+        </Link>
+      )}
       <div className="set-card-bottom">
         <span className="set-source"><span aria-hidden="true">{deck.emoji}</span>{source}</span>
         <Link href={total > 0 ? `/study/${deck.id}` : `/deck/${deck.id}`} className="set-study" aria-label={`${total > 0 ? "Study" : "Open"} ${deck.name}`}>
