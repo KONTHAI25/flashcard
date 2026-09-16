@@ -322,6 +322,7 @@ select:-webkit-autofill {
   .set-title h3 { font-size: 17px; }
   .set-delete { width: 44px; height: 44px; margin-top: -8px; margin-right: -8px; }
   .set-study { min-height: 44px; }
+  .set-remain { min-height: 44px; }
   .set-collection-list .set-card-body { grid-template-columns: minmax(0, 1fr); grid-template-areas: "heading" "metadata" "remain" "bottom"; row-gap: 8px; }
   .set-collection-list .set-remain { margin: 0; }
   .field { font-size: 16px; }
