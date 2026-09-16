@@ -17,6 +17,7 @@ export function SetCard({ summary, onDelete }: { summary: DeckSummary; onDelete:
   const remaining = summaryRemaining(summary);
   const remainPct = total > 0 ? Math.min(100, Math.round((remaining / total) * 100)) : 0;
   const source = deck.id.startsWith("deck-oxford-") ? "Oxford collection" : deck.id === "deck-demo" ? "Starter set" : "Personal set";
+  const sourceIcon = deck.id.startsWith("deck-oxford-") ? "book" : deck.id === "deck-demo" ? "sparkles" : "pencil";
   return <li className="set-card">
     <div className="set-cover" style={{ backgroundColor: accentFor(deck.id) }} aria-hidden="true">
       <span className="set-cover-emoji">{deck.emoji}</span>
@@ -28,8 +29,8 @@ export function SetCard({ summary, onDelete }: { summary: DeckSummary; onDelete:
         <button type="button" onClick={onDelete} aria-label={`Delete ${deck.name}`} className="set-delete"><Icon name="trash" width="16" height="16" /></button>
       </div>
       <div className="set-metadata">
-        <span className="term-count">{total} {total === 1 ? "term" : "terms"}</span>
-        {due > 0 && <span className="due-count">{due} to review</span>}
+        <span className="term-count"><Icon name="layers" width="12" height="12" />{total} {total === 1 ? "term" : "terms"}</span>
+        {due > 0 && <span className="due-count"><Icon name="clock" width="12" height="12" />{due} to review</span>}
       </div>
       {remaining > 0 && (
         <Link href={`/study/${deck.id}?mode=learning`} className="set-remain" aria-label={`Remain ${remaining}/${total} still learning · play again`}>
@@ -40,7 +41,7 @@ export function SetCard({ summary, onDelete }: { summary: DeckSummary; onDelete:
         </Link>
       )}
       <div className="set-card-bottom">
-        <span className="set-source"><span aria-hidden="true">{deck.emoji}</span>{source}</span>
+        <span className="set-source"><span aria-hidden="true"><Icon name={sourceIcon} width="13" height="13" /></span>{source}</span>
         <Link href={total > 0 ? `/study/${deck.id}` : `/deck/${deck.id}`} className="set-study" aria-label={`${total > 0 ? "Study" : "Open"} ${deck.name}`}>
           <span>{total > 0 ? "Study" : "Open"}</span><Icon name="arrow" width="17" height="17" />
         </Link>

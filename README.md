@@ -96,3 +96,7 @@ Limits are per server instance (in-memory): 60/min per IP + 120 requests/min and
 Use a Next.js-compatible host or run `npm run build` followed by `npm start`. No environment variables are required. The web manifest supplies app metadata; a service worker and offline route caching are not implemented.
 
 PostCSS is overridden to 8.5.28 to avoid the vulnerable version pinned by Next.js 15. Keep the override until upgrading to a framework release with a patched dependency.
+
+## Icons
+
+UI glyphs use Flaticon's UIcons regular-rounded web font, self-hosted in `public/fonts/uicons/`. The library-page study-mode artwork uses Creative Commons icons from The Noun Project, one PNG per icon in `public/icons/noun/`, rendered as color masks. Authors and licenses are recorded in [`public/icons/ATTRIBUTION.md`](public/icons/ATTRIBUTION.md); the app shows a credit line at the bottom of the library page.

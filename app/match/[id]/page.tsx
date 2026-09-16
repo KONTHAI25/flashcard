@@ -99,7 +99,7 @@ function MatchSession({ id }: { id: string }) {
   if (usablePairs < MATCH_MIN_PAIRS) {
     return (
       <div className="match-empty">
-        <div className="match-summary-icon" aria-hidden="true"><Icon name="match" width="30" height="30" /></div>
+        <div className="match-summary-icon" aria-hidden="true"><span className="noun-art noun-art-puzzle" /></div>
         <h1>Not enough pairs</h1>
         <p>Find the pair needs at least {MATCH_MIN_PAIRS} terms with different English prompts and Thai meanings. Add or edit terms in this set first.</p>
         <div className="match-actions">

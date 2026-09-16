@@ -47,7 +47,7 @@ export default function MatchIndexPage() {
   return (
     <div className="match-index">
       <header className="match-index-head">
-        <div className="match-index-art" aria-hidden="true"><Icon name="match" width="30" height="30" /></div>
+        <div className="match-index-art" aria-hidden="true"><span className="noun-art noun-art-puzzle" /></div>
         <div>
           <h1>Find the pair</h1>
           <p>Tap an English term, then tap its Thai meaning. Clear the board as fast as you can.</p>
