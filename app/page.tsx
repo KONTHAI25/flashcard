@@ -60,12 +60,12 @@ function Library() {
   if (error) return <EmptyState title="Your library could not load" hint={error} action={<div className="flex flex-wrap items-center justify-center gap-2"><Button onClick={refresh}>Try again</Button><BackupButtons recovery onRestored={refresh} /></div>} />;
 
   return <div className="library-page">
-    <header className="library-intro"><div><h1>Good things take practice.</h1><p>Pick a set. Find your rhythm. Make it stick.</p></div><span className="intro-doodle" aria-hidden="true">✳</span></header>
+    <header className="library-intro"><div><h1>Good things take practice.</h1><p>Pick a set. Find your rhythm. Make it stick.</p></div><span className="intro-doodle noun-art noun-art-seedling" aria-hidden="true" /></header>
     <section aria-label="Ways to study" className="study-shortcuts">
-      <Link href="/study" className="study-shortcut shortcut-cards"><div><h2>Flashcards</h2><p>A little repetition goes a long way.</p><span>Start reviewing <Icon name="arrow" width="16" height="16" /></span></div><div className="mode-art cards-art" aria-hidden="true"><i /><i /><Icon name="cards" width="32" height="32" /></div></Link>
-      <Link href="/quiz" className="study-shortcut shortcut-quiz"><div><h2>Practice quiz</h2><p>See what you know. Build on it.</p><span>Test yourself <Icon name="arrow" width="16" height="16" /></span></div><div className="mode-art quiz-art" aria-hidden="true"><Icon name="quiz" width="48" height="48" /><i>✓</i></div></Link>
-      <Link href="/match" className="study-shortcut shortcut-match"><div><h2>Find the pair</h2><p>Match English and Thai. Beat the clock.</p><span>Play match <Icon name="arrow" width="16" height="16" /></span></div><div className="mode-art match-art" aria-hidden="true"><Icon name="match" width="42" height="42" /></div></Link>
-      <button type="button" onClick={() => setOpen(true)} className="study-shortcut shortcut-create"><div><h2>Make it yours</h2><p>Your topic. Your next study set.</p><span>Create a set <Icon name="plus" width="16" height="16" /></span></div><div className="mode-art create-art" aria-hidden="true"><Icon name="plus" width="38" height="38" /></div></button>
+      <Link href="/study" className="study-shortcut shortcut-cards"><div><h2>Flashcards</h2><p>A little repetition goes a long way.</p><span>Start reviewing <Icon name="arrow" width="16" height="16" /></span></div><div className="mode-art cards-art" aria-hidden="true"><span className="noun-art noun-art-flashcards" /></div></Link>
+      <Link href="/quiz" className="study-shortcut shortcut-quiz"><div><h2>Practice quiz</h2><p>See what you know. Build on it.</p><span>Test yourself <Icon name="arrow" width="16" height="16" /></span></div><div className="mode-art quiz-art" aria-hidden="true"><span className="noun-art noun-art-quiz" /><i>✓</i></div></Link>
+      <Link href="/match" className="study-shortcut shortcut-match"><div><h2>Find the pair</h2><p>Match English and Thai. Beat the clock.</p><span>Play match <Icon name="arrow" width="16" height="16" /></span></div><div className="mode-art match-art" aria-hidden="true"><span className="noun-art noun-art-puzzle" /></div></Link>
+      <button type="button" onClick={() => setOpen(true)} className="study-shortcut shortcut-create"><div><h2>Make it yours</h2><p>Your topic. Your next study set.</p><span>Create a set <Icon name="plus" width="16" height="16" /></span></div><div className="mode-art create-art" aria-hidden="true"><span className="noun-art noun-art-pencil" /></div></button>
     </section>
 
     <section aria-labelledby="library-heading" className="sets-section">
@@ -84,6 +84,7 @@ function Library() {
         <div className="library-pagination"><p role="status">Showing {Math.min(visibleCount, filtered.length)} of {filtered.length} sets</p>{filtered.length > visibleCount && <Button variant="secondary" onClick={() => setVisibleCount(count => count + 12)}>Show more sets</Button>}</div>
       </> : <EmptyState title={summaries.length ? "No matching sets" : "Your first set starts here"} hint={summaries.length ? "Try another search or filter." : "Create a set, add a few terms, and start learning."} action={<Button variant="secondary" onClick={() => { if (!summaries.length) setOpen(true); else { setQuery(""); setFilter("all"); router.replace("/", { scroll: false }); } }}>{summaries.length ? "Clear filters" : "Create a set"}</Button>} />}
     </section>
+    <p className="icon-credits">Icons by <a href="https://thenounproject.com" target="_blank" rel="noreferrer">The Noun Project</a> and <a href="https://www.flaticon.com/uicons" target="_blank" rel="noreferrer">Flaticon UIcons</a></p>
     <CreateSetSheet open={open} onClose={() => setOpen(false)} />
   </div>;
 }
