@@ -31,10 +31,15 @@ npm run build          # next build (production)
 npm start              # serve the production build
 npm run verify         # lint + typecheck + test + build (CI uses this)
 npm run build:pairs    # regenerate C1/C2 data (needs network; see §4.3)
+npm run test:e2e       # build, then desktop + mobile Chromium E2E tests
+npm run test:e2e:run   # E2E against the existing production build (used in CI)
+npm run test:e2e:ui    # build, then interactive Playwright runner
 ```
 
 Always run `npm run verify` before considering a change complete. CI
-(`.github/workflows/ci.yml`) runs the same command on push/PR.
+(`.github/workflows/ci.yml`) runs the same command on push/PR, then installs
+Chromium and runs `npm run test:e2e:run`. For UI changes, also run E2E locally;
+install its browser first with `npx playwright install chromium`.
 
 ## 3. Repository map
 
@@ -53,7 +58,8 @@ Always run `npm run verify` before considering a change complete. CI
 | `data/vocab/part-01..08.ts` | Vocabulary rows | Parts 01/02 are legacy A1/A2, not seeded |
 | `data/vocab/sources/` | C1/C2 headword lists, overrides, license notes | See §4.3 |
 | `scripts/build-c1c2-pairs.cjs` | Resumable C1/C2 generator | Build-time tool; ESLint-ignored on purpose |
-| `tests/`, `app/quiz/*.test.cjs` | Regression suite (71 tests) | `node --test` + on-the-fly TypeScript transpile |
+| `tests/`, `app/quiz/*.test.cjs` | Regression suite | `node --test` + on-the-fly TypeScript transpile; report the count from the tested checkout |
+| `tests/e2e/`, `playwright.config.ts` | Desktop/mobile browser regression suite | Production server on loopback port 3100; isolated storage; see `tests/e2e/README.md` |
 
 ## 4. Architecture and data contracts
 
@@ -116,8 +122,19 @@ Always run `npm run verify` before considering a change complete. CI
 - `tests/storage.test.cjs` compiles the storage layer and enforces atomicity,
   migration and deduplication guarantees. Keep those contracts.
 - All lint warnings are errors (`--max-warnings=0`). Build must remain green.
-- Include the exact command and result in PR/commit notes:
-  `npm run verify` → lint, typecheck, 71/71 tests, build.
+- Include the exact command, tested commit or working-tree state, Node version,
+  and actual result in PR/commit notes. Do not copy a historical test count.
+- CI uses Node 22 from `.github/workflows/ci.yml`, matching `.nvmrc`. A local
+  pass on another supported Node version is useful but is not a Node 22 CI run.
+- For links that show a filtered count, verify that the destination selects the
+  same cards. Cover mixed decks containing unstarted, still-learning, and due
+  learned cards; pure queue tests alone do not verify link wiring.
+- Browser E2E uses Playwright with fresh contexts and a small version-1 storage
+  fixture. Seed once per context; never reset data on navigation or use a real
+  browser profile. Translation responses are mocked. Use accessible selectors,
+  auto-waiting assertions, and traces instead of fixed sleeps.
+- Do not suppress uncaught browser errors to make E2E pass. A green unit suite
+  does not prove hydration or browser interactions are correct.
 
 ## 6. UI/UX conventions
 
@@ -127,11 +144,19 @@ Always run `npm run verify` before considering a change complete. CI
   Find the Pair (`/match/[id]`).
 - Session-only controls (Shuffle, Swap) must never mutate stored cards or
   schedules.
+- Remaining means attempted but not learned (`summaryRemaining`), not all
+  unlearned cards. A link offering to replay that count must select `learning`
+  mode explicitly. `/study/[id]?mode=learning` passes the mode into
+  `StudySession`; absent or unknown modes default to `continue`, which also
+  includes other due cards. Preserve this link-to-route contract.
 - Accessibility is part of “done”: labels, focus-visible rings, keyboard
   shortcuts guarded by `components/study-quiz/keyboard.ts`, `aria-live`
   feedback, reduced-motion support, no nested interactive elements.
 - Prefer adding reusable, tested helpers to `lib/`; keep components thin.
 - Reuse `components/Icon.tsx` rather than adding one-off SVGs where possible.
+  On `feature/ui-icons`, it renders decorative spans using the vendored UIcons
+  font. Keep controls named independently of their icons and keep all font/mask
+  assets local. Attribution records live in `public/icons/ATTRIBUTION.md`.
 
 ## 7. Workstream history
 
@@ -179,11 +204,19 @@ vercel --prod   # production
 ### 8.3 CI/CD contract
 
 - `.github/workflows/ci.yml`: every push/PR runs `npm ci` then
-  `npm run verify` (15-minute timeout, concurrency-cancelled).
+  `npm run verify`, installs Chromium with Linux dependencies, and runs
+  `npm run test:e2e:run` (15-minute timeout, concurrency-cancelled).
 - CI proves the build; it does **not** deploy. Vercel Git integration performs
   CD on `main` and previews on PRs.
 - Optional: require the CI status check on `main`; add explicit Vercel tokens
   only if replacing Git integration with an Actions deploy job.
+- Review workflow YAML and live Actions results separately. Record the run URL
+  and SHA; a green run for `origin/main` does not validate a local branch or
+  uncommitted changes. Check branch protection separately before claiming that
+  CI is a required merge gate.
+- Workflow permissions are explicitly `contents: read`. E2E reports and failure
+  traces are uploaded for seven days; generated `playwright-report/`,
+  `test-results/`, and `blob-report/` directories must remain untracked.
 
 ### 8.4 Alternative hosts
 
@@ -226,19 +259,37 @@ vercel --prod   # production
   `configs/`, `docs/contracts.md`, `docs/vision-benchmark.md`, `models/`,
   `scripts/vision_benchmark.py`, `src/exam_monitor/`, `tests/fixtures/`,
   `tests/vision/`.
-- `.gitattributes` normalizes LF. If a checkout shows whole-file CRLF diffs,
-  run `git add --renormalize .` instead of committing line-ending noise.
+- `.gitattributes` normalizes LF. Inspect line-ending diffs before staging;
+  if normalization is needed, restrict `git add --renormalize -- <paths>` to
+  the intended files. Never stage the entire dirty workspace to fix line endings.
+- Before reviewing unmerged work, fetch remote refs, inspect `git status`, and
+  compare each candidate branch with the target using `git log target..branch`
+  and `git diff target...branch`. Test branch commits in a detached worktree
+  when this checkout contains unrelated edits. Preserve those edits and report
+  branch-only results separately from working-tree results.
+- A review request does not itself request a merge or push. Record findings
+  before merging, and only merge or publish when the user requests it.
 - Never commit build output (`.next/`), translation caches, screenshots or
   secrets. Do not invent environment variables; none are required.
 - Do not reorder vocabulary parts lightly: seed chunking gives new cards their
   IDs, and ordering changes only affect fresh installations.
 - Keep `reviews/` as historical evidence; put current operating rules here.
 
-## 11. Current status (2026-09-16)
+## 11. Last reviewed status (2026-09-17)
 
-- `main` contains both workstreams plus the CI/docs changes; remote
-  `origin/main` was at `1fcbd7a` when this guide was written.
-- `npm run verify` passes: lint, typecheck, **71/71 tests**, production build.
-- HEAD may be one docs commit ahead of origin; check and push before deploying.
+- `main` and fetched `origin/main` are at `5361eac`, containing the reviewed
+  flashcard bug fixes and remaining-card feature.
+- The current review covers `feature/ui-icons` at `5656d6d`. Its branch history
+  lacks main's `d783f0a` bug-fix commit, although the working tree contains the
+  same three source fixes and their untracked regression test. Do not confuse
+  a working-tree pass with verification of the branch tip alone.
+- Playwright E2E infrastructure and the updated CI workflow are local changes.
+  Review results, verification counts, and the inherited hydration issue are
+  recorded in [`reviews/ui-icons-e2e-review-2026-09-17.md`](reviews/ui-icons-e2e-review-2026-09-17.md).
+- Production-browser checks have exposed intermittent React hydration error
+  #418 on both the icon working tree and clean main. Keep the E2E browser-error
+  assertion enabled; do not report an affected run as green.
+- Local verification uses Node 24.15.0; CI uses Node 22. Recheck refs,
+  working-tree state, and the specific remote run before deployment.
 - Headless-Chrome smoke screenshots:
   `C:\Users\acer\Downloads\flashcard-shots\`.
