@@ -30,5 +30,22 @@
     "eslint-config-next": "^15.5.25",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.0"
-  }
+  },
+  "description": "A mobile-friendly flashcard library with spaced repetition and multiple-choice quizzes. Built with Next.js 15, React 19, TypeScript, and Tailwind CSS 4.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "lib": "lib",
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KONTHAI25/flashcard.git"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/KONTHAI25/flashcard/issues"
+  },
+  "homepage": "https://github.com/KONTHAI25/flashcard#readme"
 }
