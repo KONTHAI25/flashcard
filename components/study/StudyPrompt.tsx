@@ -1,19 +1,22 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { normalizeCard, getDisplayBack, isBilingualCard, type Card } from "@/lib/types";
+import { normalizeCard, isBilingualCard, type Card } from "@/lib/types";
+import { studyFace } from "@/lib/study-settings";
 import { PairBadges } from "@/components/PairMeta";
 
-export function StudyPrompt({ card, revealed, onReveal, onReview }: {
+export function StudyPrompt({ card, revealed, swap = false, onReveal, onReview }: {
   card: Card;
   revealed: boolean;
+  swap?: boolean;
   onReveal: () => void;
   onReview: (quality: number) => void;
 }) {
   const prompt = useRef<HTMLButtonElement>(null);
   useEffect(() => { prompt.current?.focus(); }, []);
   const normalized = normalizeCard(card);
-  const answer = getDisplayBack(normalized);
+  const face = studyFace(normalized, swap);
+  const answer = face.answer;
   const bilingual = isBilingualCard(card);
   return (
     <div className="mx-auto w-full max-w-2xl">
@@ -41,7 +44,7 @@ export function StudyPrompt({ card, revealed, onReveal, onReview }: {
           </span>
           <PairBadges level={normalized.level} source={normalized.source} />
         </span>
-        <span className="block break-words text-2xl font-semibold text-slate-900">{normalized.front}</span>
+        <span className="block break-words text-2xl font-semibold text-slate-900">{face.prompt}</span>
         <span className="mt-4 block text-xs font-normal text-slate-500">{revealed ? "Choose Still learning or Know" : "Reveal answer · Space or Enter"}</span>
       </button>
       <div id="study-answer" aria-live="polite">

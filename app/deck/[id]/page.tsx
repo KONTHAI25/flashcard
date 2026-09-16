@@ -9,10 +9,12 @@ import { Deck, Card as CardType, normalizeCard, getDisplayBack, isBilingualCard,
 import { getDeck, getCardsByDeck, createCard, deleteCard, restoreCard, updateCard } from "@/lib/store";
 import { isDue } from "@/lib/srs";
 import { Button } from "@/components/Button";
+import { Icon } from "@/components/Icon";
 import { EmptyState } from "@/components/ui";
 import { showToast } from "@/components/Toast";
 import { Sheet } from "@/components/Sheet";
 import { canBuildQuiz } from "@/app/quiz/quiz";
+import { countMatchablePairs } from "@/lib/match";
 import { fetchTranslate, type TranslateCandidate } from "@/lib/translate";
 import { LevelBadge, SourceTag, CefrFilter, type CefrFilterValue } from "@/components/PairMeta";
 import { deckProgress } from "@/lib/library";
@@ -550,6 +552,8 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
   const dueCount = cards.filter(isDue).length;
   const canSave = front.trim().length > 0 && back.trim().length > 0;
   const quizDisabled = useMemo(() => !canBuildQuiz(cards), [cards]);
+  const matchablePairs = useMemo(() => countMatchablePairs(cards), [cards]);
+  const matchDisabled = matchablePairs < 2;
 
   const search = query.trim().toLocaleLowerCase();
   const cefrCounts = useMemo(() => {
@@ -636,6 +640,20 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
           )}
           {quizDisabled && <p id="quiz-help" className={styles.modeHelp}>
             Add at least 4 distinct answers with unambiguous prompts to unlock the quiz.
+          </p>}
+        </div>
+        <div>
+          {!matchDisabled ? (
+            <Link href={`/match/${id}`} className={styles.mode}>
+              <Icon name="match" width="22" height="22" /> Find the pair <span className={styles.modeArrow} aria-hidden="true">→</span>
+            </Link>
+          ) : (
+            <span className={styles.mode} role="link" aria-disabled="true" aria-describedby="match-help">
+              <Icon name="match" width="22" height="22" /> Find the pair
+            </span>
+          )}
+          {matchDisabled && <p id="match-help" className={styles.modeHelp}>
+            Add at least 2 terms with different English prompts and Thai meanings to unlock match.
           </p>}
         </div>
       </nav>

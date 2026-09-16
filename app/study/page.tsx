@@ -26,11 +26,16 @@ export default function StudyIndexPage() {
       <ul className="space-y-3">{sets.map((row) => {
         const { deck, total, due } = row;
         const remaining = summaryRemaining(row);
-        return <li key={deck.id}><Link href={`/study/${deck.id}`} aria-label={`${remaining ? "Continue learning" : "Practice"} ${deck.name}`} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 hover:border-indigo-300">
-          <span aria-hidden="true" className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-indigo-50 text-xl">{deck.emoji}</span>
-          <span className="min-w-0 flex-1"><span className="block break-words font-semibold">{deck.name}</span><span className="mt-1 block text-xs text-slate-500">{total} terms · {remaining} still learning · {due} due</span></span>
-          <span className="text-sm font-semibold text-indigo-600">{remaining ? "Continue" : "Practice"}</span><Icon name="arrow" className="shrink-0 text-indigo-500" width="18" height="18" />
-        </Link></li>;
+        return <li key={deck.id} className="study-set-row">
+          <Link href={`/study/${deck.id}`} aria-label={`${remaining ? "Continue learning" : "Practice"} ${deck.name}`} className="study-set-main">
+            <span aria-hidden="true" className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-indigo-50 text-xl">{deck.emoji}</span>
+            <span className="min-w-0 flex-1"><span className="block break-words font-semibold">{deck.name}</span><span className="mt-1 block text-xs text-slate-500">{total} terms · {remaining} still learning · {due} due</span></span>
+            <span className="text-sm font-semibold text-indigo-600">{remaining ? "Continue" : "Practice"}</span><Icon name="arrow" className="shrink-0 text-indigo-500" width="18" height="18" />
+          </Link>
+          <Link href={`/match/${deck.id}`} className="study-set-match" aria-label={`Play Find the pair with ${deck.name}`} title="Find the pair">
+            <Icon name="match" width="20" height="20" /><span className="sr-only">Find the pair</span>
+          </Link>
+        </li>;
       })}</ul>}
   </div>;
 }

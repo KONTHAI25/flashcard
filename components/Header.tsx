@@ -8,6 +8,7 @@ const links: { href: string; label: string; icon: IconName }[] = [
   { href: "/", label: "Your library", icon: "library" },
   { href: "/study", label: "Flashcards", icon: "cards" },
   { href: "/quiz", label: "Practice quiz", icon: "quiz" },
+  { href: "/match", label: "Find the pair", icon: "match" },
 ];
 
 export function Header() {

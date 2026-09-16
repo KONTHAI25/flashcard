@@ -36,6 +36,11 @@ interface UsablePair {
   back: string;
 }
 
+/** Number of unambiguous EN–TH pairs available for a Match board. */
+export function countMatchablePairs(cards: readonly Card[]): number {
+  return usablePairs(cards).length;
+}
+
 function usablePairs(cards: readonly Card[]): UsablePair[] {
   const seenPrompt = new Set<string>();
   const seenAnswer = new Set<string>();

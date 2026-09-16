@@ -71,6 +71,12 @@ test('buildMatchBoard never allows duplicate Thai answers or duplicate prompts o
   assert.equal(board.length, 10, 'only five pairs are usable after blank and duplicate-back de-duplication');
 });
 
+test('countMatchablePairs reports de-duplicated usable pairs for mode gating', () => {
+  assert.equal(match.countMatchablePairs(deck), 5);
+  assert.equal(match.countMatchablePairs([card('1', 'one', '   ')]), 0);
+  assert.equal(match.countMatchablePairs([]), 0);
+});
+
 test('buildMatchBoard is deterministic for a fixed random source and clamps tiny decks', () => {
   const a = match.buildMatchBoard(deck, 3, seeded(3));
   const b = match.buildMatchBoard(deck, 3, seeded(3));
