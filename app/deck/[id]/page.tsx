@@ -520,12 +520,8 @@ export default function DeckPage({ params }: { params: Promise<{ id: string }> }
         label: "Undo",
         onUndo: () => {
           // Restoration failures must reach ToastHost, which keeps Undo available.
-          try {
-            restoreCard(removed);
-            setCards(getCardsByDeck(id));
-          } catch {
-            showToast("Could not restore this term. Please reload the set.");
-          }
+          restoreCard(removed);
+          setCards(getCardsByDeck(id));
         },
       });
     } catch { showToast("Could not delete this term. Please try again."); }
