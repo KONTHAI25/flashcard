@@ -32,7 +32,7 @@ export function SetCard({ summary, onDelete }: { summary: DeckSummary; onDelete:
         {due > 0 && <span className="due-count">{due} to review</span>}
       </div>
       {remaining > 0 && (
-        <Link href={`/study/${deck.id}`} className="set-remain" aria-label={`Play again: ${remaining} of ${total} cards still learning`}>
+        <Link href={`/study/${deck.id}`} className="set-remain" aria-label={`Remain ${remaining}/${total} still learning · play again`}>
           <span className="set-remain-track" aria-hidden="true">
             <span className="set-remain-fill" style={{ width: `${remainPct}%` }} />
           </span>
