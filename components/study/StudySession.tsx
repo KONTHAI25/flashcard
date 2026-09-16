@@ -11,6 +11,9 @@ import { saveReview } from "../study-quiz/saveReview";
 import { shouldIgnoreShortcut } from "../study-quiz/keyboard";
 import { Button } from "@/components/Button";
 import { ProgressBar } from "@/components/ui";
+import { Icon } from "@/components/Icon";
+import { DEFAULT_STUDY_SETTINGS, shuffleCards, type StudySettings } from "@/lib/study-settings";
+import { formatElapsed } from "@/lib/match";
 import { LoadError } from "@/components/LoadError";
 
 function ArrowLeftIcon({ className = "h-5 w-5" }: { className?: string }) {
@@ -73,9 +76,10 @@ function CheckCircleIcon({ className = "h-8 w-8" }: { className?: string }) {
 export function StudySession({ id, initialMode }: { id?: string; initialMode?: StudyMode }) {
   const [mode, setMode] = useState<StudyMode>(initialMode ?? (id ? "continue" : "due"));
   const [level, setLevel] = useState<CefrFilterValue>("All");
+  const [settings, setSettings] = useState<StudySettings>(DEFAULT_STUDY_SETTINGS);
   return <div>
-    <div className="mx-auto mb-5 flex max-w-3xl flex-wrap items-center justify-end gap-x-4 gap-y-3">
-      <label className="flex items-center gap-3 text-sm text-slate-600">
+    <div className="study-controls">
+      <label className="study-practice">
         Practice
         <select aria-label="Flashcard selection" value={mode} onChange={event => setMode(event.target.value as StudyMode)} className="field w-auto">
           <option value="continue">Continue learning</option>
@@ -85,12 +89,32 @@ export function StudySession({ id, initialMode }: { id?: string; initialMode?: S
         </select>
       </label>
       <CefrFilter value={level} onChange={setLevel} idPrefix="study-cefr" />
+      <div className="study-settings" role="group" aria-label="Flashcard options">
+        <button
+          type="button"
+          aria-pressed={settings.shuffle}
+          className={`study-setting${settings.shuffle ? " active" : ""}`}
+          onClick={() => setSettings(current => ({ ...current, shuffle: !current.shuffle }))}
+          title="Shuffle the remaining cards"
+        >
+          <Icon name="shuffle" width="16" height="16" /> Shuffle
+        </button>
+        <button
+          type="button"
+          aria-pressed={settings.swap}
+          className={`study-setting${settings.swap ? " active" : ""}`}
+          onClick={() => setSettings(current => ({ ...current, swap: !current.swap }))}
+          title="Show Thai first and recall the English word"
+        >
+          <Icon name="swap" width="16" height="16" /> Swap
+        </button>
+      </div>
     </div>
-    <StudyRound key={`${id ?? "all"}:${mode}:${level}`} id={id} mode={mode} levelFilter={level} />
+    <StudyRound key={`${id ?? "all"}:${mode}:${level}`} id={id} mode={mode} levelFilter={level} settings={settings} />
   </div>;
 }
 
-function StudyRound({ id, mode, levelFilter }: { id?: string; mode: StudyMode; levelFilter: CefrFilterValue }) {
+function StudyRound({ id, mode, levelFilter, settings }: { id?: string; mode: StudyMode; levelFilter: CefrFilterValue; settings: StudySettings }) {
   const router = useRouter();
   const [decks, setDecks] = useState<Deck[]>([]);
   const deck = decks.find(d => d.id === id);
@@ -111,6 +135,13 @@ function StudyRound({ id, mode, levelFilter }: { id?: string; mode: StudyMode; l
   // Distinct from persistent still-learning progress (lib/library.ts
   // cardProgress/deckProgress): this list resets every round.
   const [missedIds, setMissedIds] = useState<string[]>([]);
+  // Keep the latest settings available to callbacks without restarting the
+  // data-loading effect (and losing progress) when a toggle changes.
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
+  const currentIdxRef = useRef(currentIdx);
+  currentIdxRef.current = currentIdx;
+  const startedAt = useRef(Date.now());
 
   useEffect(() => {
     try {
@@ -133,6 +164,16 @@ function StudyRound({ id, mode, levelFilter }: { id?: string; mode: StudyMode; l
     if (finished) heading.current?.focus();
   }, [finished]);
 
+  // Toggling Shuffle reorders only the cards still ahead in the current round;
+  // graded progress and saved schedules are untouched.
+  useEffect(() => {
+    if (!settings.shuffle) return;
+    setDueCards(previous => {
+      const index = Math.min(currentIdxRef.current, previous.length);
+      return [...previous.slice(0, index), ...shuffleCards(previous.slice(index))];
+    });
+  }, [settings.shuffle]);
+
   function handleReview(quality: number) {
     const card = dueCards[currentIdx];
     if (!card || finished || !revealed || reviewedCard.current === card.id) return;
@@ -153,7 +194,8 @@ function StudyRound({ id, mode, levelFilter }: { id?: string; mode: StudyMode; l
   }
 
   function startRound(cards: CardType[]) {
-    setDueCards(cards);
+    setDueCards(settingsRef.current.shuffle ? shuffleCards(cards) : [...cards]);
+    startedAt.current = Date.now();
     setCurrentIdx(0);
     setOriginalLen(cards.length);
     setReviewed(0);
@@ -277,6 +319,12 @@ function StudyRound({ id, mode, levelFilter }: { id?: string; mode: StudyMode; l
             {originalLen - missedIds.length} known · {missedIds.length} still
             learning in {deck?.name ?? "All sets"}
           </p>
+          <dl className="round-stats">
+            <div><dt>Known</dt><dd>{originalLen - missedIds.length}</dd></div>
+            <div><dt>Still learning</dt><dd>{missedIds.length}</dd></div>
+            <div><dt>Accuracy</dt><dd>{originalLen ? Math.round(((originalLen - missedIds.length) / originalLen) * 100) : 100}%</dd></div>
+            <div><dt>Time</dt><dd>{formatElapsed(Date.now() - startedAt.current)}</dd></div>
+          </dl>
           <div className="mt-6 flex w-full flex-col gap-2">
             {missedIds.length > 0 && (
               <Button className="w-full" onClick={handleReviewMissed}>
@@ -315,8 +363,8 @@ function StudyRound({ id, mode, levelFilter }: { id?: string; mode: StudyMode; l
       <div className="mb-4 flex items-center gap-3">
         <button
           type="button"
-          onClick={() => router.push("/study")}
-          aria-label="Back to study"
+          onClick={() => router.push(id ? `/deck/${id}` : "/study")}
+          aria-label={id ? "Back to set" : "Back to study"}
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2"
         >
           <ArrowLeftIcon />
@@ -334,7 +382,7 @@ function StudyRound({ id, mode, levelFilter }: { id?: string; mode: StudyMode; l
       <div className="flex-1">
         {/* Remount each prompt to restore keyboard focus after grading. */}
         {!id && <p className="mb-3 text-sm text-slate-500">Set: {decks.find(d => d.id === card.deckId)?.name}</p>}
-        <StudyPrompt key={card.id} card={card} revealed={revealed} onReveal={() => setRevealed(true)} onReview={handleReview} />
+        <StudyPrompt key={card.id} card={card} revealed={revealed} swap={settings.swap} onReveal={() => setRevealed(true)} onReview={handleReview} />
       </div>
 
       <p className="mt-3 text-center text-xs text-slate-500">

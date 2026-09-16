@@ -64,6 +64,7 @@ function Library() {
     <section aria-label="Ways to study" className="study-shortcuts">
       <Link href="/study" className="study-shortcut shortcut-cards"><div><h2>Flashcards</h2><p>A little repetition goes a long way.</p><span>Start reviewing <Icon name="arrow" width="16" height="16" /></span></div><div className="mode-art cards-art" aria-hidden="true"><i /><i /><Icon name="cards" width="32" height="32" /></div></Link>
       <Link href="/quiz" className="study-shortcut shortcut-quiz"><div><h2>Practice quiz</h2><p>See what you know. Build on it.</p><span>Test yourself <Icon name="arrow" width="16" height="16" /></span></div><div className="mode-art quiz-art" aria-hidden="true"><Icon name="quiz" width="48" height="48" /><i>✓</i></div></Link>
+      <Link href="/match" className="study-shortcut shortcut-match"><div><h2>Find the pair</h2><p>Match English and Thai. Beat the clock.</p><span>Play match <Icon name="arrow" width="16" height="16" /></span></div><div className="mode-art match-art" aria-hidden="true"><Icon name="match" width="42" height="42" /></div></Link>
       <button type="button" onClick={() => setOpen(true)} className="study-shortcut shortcut-create"><div><h2>Make it yours</h2><p>Your topic. Your next study set.</p><span>Create a set <Icon name="plus" width="16" height="16" /></span></div><div className="mode-art create-art" aria-hidden="true"><Icon name="plus" width="38" height="38" /></div></button>
     </section>
 

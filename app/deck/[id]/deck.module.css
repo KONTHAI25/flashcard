@@ -6,7 +6,7 @@
 .title h1 { font-size: clamp(26px, 4vw, 36px); line-height: 1.2; font-weight: 750; letter-spacing: -.035em; overflow-wrap: anywhere; white-space: pre-wrap; }
 .metadata { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; color: #626c83; margin-top: 12px; font-size: 13px; }
 .termCount { background: #e9ecf5; color: #394563; padding: 4px 10px; border-radius: 6px; font-weight: 650; }
-.modes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 28px; }
+.modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 28px; }
 .mode { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 14px 18px; border: 1px solid #dfe3ee; border-radius: 12px; background: white; color: #1b2545; text-decoration: none; font-size: 15px; font-weight: 700; transition: border-color .15s, box-shadow .15s; }
 .mode svg { color: #4255ff; flex-shrink: 0; }
 .mode:hover { border-color: #4255ff; box-shadow: 0 3px 0 #4255ff; }
@@ -34,6 +34,9 @@
 .previewHint { margin-top: 12px; text-align: center; font-size: 12px; color: #626c83; }
 .page a:focus-visible, .preview button:focus-visible { outline: 3px solid #4255ff; outline-offset: 4px; }
 .terms { margin-top: 32px; }
+@media (max-width: 760px) {
+  .modes { grid-template-columns: 1fr; }
+}
 @media (max-width: 540px) {
   .title { gap: 12px; }
   .mode { padding: 12px; gap: 8px; font-size: 13px; }
