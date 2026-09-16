@@ -247,6 +247,11 @@ select:-webkit-autofill {
 .set-metadata { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 11px; font-size: 11px; }
 .term-count { background: #f0f1f8; color: #727893; border-radius: 20px; padding: 4px 10px; font-weight: 600; }
 .due-count { color: #697393; }
+.set-remain { position: relative; z-index: 1; display: flex; align-items: center; gap: 8px; margin-top: 11px; font-size: 11px; font-weight: 650; color: #8f6b10; }
+.set-remain-track { flex-shrink: 0; width: 72px; height: 6px; border-radius: 999px; background: #f0f1f8; overflow: hidden; }
+.set-remain-fill { display: block; height: 100%; border-radius: 999px; background: #f2b33d; }
+.set-remain:hover .set-remain-label { text-decoration: underline; }
+.set-collection-list .set-remain { margin: 0; grid-column: 1 / -1; }
 .set-card-bottom { display: flex; align-items: center; justify-content: space-between; gap: 4px; margin-top: 27px; }
 .set-source { display: flex; align-items: center; gap: 7px; font-size: 10px; font-weight: 550; color: #7e849c; }
 .set-source > span { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 50%; font-size: 13px; background: #f1f2fa; }
