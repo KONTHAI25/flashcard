@@ -1,0 +1,566 @@
+{
+  "angsty": {
+    "th": "วิตกกังวล",
+    "source": "manual"
+  },
+  "bereftly": {
+    "th": "อย่างเศร้าโศกและสูญเสีย",
+    "source": "manual"
+  },
+  "cogently": {
+    "th": "อย่างมีเหตุผลน่าเชื่อถือ",
+    "source": "manual"
+  },
+  "demystification": {
+    "th": "การทำให้เข้าใจง่ายขึ้น",
+    "source": "manual"
+  },
+  "edify": {
+    "th": "อบรมสั่งสอน",
+    "source": "manual"
+  },
+  "farcical": {
+    "th": "เหลวไหลน่าขัน",
+    "source": "manual"
+  },
+  "histrionically": {
+    "th": "อย่างเกินจริงเหมือนละคร",
+    "source": "manual"
+  },
+  "impressionistically": {
+    "th": "ในเชิงอิมเพรสชันนิสม์",
+    "source": "manual"
+  },
+  "stultifyingly": {
+    "th": "อย่างน่าเบื่อและทำให้สมองตื้อ",
+    "source": "manual"
+  },
+  "ad lib": {
+    "th": "โดยไม่ได้เตรียมมาก่อน",
+    "source": "manual"
+  },
+  "angst": {
+    "th": "ความวิตกกังวล",
+    "source": "manual"
+  },
+  "antithetical": {
+    "th": "ซึ่งตรงกันข้ามอย่างสิ้นเชิง",
+    "source": "manual"
+  },
+  "attributive": {
+    "th": "เกี่ยวกับลักษณะของ; ที่เป็นคุณศัพท์ขยายนาม",
+    "source": "manual"
+  },
+  "attuned": {
+    "th": "ที่ปรับให้เข้ากัน",
+    "source": "manual"
+  },
+  "belligerence": {
+    "th": "ความเป็นปฏิปักษ์; ความก้าวร้าว",
+    "source": "manual"
+  },
+  "blubbery": {
+    "th": "อ้วนจ้ำม่ำ; ซึ่งมีไขมันมาก",
+    "source": "manual"
+  },
+  "burgeoning": {
+    "th": "ที่กำลังเติบโตอย่างรวดเร็ว",
+    "source": "manual"
+  },
+  "brouhaha": {
+    "th": "ความวุ่นวาย; เสียงเอะอะโวยวาย",
+    "source": "manual"
+  },
+  "circumnavigation": {
+    "th": "การเดินทางรอบโลก",
+    "source": "manual"
+  },
+  "egalitarian": {
+    "th": "เกี่ยวกับความเสมอภาค; ผู้ยึดหลักความเสมอภาค",
+    "source": "manual"
+  },
+  "fabulate": {
+    "th": "กุเรื่อง; สนทนา",
+    "source": "manual"
+  },
+  "fabulation": {
+    "th": "การกุเรื่อง; การสนทนา",
+    "source": "manual"
+  },
+  "floe": {
+    "th": "แผ่นน้ำแข็งลอย",
+    "source": "manual"
+  },
+  "happenstance": {
+    "th": "เหตุบังเอิญ",
+    "source": "manual"
+  },
+  "hotelier": {
+    "th": "เจ้าของหรือผู้จัดการโรงแรม",
+    "source": "manual"
+  },
+  "idiosyncratic": {
+    "th": "ซึ่งมีลักษณะเฉพาะตัว",
+    "source": "manual"
+  },
+  "improvisational": {
+    "th": "ที่เป็นการแสดงสดโดยไม่ได้เตรียมมาก่อน",
+    "source": "manual"
+  },
+  "interlocking": {
+    "th": "ที่ประสานกัน; ซึ่งเกี่ยวติดกัน",
+    "source": "manual"
+  },
+  "irrelevancy": {
+    "th": "ความไม่เกี่ยวข้อง; ความไม่สัมพันธ์กัน",
+    "source": "manual"
+  },
+  "patchily": {
+    "th": "อย่างไม่สม่ำเสมอ",
+    "source": "manual"
+  },
+  "prurient": {
+    "th": "ที่หมกมุ่นในเรื่องเพศ",
+    "source": "manual"
+  },
+  "taciturnity": {
+    "th": "ความเงียบขรึม",
+    "source": "manual"
+  },
+  "undemonstrative": {
+    "th": "ที่ไม่แสดงอารมณ์",
+    "source": "manual"
+  },
+  "undiminishing": {
+    "th": "ที่ไม่ลดน้อยลง",
+    "source": "manual"
+  },
+  "vis-a-vis": {
+    "th": "เมื่อเทียบกับ; ซึ่งเผชิญหน้ากัน",
+    "source": "manual"
+  },
+  "arguably": {
+    "th": "อาจกล่าวได้ว่า",
+    "source": "manual"
+  },
+  "disastrous": {
+    "th": "ซึ่งก่อหายนะ; เลวร้ายมาก",
+    "source": "manual"
+  },
+  "disturbing": {
+    "th": "น่ากังวล; รบกวนจิตใจ",
+    "source": "manual"
+  },
+  "driving": {
+    "th": "ที่ขับเคลื่อน; การขับรถ",
+    "source": "manual"
+  },
+  "exclusively": {
+    "th": "เฉพาะ; เท่านั้น",
+    "source": "manual"
+  },
+  "favourable": {
+    "th": "ที่เอื้ออำนวย; เป็นที่ชื่นชอบ",
+    "source": "manual"
+  },
+  "handling": {
+    "th": "การจัดการ; การถือ",
+    "source": "manual"
+  },
+  "high-profile": {
+    "th": "ที่โดดเด่น; เป็นที่รู้จัก",
+    "source": "manual"
+  },
+  "ironically": {
+    "th": "อย่างประชดประชัน",
+    "source": "manual"
+  },
+  "line-up": {
+    "th": "รายชื่อผู้เข้าร่วม; การจัดแถว",
+    "source": "manual"
+  },
+  "set-up": {
+    "th": "การติดตั้ง; การจัดตั้ง",
+    "source": "manual"
+  },
+  "substantially": {
+    "th": "อย่างมาก; โดยพื้นฐาน",
+    "source": "manual"
+  },
+  "thrilled": {
+    "th": "ตื่นเต้นดีใจ",
+    "source": "manual"
+  },
+  "transmission": {
+    "th": "การส่งผ่าน; การถ่ายทอด",
+    "source": "manual"
+  },
+  "troubled": {
+    "th": "ที่เดือดร้อน; มีปัญหา",
+    "source": "manual"
+  },
+  "acrobatically": {
+    "th": "อย่างกายกรรม",
+    "source": "manual"
+  },
+  "anarchic": {
+    "th": "ที่ไร้ระเบียบ; เกี่ยวกับอนาธิปไตย",
+    "source": "manual"
+  },
+  "anticlimactically": {
+    "th": "อย่างน่าผิดหวัง; อย่างลดความตื่นเต้น",
+    "source": "manual"
+  },
+  "arcanely": {
+    "th": "อย่างลึกลับ; อย่างเข้าใจยาก",
+    "source": "manual"
+  },
+  "archival": {
+    "th": "เกี่ยวกับจดหมายเหตุ",
+    "source": "manual"
+  },
+  "baroque": {
+    "th": "แบบบาโรก",
+    "source": "manual"
+  },
+  "calamitously": {
+    "th": "อย่างหายนะ; อย่างเลวร้าย",
+    "source": "manual"
+  },
+  "callously": {
+    "th": "อย่างไม่แยแส; อย่างใจดำ",
+    "source": "manual"
+  },
+  "choreographical": {
+    "th": "เกี่ยวกับท่าเต้น",
+    "source": "manual"
+  },
+  "cinematography": {
+    "th": "ศิลปะการถ่ายภาพยนตร์",
+    "source": "manual"
+  },
+  "cloistered": {
+    "th": "ที่ปลีกวิเวก; เกี่ยวกับสำนักสงฆ์",
+    "source": "manual"
+  },
+  "collider": {
+    "th": "เครื่องเร่งอนุภาคชนกัน",
+    "source": "manual"
+  },
+  "confrontational": {
+    "th": "ที่ชอบเผชิญหน้า; ที่ทำให้เกิดความขัดแย้ง",
+    "source": "manual"
+  },
+  "confrontationally": {
+    "th": "อย่างเผชิญหน้า",
+    "source": "manual"
+  },
+  "counterproductive": {
+    "th": "ที่ให้ผลตรงกันข้าม; ลดประสิทธิภาพ",
+    "source": "manual"
+  },
+  "counterproductively": {
+    "th": "อย่างให้ผลตรงกันข้าม",
+    "source": "manual"
+  },
+  "crippling": {
+    "th": "ที่ทำให้เป็นอัมพาต; ที่ทำลาย",
+    "source": "manual"
+  },
+  "cultish": {
+    "th": "แบบลัทธิ; ที่คลั่งไคล้",
+    "source": "manual"
+  },
+  "daunting": {
+    "th": "ที่น่ากังวล; ยากน่าดู",
+    "source": "manual"
+  },
+  "deficiently": {
+    "th": "อย่างบกพร่อง",
+    "source": "manual"
+  },
+  "deprecatingly": {
+    "th": "อย่างดูแคลน; อย่างไม่เห็นคุณค่า",
+    "source": "manual"
+  },
+  "deviantly": {
+    "th": "อย่างเบี่ยงเบน; อย่างผิดปกติ",
+    "source": "manual"
+  },
+  "diligently": {
+    "th": "อย่างขยันขันแข็ง",
+    "source": "manual"
+  },
+  "drabness": {
+    "th": "ความหม่นหมอง; ความจืดชืด",
+    "source": "manual"
+  },
+  "dwarfism": {
+    "th": "ภาวะแคระ",
+    "source": "manual"
+  },
+  "eccentricity": {
+    "th": "ความแปลกประหลาด",
+    "source": "manual"
+  },
+  "echolocate": {
+    "th": "ระบุตำแหน่งด้วยเสียงสะท้อน",
+    "source": "manual"
+  },
+  "emulsifier": {
+    "th": "สารอิมัลซิไฟเออร์; สารทำให้เป็นเนื้อเดียวกัน",
+    "source": "manual"
+  },
+  "enabler": {
+    "th": "ผู้สนับสนุน; สิ่งที่ทำให้เป็นไปได้",
+    "source": "manual"
+  },
+  "enduringly": {
+    "th": "อย่างยั่งยืน; อย่างยาวนาน",
+    "source": "manual"
+  },
+  "ephemerality": {
+    "th": "ความชั่วคราว; ความไม่จีรัง",
+    "source": "manual"
+  },
+  "euphorically": {
+    "th": "อย่างมีความสุขสุดขีด",
+    "source": "manual"
+  },
+  "evokingly": {
+    "th": "อย่างกระตุ้นให้ระลึกถึง",
+    "source": "manual"
+  },
+  "exaltedly": {
+    "th": "อย่างปลื้มปิติ; อย่างยกย่อง",
+    "source": "manual"
+  },
+  "genomic": {
+    "th": "ทางจีโนม; เกี่ยวกับจีโนม",
+    "source": "manual"
+  },
+  "genomically": {
+    "th": "ในระดับจีโนม",
+    "source": "manual"
+  },
+  "ignominiously": {
+    "th": "อย่างน่าอับอายขายหน้า",
+    "source": "manual"
+  },
+  "impressionistic": {
+    "th": "แบบอิมเพรสชันนิสม์",
+    "source": "manual"
+  },
+  "indolently": {
+    "th": "อย่างเกียจคร้าน",
+    "source": "manual"
+  },
+  "inexorability": {
+    "th": "ความไม่ยอมผ่อนปรน; ความหลีกเลี่ยงไม่ได้",
+    "source": "manual"
+  },
+  "infallibly": {
+    "th": "อย่างไม่ผิดพลาด",
+    "source": "manual"
+  },
+  "ingratiating": {
+    "th": "ที่เอาใจ; ที่ประจบ",
+    "source": "manual"
+  },
+  "ingratiatingly": {
+    "th": "อย่างประจบเอาใจ",
+    "source": "manual"
+  },
+  "jarring": {
+    "th": "ที่สั่นสะเทือน; ที่ทำให้รู้สึกไม่กลมกลืน",
+    "source": "manual"
+  },
+  "paradoxical": {
+    "th": "ที่ย้อนแย้ง; เกี่ยวกับปฏิทรรศน์",
+    "source": "manual"
+  },
+  "paralyzingly": {
+    "th": "อย่างทำให้เป็นอัมพาต",
+    "source": "manual"
+  },
+  "ponderously": {
+    "th": "อย่างหนักอึ้ง; อย่างเชื่องช้า",
+    "source": "manual"
+  },
+  "presentational": {
+    "th": "เกี่ยวกับการนำเสนอ",
+    "source": "manual"
+  },
+  "promotable": {
+    "th": "ที่สามารถเลื่อนตำแหน่งได้",
+    "source": "manual"
+  },
+  "proprietorial": {
+    "th": "เกี่ยวกับกรรมสิทธิ์; ที่หวงแหน",
+    "source": "manual"
+  },
+  "punitively": {
+    "th": "อย่างลงโทษ; อย่างรุนแรง",
+    "source": "manual"
+  },
+  "reclusive": {
+    "th": "ที่ปลีกวิเวก; ที่หลีกเลี่ยงผู้คน",
+    "source": "manual"
+  },
+  "salivary": {
+    "th": "เกี่ยวกับน้ำลาย",
+    "source": "manual"
+  },
+  "sandwiched": {
+    "th": "ที่ถูกประกบอยู่ระหว่าง",
+    "source": "manual"
+  },
+  "squirmy": {
+    "th": "ที่ดิ้นไปมา; ที่น่าอึดอัด",
+    "source": "manual"
+  },
+  "summarily": {
+    "th": "อย่างทันทีทันใด; โดยไม่ชักช้า",
+    "source": "manual"
+  },
+  "unadulterated": {
+    "th": "ที่ไม่เจือปน; บริสุทธิ์",
+    "source": "manual"
+  },
+  "unexceptional": {
+    "th": "ที่ธรรมดา; ไม่โดดเด่น",
+    "source": "manual"
+  },
+  "unexceptionally": {
+    "th": "อย่างธรรมดา; อย่างไม่โดดเด่น",
+    "source": "manual"
+  },
+  "unexcused": {
+    "th": "ที่ไม่ได้รับอนุญาต; ที่ไม่อาจแก้ตัว",
+    "source": "manual"
+  },
+  "unfeasible": {
+    "th": "ที่เป็นไปไม่ได้; ที่ทำไม่ได้",
+    "source": "manual"
+  },
+  "unfeasibly": {
+    "th": "อย่างเป็นไปไม่ได้",
+    "source": "manual"
+  },
+  "unmediated": {
+    "th": "ที่ไม่มีตัวกลาง; โดยตรง",
+    "source": "manual"
+  },
+  "unnerving": {
+    "th": "ที่ทำให้เสียขวัญ; น่าหวาดเสียว",
+    "source": "manual"
+  },
+  "unnervingly": {
+    "th": "อย่างทำให้เสียขวัญ",
+    "source": "manual"
+  },
+  "unobtrusive": {
+    "th": "ที่ไม่รบกวน; ที่กลมกลืน",
+    "source": "manual"
+  },
+  "unobtrusively": {
+    "th": "อย่างไม่รบกวน; อย่างกลมกลืน",
+    "source": "manual"
+  },
+  "unobtrusiveness": {
+    "th": "ความไม่รบกวน; ความกลมกลืน",
+    "source": "manual"
+  },
+  "unpromising": {
+    "th": "ที่ไม่น่าจะสำเร็จ; ที่ไม่ให้ความหวัง",
+    "source": "manual"
+  },
+  "unsurpassed": {
+    "th": "ที่ไม่มีใครเทียบได้",
+    "source": "manual"
+  },
+  "unsuspected": {
+    "th": "ที่ไม่ถูกสงสัย; ที่ไม่มีใครคาดคิด",
+    "source": "manual"
+  },
+  "vestigial": {
+    "th": "ที่เหลือเป็นร่องรอย; เกี่ยวกับส่วนที่ลดขนาด",
+    "source": "manual"
+  },
+  "vestigially": {
+    "th": "อย่างเหลือเป็นร่องรอย",
+    "source": "manual"
+  },
+  "vocalist": {
+    "th": "นักร้อง",
+    "source": "manual"
+  },
+  "implementation": {
+    "th": "การนำไปปฏิบัติ",
+    "source": "manual"
+  },
+  "centralized": {
+    "th": "รวมศูนย์",
+    "source": "manual"
+  },
+  "congressional": {
+    "th": "เกี่ยวกับสภาคองเกรส",
+    "source": "manual"
+  },
+  "encouraging": {
+    "th": "ที่ให้กำลังใจ",
+    "source": "manual"
+  },
+  "accessibility": {
+    "th": "การเข้าถึงได้",
+    "source": "manual"
+  },
+  "acreage": {
+    "th": "พื้นที่เป็นเอเคอร์",
+    "source": "manual"
+  },
+  "automate": {
+    "th": "ทำให้เป็นอัตโนมัติ",
+    "source": "manual"
+  },
+  "posturing": {
+    "th": "การวางท่า; ท่าทางเสแสร้ง",
+    "source": "manual"
+  },
+  "leavening": {
+    "th": "สารทำให้ขึ้นฟู",
+    "source": "manual"
+  },
+  "surrealist": {
+    "th": "แบบเหนือจริง; ศิลปินแนวเหนือจริง",
+    "source": "manual"
+  },
+  "totemic": {
+    "th": "เกี่ยวกับโทเทม",
+    "source": "manual"
+  },
+  "impeccably": {
+    "th": "อย่างไม่มีที่ติ",
+    "source": "manual"
+  },
+  "disparagingly": {
+    "th": "อย่างดูหมิ่น",
+    "source": "manual"
+  },
+  "redundantly": {
+    "th": "อย่างซ้ำซ้อน",
+    "source": "manual"
+  },
+  "superfluously": {
+    "th": "อย่างเกินจำเป็น",
+    "source": "manual"
+  },
+  "taste-maker": {
+    "th": "ผู้กำหนดรสนิยม",
+    "source": "manual"
+  },
+  "resoundingly": {
+    "th": "อย่างกึกก้อง; อย่างชัดเจน",
+    "source": "manual"
+  }
+}

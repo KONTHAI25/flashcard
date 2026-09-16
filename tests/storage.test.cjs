@@ -78,13 +78,18 @@ test('failed backup writes preserve the previous snapshot', () => {
 });
 
 test('all vocabulary source tuples and newly seeded pairs are unique', () => {
-  const rows = ['01', '02', '03', '04', '05', '06'].flatMap(n => vocabulary['VOCAB_' + n]);
+  const rows = ['01', '02', '03', '04', '05', '06', '07', '08'].flatMap(n => vocabulary['VOCAB_' + n]);
   assert.equal(rows.length, new Set(rows.map(row => JSON.stringify(row))).size);
   setup(null);
-  const seeded = store.getCards().filter(c => c.source === 'oxford');
+  const seeded = store.getCards().filter(c => /^deck-oxford-/.test(c.deckId));
   assert.ok(seeded.length > 0);
   assert.equal(seeded.length, new Set(seeded.map(c => JSON.stringify([c.front, c.back, c.level]))).size);
   assert.ok(seeded.every(c => ['B1', 'B2', 'C1', 'C2'].includes(c.level)));
+  assert.ok(seeded.every(c => ['oxford', 'longdo', 'manual'].includes(c.source)));
+  const c1 = seeded.filter(c => c.level === 'C1');
+  const c2 = seeded.filter(c => c.level === 'C2');
+  assert.ok(c1.length >= 1100, `expected completed C1 seed, found ${c1.length}`);
+  assert.ok(c2.length >= 950, `expected completed C2 seed, found ${c2.length}`);
 });
 
 test('metadata is validated at load, create, update, and restore boundaries without writes', () => {

@@ -1,4 +1,4 @@
-import { Deck, Card, B1_C2_LEVELS, type CEFRLevel } from "./types";
+import { Deck, Card, B1_C2_LEVELS, type CEFRLevel, type CardSource } from "./types";
 import { VOCAB_B1_C2 } from "../data/vocab";
 
 const SEED_DECK: Deck = {
@@ -65,7 +65,9 @@ function oxfordDeckId(n: number): string {
 function buildOxfordSeed(now: number): { decks: Deck[]; cards: Card[] } {
   // B1–C2 only: VOCAB_B1_C2 already excludes A1/A2 (part-01/02 retained on
   // disk but not seeded). Re-filter by allowlist so future C1/C2 rows flow
-  // through without code changes.
+  // through without code changes. The optional fourth tuple element records
+  // translation provenance ("longdo" / "manual") for the completed pairs;
+  // legacy three-element rows keep the Oxford badge.
   const allowed = new Set<string>(B1_C2_LEVELS);
   const all = VOCAB_B1_C2.filter(([, , level]) => allowed.has(level));
   const decks: Deck[] = [];
@@ -83,7 +85,8 @@ function buildOxfordSeed(now: number): { decks: Deck[]; cards: Card[] } {
     });
     all
       .slice(d * OXFORD_CHUNK_SIZE, (d + 1) * OXFORD_CHUNK_SIZE)
-      .forEach(([en, th, level], i) => {
+      .forEach(([en, th, level, rawSource], i) => {
+        const source: CardSource = rawSource === "longdo" ? "longdo" : rawSource === "manual" ? "manual" : "oxford";
         cards.push({
           id: `${deckId}-c${i + 1}`,
           deckId,
@@ -91,7 +94,7 @@ function buildOxfordSeed(now: number): { decks: Deck[]; cards: Card[] } {
           front: en,
           back: th,
           level: level as CEFRLevel,
-          source: "oxford",
+          source,
           wordEng: en,
           wordThai: th,
           interval: 1,

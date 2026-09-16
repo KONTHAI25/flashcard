@@ -5,20 +5,25 @@ export { VOCAB_04 } from "./part-04";
 export { VOCAB_05 } from "./part-05";
 export { VOCAB_06 } from "./part-06";
 export { VOCAB_07 } from "./part-07";
+export { VOCAB_08 } from "./part-08";
 
 import { VOCAB_03 } from "./part-03";
 import { VOCAB_04 } from "./part-04";
 import { VOCAB_05 } from "./part-05";
 import { VOCAB_06 } from "./part-06";
 import { VOCAB_07 } from "./part-07";
+import { VOCAB_08 } from "./part-08";
 
 // Dataset scope: B1–C2 only.
 // part-01 (A1, 500 rows) and part-02 (A2, 500 rows) are intentionally retained
-// on disk but EXCLUDED from the seed below. Exact repeated tuples have been
-// removed from part-03..06. part-07 holds the C1/C2 advanced rows.
+// on disk but EXCLUDED from the seed below.
+// part-03..06 hold the original B1/B2 blocks. part-07 holds the completed
+// C1/C2 run (curated A–C rows plus full Oxford 5000 C1 and Octanove C2 source
+// lists — see data/vocab/sources/ and scripts/build-c1c2-pairs.cjs). part-08
+// holds the seven verified B1/B2 corrections that previously sat in part-07.
 // The filter below is an allowlist (not a denylist) so future levels pass
 // through without code changes.
-export type VocabRow = [en: string, th: string, level: string];
+export type VocabRow = [en: string, th: string, level: string, source?: string];
 export const B1_C2_LEVELS = ["B1", "B2", "C1", "C2"] as const;
 export type B1C2Level = (typeof B1_C2_LEVELS)[number];
 
@@ -33,4 +38,5 @@ export const VOCAB_B1_C2: VocabRow[] = [
   ...VOCAB_05,
   ...VOCAB_06,
   ...VOCAB_07,
-].filter((row): row is [string, string, B1C2Level] => isB1C2Level(row[2]));
+  ...VOCAB_08,
+].filter((row): row is VocabRow => isB1C2Level(row[2]));
