@@ -298,10 +298,11 @@ select:-webkit-autofill {
      overflowed every viewport narrower than ~375px. `minmax(0, 1fr)` tracks
      plus `min-width: 0` on the links remove that floor; the count is not
      hardcoded, so an extra destination just adds a narrower column.
-     Labels wrap when they must and ellipsize only if a word cannot fit. */
+     Labels here wrap onto a second line rather than being cut off; the <=430px
+     block below switches them to a single ellipsized line instead. */
   .mobile-nav { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2px; padding: 8px 12px; background: white; border-bottom: 1px solid #e9ebf2; }
   :where(.mobile-nav) .shell-nav-link { justify-content: center; min-width: 0; min-height: 44px; font-size: 12px; padding: 8px 6px; gap: 8px; }
-  :where(.mobile-nav) .shell-nav-link > span:not(.fc-icon) { max-width: 100%; min-width: 0; overflow: hidden; overflow-wrap: anywhere; text-align: center; text-overflow: ellipsis; }
+  :where(.mobile-nav) .shell-nav-link > span:not(.fc-icon) { max-width: 100%; overflow: hidden; overflow-wrap: anywhere; text-align: center; }
   :where(.mobile-nav) .shell-nav-link .fc-icon { font-size: 18px; }
   .app-main { margin-left: 0; padding: 28px 20px 48px; }
   .study-shortcuts { margin-bottom: 32px; }
@@ -345,11 +346,15 @@ select:-webkit-autofill {
   .field { font-size: 16px; }
 }
 @media (max-width: 430px) {
-  /* Icon above label: even the longest word still fits a quarter of a 320px
-     row, so every label stays readable instead of being truncated. */
+  /* Icon above label: the label switches to one ellipsized line so the bar stays
+     a single row tall instead of wrapping into a stack. The clamping that keeps
+     that line inside its link is inherited from the 800px block, and the
+     overrides below only win by source order, so this block must stay after the
+     800px and 560px blocks. `tests/e2e/shell-nav.spec.ts` asserts that no label
+     is clipped at the narrow end of this range. */
   .mobile-nav { padding: 6px 8px; }
   :where(.mobile-nav) .shell-nav-link { flex-direction: column; gap: 3px; min-height: 52px; padding: 6px 2px; font-size: 10.5px; line-height: 1.25; }
-  :where(.mobile-nav) .shell-nav-link > span:not(.fc-icon) { max-width: 100%; overflow: hidden; overflow-wrap: normal; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+  :where(.mobile-nav) .shell-nav-link > span:not(.fc-icon) { white-space: nowrap; text-overflow: ellipsis; }
 }
 
 /* ---------- Find the pair (Match) ---------- */

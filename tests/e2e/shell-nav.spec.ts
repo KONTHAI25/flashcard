@@ -13,6 +13,7 @@ import { test } from "./fixtures";
  */
 
 const PHONE_WIDTHS = [320, 360] as const;
+// Mirrors the destinations in components/Header.tsx; update both together.
 const LABELS = ["Your library", "Flashcards", "Practice quiz", "Find the pair"];
 
 /** Geometry of the visible mobile nav, measured in the page. */
@@ -24,8 +25,11 @@ async function auditMobileNav(page: Page) {
     const links = [...nav.querySelectorAll<HTMLElement>(".shell-nav-link")].map(link => {
       const label = link.querySelector<HTMLElement>("span:not(.fc-icon)");
       if (!label) throw new Error("a nav link lost its label span");
+      const icon = link.querySelector<HTMLElement>(".fc-icon");
+      if (!icon) throw new Error("a nav link lost its icon");
       const linkRect = link.getBoundingClientRect();
       const labelRect = label.getBoundingClientRect();
+      const iconRect = icon.getBoundingClientRect();
       // Measure the painted text, not just the box: `overflow: hidden` can clip
       // a label while the document stays perfectly scroll-free.
       return {
@@ -36,6 +40,10 @@ async function auditMobileNav(page: Page) {
         // line (legitimate) and goes positive when text is hard-clipped, which
         // the document-level check cannot see.
         textClippedBy: Math.max(label.scrollWidth - label.clientWidth, 0),
+        // A missing or unloaded glyph would shrink the icon to nothing while
+        // every text assertion still passes.
+        iconWidth: iconRect.width,
+        iconHeight: iconRect.height,
         top: linkRect.top,
         height: linkRect.height,
         width: linkRect.width,
@@ -61,14 +69,17 @@ async function expectNavFits(page: Page, where: string, expectedWidth: number, a
   expect(audit.scrollWidth, `${where}: horizontal page overflow`).toBeLessThanOrEqual(audit.viewport);
   expect(audit.links.map(link => link.text), `${where}: nav labels`).toEqual(LABELS);
   // One row for every destination: guards the grid tracks against collapsing
-  // into a wrapped second row (the pre-fix layout produced 3 lines at 320px).
+  // into a wrapped second row.
   expect(new Set(audit.links.map(link => Math.round(link.top))).size, `${where}: links share one row`).toBe(1);
   for (const link of audit.links) {
     expect(link.labelOutsideLink, `${where}: "${link.text}" label inside its link`).toBeLessThanOrEqual(1);
-    expect(link.linkOutsideViewport, `${where}: "${link.text}" inside the viewport`).toBeLessThanOrEqual(0);
+    // 1px of slack absorbs subpixel rect rounding on fractional grid tracks.
+    expect(link.linkOutsideViewport, `${where}: "${link.text}" inside the viewport`).toBeLessThanOrEqual(1);
     expect(link.textClippedBy, `${where}: "${link.text}" text not clipped`).toBeLessThanOrEqual(1);
     expect(link.height, `${where}: "${link.text}" tap target height`).toBeGreaterThanOrEqual(44);
     expect(link.width, `${where}: "${link.text}" tap target width`).toBeGreaterThanOrEqual(44);
+    expect(link.iconWidth, `${where}: "${link.text}" icon drawn`).toBeGreaterThan(0);
+    expect(link.iconHeight, `${where}: "${link.text}" icon drawn`).toBeGreaterThan(0);
   }
   const active = audit.links.filter(link => link.active);
   expect(active.map(link => link.text), `${where}: exactly one current link`).toEqual([activeLabel]);
@@ -98,24 +109,21 @@ test("mobile nav fits on a study route too", async ({ page }) => {
 test("the nav switches layout at 430px without clipping", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "E2E vocabulary", exact: true })).toBeVisible();
-  await page.evaluate(() => document.fonts.ready);
+  const navHeight = () => page.locator(".mobile-nav").evaluate(nav => nav.getBoundingClientRect().height);
   await page.setViewportSize({ width: 430, height: 900 });
+  // Both sides of the switch get the full guard set: a second row, a shrunken
+  // tap target or a widened layout viewport is as wrong here as at 320px.
+  await expectNavFits(page, "/ @430px", 430);
   const stacked = await auditMobileNav(page);
-  await page.setViewportSize({ width: 431, height: 900 });
-  const row = await auditMobileNav(page);
-  for (const [width, audit] of [[430, stacked], [431, row]] as const) {
-    expect(audit.scrollWidth, `@${width}px: horizontal page overflow`).toBeLessThanOrEqual(audit.viewport);
-    for (const link of audit.links) {
-      expect(link.textClippedBy, `@${width}px: "${link.text}" text not clipped`).toBeLessThanOrEqual(1);
-      expect(link.linkOutsideViewport, `@${width}px: "${link.text}" inside the viewport`).toBeLessThanOrEqual(0);
-    }
-  }
-  // The stacked layout is taller by design (icon above label); it must stay a
-  // bounded change rather than doubling the bar.
-  const navHeight = async () => page.locator(".mobile-nav").evaluate(nav => nav.getBoundingClientRect().height);
-  await page.setViewportSize({ width: 430, height: 900 });
   const stackedHeight = await navHeight();
   await page.setViewportSize({ width: 431, height: 900 });
+  await expectNavFits(page, "/ @431px", 431);
   const rowHeight = await navHeight();
+  // The stacked layout is taller by design (icon above label); it must stay a
+  // bounded change rather than doubling the bar.
   expect(Math.abs(stackedHeight - rowHeight)).toBeLessThanOrEqual(14);
+  // In stacked mode the label is nowrap, so a label that wrapped instead would
+  // grow its link past the 52px min-height and silently push the bar taller.
+  const tallest = Math.max(...stacked.links.map(link => link.height));
+  expect(tallest, "@430px: stacked links stay a single line").toBeLessThanOrEqual(58);
 });
