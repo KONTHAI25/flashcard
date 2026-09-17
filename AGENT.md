@@ -289,6 +289,14 @@ vercel --prod   # production
 - Production-browser checks have exposed intermittent React hydration error
   #418 on both the icon working tree and clean main. Keep the E2E browser-error
   assertion enabled; do not report an affected run as green.
+- RESOLVED (2026-09-17): the #418 was a React 19.2.8 hydration retry defect —
+  after a mid-walk suspension the retried render re-claimed the root layout's
+  `main` with a stale walk pointer. Next 15.5.25 streamed the trigger refs
+  (metadata/params) in a later flight chunk, so an early-executing main bundle
+  raced them under CPU load. Fixed by upgrading to Next 16.3.5 + React 19.3.0
+  (with `type: commonjs` removed and the ESLint config migrated to the native
+  flat exports). Instrumented parallel-load stress (~1,800 loads) went from
+  repeated hits to zero; `hydration-stress.spec.ts` guards the regression.
 - Local verification uses Node 24.15.0; CI uses Node 22. Recheck refs,
   working-tree state, and the specific remote run before deployment.
 - Headless-Chrome smoke screenshots:

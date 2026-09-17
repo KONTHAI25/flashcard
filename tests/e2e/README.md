@@ -38,6 +38,8 @@ npx playwright show-report
 - Backup download, restore, and rejection of invalid backups without data loss.
 - Local icon font loading, decoded transparent masks, accessible controls,
   external-request detection, and desktop/mobile screenshot attachments.
+- Hydration stress: load/reload cycles over every shell route (desktop), so a
+  recurring hydration mismatch fails the uncaught-error gate directly.
 
 Fixtures seed a small version-1 `fc_storage` snapshot once per browser context,
 not on every navigation. Most actions use accessible roles and names. Direct
@@ -53,8 +55,12 @@ not pixel-diff golden tests. Live translation and third-party license compliance
 are outside this suite's scope.
 
 The initial review found an intermittent hydration error on both the icon
-working tree and clean main. See the [review and verification results](../../reviews/ui-icons-e2e-review-2026-09-17.md)
-before treating an E2E failure as an icon regression.
+working tree and clean main; see the [review and verification results](../../reviews/ui-icons-e2e-review-2026-09-17.md).
+It was later resolved by upgrading to Next 16.3.5 + React 19.3.0 (the retried
+hydration render re-claimed the root `main` with a stale walk pointer after a
+mid-walk suspension). `hydration-stress.spec.ts` reloads each shell route on
+desktop so any recurrence fails the suite again instead of hiding between
+functional cases.
 
 ## CI and diagnostics
 

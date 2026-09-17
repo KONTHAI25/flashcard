@@ -1,6 +1,6 @@
 # Flashcards
 
-A mobile-friendly flashcard library with spaced repetition and multiple-choice quizzes. Built with Next.js 15, React 19, TypeScript, and Tailwind CSS 4.
+A mobile-friendly flashcard library with spaced repetition and multiple-choice quizzes. Built with Next.js 16, React 19, TypeScript, and Tailwind CSS 4.
 
 ## Development
 
@@ -95,7 +95,7 @@ Limits are per server instance (in-memory): 60/min per IP + 120 requests/min and
 
 Use a Next.js-compatible host or run `npm run build` followed by `npm start`. No environment variables are required. The web manifest supplies app metadata; a service worker and offline route caching are not implemented.
 
-PostCSS is overridden to 8.5.28 to avoid the vulnerable version pinned by Next.js 15. Keep the override until upgrading to a framework release with a patched dependency.
+PostCSS is overridden to 8.5.28 to avoid the older version Next.js pins (16.3.5 pins 8.5.23). Keep the override until the framework ships the patched dependency.
 
 ## Browser E2E tests
 
