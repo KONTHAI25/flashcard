@@ -26,7 +26,7 @@ refinements), `42b6ef2` (honest overflow assertions, plus the same `innerWidth` 
 
 ## Fixes
 
-`app/globals.css`: three nav rules inside the existing media blocks, one new
+`app/globals.css`: the nav rules inside the existing media blocks, one new
 `forced-colors` block, and one new list rule.
 
 - `<=800px`: the nav becomes `grid-auto-flow: column` with
@@ -79,7 +79,7 @@ long answer shrinks and wraps inside the button.
 - the desktop sidebar keeping its own metrics at 1024px (14px / 48px / `10px 15px` /
   13px gap / label `overflow: visible`) with the mobile nav hidden;
 - the current page staying marked in `forced-colors: active`;
-- no horizontal page scroll at 320px on `/`, `/quiz`, `/match`, `/study/all`,
+- no horizontal page scroll at 320px on `/`, `/study`, `/quiz`, `/match`, `/study/all`,
   `/deck/[id]`, a study session, a quiz session and a match session, with a long deck
   name and an unbroken answer as the content.
 
@@ -111,9 +111,10 @@ has not been measured here (see Known gaps).
   280, 320, 470 and 471px.
 - Route sweep at 280px, 320px and 360px with a long deck name and an unbroken answer:
   `/`, `/study`, `/study/all`, `/quiz`, `/match`, `/deck/[id]`, `/study/[id]`,
-  `/match/[id]` and `/quiz/[id]` all report zero horizontal overflow (27 measurements),
-  each after its own content anchor is visible, and `/study/all` at 280px is anchored on
-  the page heading because that layout hides the set-name span at that width.
+  `/match/[id]` and `/quiz/[id]` all report zero horizontal overflow (27 anchored
+  measurements). Each route waits for its own content anchor; `/study` uses the page
+  heading there because its set-name span is only 4px wide at 280px and the text
+  anchor does not resolve.
 - Forced colours: the current link computes `solid 2px rgb(0, 0, 159)` with
   `outline-offset: -2px` and the others `none`, in both the mobile nav at 320px and
   the sidebar at 1024px.
