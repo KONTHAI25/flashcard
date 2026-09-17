@@ -111,16 +111,21 @@ has not been measured here (see Known gaps).
   280, 320, 470 and 471px.
 - Route sweep at 280px, 320px and 360px with a long deck name and an unbroken answer:
   `/`, `/study`, `/study/all`, `/quiz`, `/match`, `/deck/[id]`, `/study/[id]`,
-  `/match/[id]` and `/quiz/[id]` all report zero horizontal overflow with their
-  content anchors visible first.
+  `/match/[id]` and `/quiz/[id]` all report zero horizontal overflow (27 measurements),
+  each after its own content anchor is visible, and `/study/all` at 280px is anchored on
+  the page heading because that layout hides the set-name span at that width.
 - Forced colours: the current link computes `solid 2px rgb(0, 0, 159)` with
   `outline-offset: -2px` and the others `none`, in both the mobile nav at 320px and
   the sidebar at 1024px.
 - Desktop sidebar at 801/1024/1280px: 14px font, 48px min-height, `10px 15px`
-  padding, 13px gap, label `overflow: visible`, mobile nav `display: none`.
+  padding, 13px gap, every label `overflow: visible` with zero clipped width, mobile
+  nav `display: none`.
 - A simulated 16px browser minimum font size leaves the document at
   `scrollWidth == clientWidth` with no clipped label at 320/360/412/471/560px; the
-  labels wrap and the bar grows to 86px at 320px instead of truncating.
+  labels wrap and the bar grows to 86px at 320px instead of truncating. Re-run with
+  Blink's real setting (`--blink-settings=minimumFontSize=16,minimumLogicalFontSize=16`):
+  labels compute 16px, two of them wrap to two lines at 320px, the bar is 86px tall,
+  and there is still no clipping and no document overflow at 320/360/412/560px.
 
 ## Known gaps
 
@@ -130,8 +135,9 @@ has not been measured here (see Known gaps).
   (60px of text in a 74.5px link), so a ~7% wider face still fits, and a wider face
   would wrap the label rather than overflow or clip.
 - Nav label sizes are `px` (12 / 11.5 / 10.5), so they ignore a user's font-size
-  preference; a 16px minimum font size makes the labels wrap and the bar grow to
-  ~86px at 320px. No overflow or clipping results, but the bar is taller.
+  preference. With Blink's minimum font size set to 16px the labels wrap, the bar
+  grows to 86px at 320px and nothing overflows or clips, so the cost is a taller bar
+  rather than unreadable or hidden text.
 - `/study/[id]`, `/match/[id]` and `/quiz/[id]` get the page-level overflow check
   (the two session routes through the spec's route list) but not the full nav guard
   set, which stays on `/` and one study route.
