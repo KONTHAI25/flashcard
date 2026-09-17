@@ -41,6 +41,6 @@ test("local icon font and decorative masks render without external requests", as
   }
   expect(failures).toEqual([]);
   expect(external).toEqual([]);
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
   await testInfo.attach("library", { body: await page.screenshot({ fullPage: true }), contentType: "image/png" });
 });

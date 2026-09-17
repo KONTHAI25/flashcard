@@ -178,6 +178,11 @@ select:-webkit-autofill {
 .shell-nav-link:hover { background: #f6f7fb; color: #303755; }
 .shell-nav-active { color: #384bd3; background: #eef0ff; font-weight: 700; }
 .shell-nav-active:hover { background: #e8ebff; }
+/* Forced-colors mode replaces the pill background, so the current page is marked
+   with an outline (which also keeps the state readable without colour). */
+@media (forced-colors: active) {
+  .shell-nav-link[aria-current="page"] { outline: 2px solid; outline-offset: -2px; }
+}
 .sidebar-divider { height: 1px; background: #eceef4; margin: 25px 8px; }
 .sidebar-label { padding: 0 15px; color: #9399ab; font-size: 10px; letter-spacing: 1px; font-weight: 700; }
 .sidebar-create { display: flex; gap: 10px; align-items: center; margin-top: 15px; padding: 0 10px; min-height: 44px; font-size: 12px; font-weight: 600; color: #626a83; }
@@ -293,9 +298,17 @@ select:-webkit-autofill {
   .topbar { padding: 0 20px; gap: 18px; height: 68px; }
   .wordmark { min-width: auto; font-size: 21px; }
   .global-search { max-width: 350px; }
-  .mobile-nav { display: flex; gap: 8px; padding: 8px 20px; background: white; border-bottom: 1px solid #e9ebf2; }
-  .shell-nav-link { min-height: 42px; font-size: 12px; padding: 8px 12px; gap: 8px; }
-  .shell-nav-link .fc-icon { font-size: 18px; }
+  /* Equal auto-sized tracks: a flex row could not shrink below each link's
+     min-content width (longest word + icon + padding = 383px minimum), so it
+     overflowed every viewport narrower than ~375px. `minmax(0, 1fr)` tracks
+     plus `min-width: 0` on the links remove that floor; the count is not
+     hardcoded, so an extra destination just adds a narrower column.
+     Labels here wrap onto a second line rather than being cut off, so a long or
+     localized destination stays readable at any width. */
+  .mobile-nav { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2px; padding: 8px 12px; background: white; border-bottom: 1px solid #e9ebf2; }
+  :where(.mobile-nav) .shell-nav-link { justify-content: center; min-width: 0; min-height: 44px; font-size: 12px; padding: 8px 6px; gap: 8px; }
+  :where(.mobile-nav) .shell-nav-link > span:not(.fc-icon) { max-width: 100%; overflow: hidden; overflow-wrap: anywhere; text-align: center; }
+  :where(.mobile-nav) .shell-nav-link .fc-icon { font-size: 18px; }
   .app-main { margin-left: 0; padding: 28px 20px 48px; }
   .study-shortcuts { margin-bottom: 32px; }
   .study-shortcut h2 { font-size: 16px; }
@@ -308,7 +321,10 @@ select:-webkit-autofill {
   .global-search { order: 3; max-width: none; min-height: 40px; }
   .global-search input { font-size: 16px; }
   .header-create { height: 38px; padding: 0 17px; }
-  .mobile-nav { gap: 1px; justify-content: space-between; padding: 7px 12px; }
+  /* 11.5px keeps the longest label ("Practice quiz") on one row of the column
+     layout that starts at 471px, where a quarter of the bar is ~111px wide. */
+  .mobile-nav { padding: 6px 10px; }
+  :where(.mobile-nav) .shell-nav-link { font-size: 11.5px; }
   .app-main { padding: 27px 16px 40px; }
   .library-intro { margin-bottom: 23px; }
   .library-intro h1 { font-size: 25px; max-width: 270px; }
@@ -335,6 +351,16 @@ select:-webkit-autofill {
   .set-collection-list .set-remain { margin: 0; }
   .field { font-size: 16px; }
 }
+@media (max-width: 470px) {
+  /* Icon above label: below 471px a quarter of the bar (~101-112px) is too
+     narrow for icon + gap + "Practice quiz" on one row, and a two-line row made
+     the bar taller than this stack. The label gets the full column width here
+     and still wraps rather than truncating if even that is not enough. The
+     overrides below only win by source order, so this block must stay after the
+     800px and 560px blocks. */
+  .mobile-nav { padding: 6px 8px; }
+  :where(.mobile-nav) .shell-nav-link { flex-direction: column; gap: 3px; min-height: 52px; padding: 6px 2px; font-size: 10.5px; line-height: 1.25; }
+}
 
 /* ---------- Find the pair (Match) ---------- */
 .match-index { max-width: 780px; }
@@ -346,6 +372,10 @@ select:-webkit-autofill {
 .match-index-head h1 { font-size: clamp(24px, 3vw, 30px); font-weight: 800; letter-spacing: -.7px; color: #232a44; }
 .match-index-head p { margin-top: 6px; color: #6a7389; font-size: 14px; line-height: 1.6; }
 .match-deck-list { display: grid; gap: 10px; list-style: none; padding: 0; }
+/* The single implicit `auto` track takes its floor from the row's min-content
+   width, so a long set name pushed the page 315px wide at a 320px viewport.
+   Zeroing the item's automatic minimum size lets the name ellipsize instead. */
+.match-deck-list > li { min-width: 0; }
 .match-deck-row { display: flex; align-items: center; gap: 14px; padding: 13px 16px; border: 1px solid #e2e5ef; border-radius: 14px; background: white; color: #232a44; text-decoration: none; transition: border-color .15s, box-shadow .15s, transform .15s; }
 .match-deck-row:hover { border-color: #4255ff; box-shadow: 0 4px 14px #2b315014; transform: translateY(-1px); }
 .match-deck-emoji { display: grid; place-items: center; width: 42px; height: 42px; flex-shrink: 0; border-radius: 12px; background: #eef0ff; font-size: 21px; }

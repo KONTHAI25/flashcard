@@ -372,7 +372,10 @@ function QuizSession({ id }: { id: string }) {
               <span aria-hidden="true" className={letterCls}>
                 {LETTERS[idx]}
               </span>
-              <span className="flex-1">{opt}</span>
+              {/* `min-w-0` lets a long unbroken answer shrink inside the flex
+                  row instead of forcing the page wider than the viewport, and
+                  `break-words` wraps it rather than letting it spill. */}
+              <span className="min-w-0 flex-1 break-words">{opt}</span>
               {icon}
             </button>
           );
