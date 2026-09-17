@@ -372,6 +372,10 @@ select:-webkit-autofill {
 .match-index-head h1 { font-size: clamp(24px, 3vw, 30px); font-weight: 800; letter-spacing: -.7px; color: #232a44; }
 .match-index-head p { margin-top: 6px; color: #6a7389; font-size: 14px; line-height: 1.6; }
 .match-deck-list { display: grid; gap: 10px; list-style: none; padding: 0; }
+/* The single implicit `auto` track takes its floor from the row's min-content
+   width, so a long set name pushed the page 315px wide at a 320px viewport.
+   Zeroing the item's automatic minimum size lets the name ellipsize instead. */
+.match-deck-list > li { min-width: 0; }
 .match-deck-row { display: flex; align-items: center; gap: 14px; padding: 13px 16px; border: 1px solid #e2e5ef; border-radius: 14px; background: white; color: #232a44; text-decoration: none; transition: border-color .15s, box-shadow .15s, transform .15s; }
 .match-deck-row:hover { border-color: #4255ff; box-shadow: 0 4px 14px #2b315014; transform: translateY(-1px); }
 .match-deck-emoji { display: grid; place-items: center; width: 42px; height: 42px; flex-shrink: 0; border-radius: 12px; background: #eef0ff; font-size: 21px; }
