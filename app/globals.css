@@ -178,6 +178,11 @@ select:-webkit-autofill {
 .shell-nav-link:hover { background: #f6f7fb; color: #303755; }
 .shell-nav-active { color: #384bd3; background: #eef0ff; font-weight: 700; }
 .shell-nav-active:hover { background: #e8ebff; }
+/* Forced-colors mode replaces the pill background, so the current page is marked
+   with an outline (which also keeps the state readable without colour). */
+@media (forced-colors: active) {
+  .shell-nav-link[aria-current="page"] { outline: 2px solid; outline-offset: -2px; }
+}
 .sidebar-divider { height: 1px; background: #eceef4; margin: 25px 8px; }
 .sidebar-label { padding: 0 15px; color: #9399ab; font-size: 10px; letter-spacing: 1px; font-weight: 700; }
 .sidebar-create { display: flex; gap: 10px; align-items: center; margin-top: 15px; padding: 0 10px; min-height: 44px; font-size: 12px; font-weight: 600; color: #626a83; }
@@ -298,8 +303,8 @@ select:-webkit-autofill {
      overflowed every viewport narrower than ~375px. `minmax(0, 1fr)` tracks
      plus `min-width: 0` on the links remove that floor; the count is not
      hardcoded, so an extra destination just adds a narrower column.
-     Labels here wrap onto a second line rather than being cut off; the <=430px
-     block below switches them to a single ellipsized line instead. */
+     Labels here wrap onto a second line rather than being cut off, so a long or
+     localized destination stays readable at any width. */
   .mobile-nav { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2px; padding: 8px 12px; background: white; border-bottom: 1px solid #e9ebf2; }
   :where(.mobile-nav) .shell-nav-link { justify-content: center; min-width: 0; min-height: 44px; font-size: 12px; padding: 8px 6px; gap: 8px; }
   :where(.mobile-nav) .shell-nav-link > span:not(.fc-icon) { max-width: 100%; overflow: hidden; overflow-wrap: anywhere; text-align: center; }
@@ -316,7 +321,8 @@ select:-webkit-autofill {
   .global-search { order: 3; max-width: none; min-height: 40px; }
   .global-search input { font-size: 16px; }
   .header-create { height: 38px; padding: 0 17px; }
-  /* Half a pixel smaller keeps "Practice quiz" on one line down to ~460px. */
+  /* 11.5px keeps the longest label ("Practice quiz") on one row of the column
+     layout that starts at 471px, where a quarter of the bar is ~111px wide. */
   .mobile-nav { padding: 6px 10px; }
   :where(.mobile-nav) .shell-nav-link { font-size: 11.5px; }
   .app-main { padding: 27px 16px 40px; }
@@ -345,16 +351,15 @@ select:-webkit-autofill {
   .set-collection-list .set-remain { margin: 0; }
   .field { font-size: 16px; }
 }
-@media (max-width: 430px) {
-  /* Icon above label: the label switches to one ellipsized line so the bar stays
-     a single row tall instead of wrapping into a stack. The clamping that keeps
-     that line inside its link is inherited from the 800px block, and the
+@media (max-width: 470px) {
+  /* Icon above label: below 471px a quarter of the bar (~101-112px) is too
+     narrow for icon + gap + "Practice quiz" on one row, and a two-line row made
+     the bar taller than this stack. The label gets the full column width here
+     and still wraps rather than truncating if even that is not enough. The
      overrides below only win by source order, so this block must stay after the
-     800px and 560px blocks. `tests/e2e/shell-nav.spec.ts` asserts that no label
-     is clipped at the narrow end of this range. */
+     800px and 560px blocks. */
   .mobile-nav { padding: 6px 8px; }
   :where(.mobile-nav) .shell-nav-link { flex-direction: column; gap: 3px; min-height: 52px; padding: 6px 2px; font-size: 10.5px; line-height: 1.25; }
-  :where(.mobile-nav) .shell-nav-link > span:not(.fc-icon) { white-space: nowrap; text-overflow: ellipsis; }
 }
 
 /* ---------- Find the pair (Match) ---------- */
