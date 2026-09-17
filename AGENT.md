@@ -144,6 +144,11 @@ install its browser first with `npx playwright install chromium`.
   Find the Pair (`/match/[id]`).
 - Session-only controls (Shuffle, Swap) must never mutate stored cards or
   schedules.
+- Shuffle includes the current card only while its answer is hidden. Once
+  revealed, the current card remains the grading target. Enabling Shuffle
+  changes the next eligible card when at least two remain; disabling it restores
+  the pending cards to their order at the start of the round. Neither action
+  resets reviewed progress. Study header language labels must follow Swap.
 - Remaining means attempted but not learned (`summaryRemaining`), not all
   unlearned cards. A link offering to replay that count must select `learning`
   mode explicitly. `/study/[id]?mode=learning` passes the mode into

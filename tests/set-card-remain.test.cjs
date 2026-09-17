@@ -27,6 +27,8 @@ function load(relative) {
     const target = [base, base + '.ts', base + '.tsx', path.join(base, 'index.ts')]
       .find((p) => fs.existsSync(p) && fs.statSync(p).isFile());
     if (!target) return require(name);
+    // This route-wiring test does not render CSS; Playwright checks the styles.
+    if (target.endsWith('.module.css')) return { default: {} };
     return load(path.relative(root, target));
   }
   vm.runInThisContext(`(function(require,module,exports){${source}\n})`, { filename })(localRequire, module, module.exports);

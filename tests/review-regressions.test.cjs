@@ -47,28 +47,47 @@ test('quiz submits only explicit answer keys, never navigation keys', () => {
   assert.equal(prevented, 12);
 });
 
-test('mid-round shuffle preserves reviewed and active cards, including a revealed card', () => {
+test('mid-round shuffle changes an unrevealed card, pins a revealed target, and restores pending order', () => {
   const currentIdxRef = { current: 1 };
-  const shuffled = [];
-  const updateQueue = loadCallback('components/study/StudySession.tsx', node =>
+  const settings = { shuffle: true };
+  const cards = ['reviewed', 'active', 'next', 'last'].map(id => ({ id }));
+  const roundOrderRef = { current: cards };
+  const calls = [];
+  const makeUpdateQueue = isRevealed => loadCallback('components/study/StudySession.tsx', node =>
     ts.isArrowFunction(node) && ts.isCallExpression(node.parent) &&
-    node.parent.expression.getText() === 'setDueCards' && node.getText().includes('currentIdxRef'), {
-    currentIdxRef,
-    shuffleCards: cards => { shuffled.push([...cards]); return [...cards].reverse(); },
-  });
-  const cards = ['reviewed', 'revealed', 'next', 'last'].map(id => ({ id }));
-  const before = structuredClone(cards);
+    node.parent.expression.getText() === 'setDueCards' && node.getText().includes('shufflePendingCards'), {
+      settings,
+      index: currentIdxRef.current,
+      isRevealed,
+      roundOrderRef,
+      shufflePendingCards: (queue, index, revealed) => {
+        calls.push({ queue: [...queue], index, revealed });
+        const start = index + (revealed ? 1 : 0);
+        const pending = queue.slice(start);
+        return [...queue.slice(0, start), ...pending.slice(1), ...pending.slice(0, 1)];
+      },
+      restorePendingCards: (queue, original, index, revealed) => {
+        const prefix = queue.slice(0, index);
+        const active = revealed ? queue.slice(index, index + 1) : [];
+        const used = new Set([...prefix, ...active].map(card => card.id));
+        return [...prefix, ...active, ...original.filter(card => !used.has(card.id))];
+      },
+    });
+  const updateQueue = makeUpdateQueue(false);
   const result = updateQueue(cards);
-  assert.equal(result[0], cards[0]);
-  assert.equal(result[1], cards[1], 'the revealed active card must remain the grading target');
-  assert.deepEqual(result.map(card => card.id), ['reviewed', 'revealed', 'last', 'next']);
-  assert.deepEqual(shuffled[0], cards.slice(2));
-  assert.deepEqual(cards, before);
-  currentIdxRef.current = cards.length - 1;
-  assert.deepEqual(updateQueue(cards), cards);
-  currentIdxRef.current = cards.length;
-  assert.deepEqual(updateQueue(cards), cards);
-  assert.deepEqual(updateQueue([]), []);
+  assert.deepEqual(result.map(card => card.id), ['reviewed', 'next', 'last', 'active']);
+  assert.equal(result[0], cards[0], 'reviewed prefix must remain untouched');
+  assert.notEqual(result[1], cards[1], 'an unrevealed current card must change when cards remain');
+  assert.deepEqual(calls[0], { queue: cards, index: 1, revealed: false });
+
+  const revealedResult = makeUpdateQueue(true)(cards);
+  assert.deepEqual(revealedResult.map(card => card.id), ['reviewed', 'active', 'last', 'next']);
+  assert.equal(revealedResult[1], cards[1], 'the revealed active card must remain the grading target');
+  assert.deepEqual(calls[1], { queue: cards, index: 1, revealed: true });
+
+  settings.shuffle = false;
+  const restored = updateQueue(result);
+  assert.deepEqual(restored.map(card => card.id), ['reviewed', 'active', 'next', 'last']);
 });
 
 test('failed term Undo propagates to the toast host and remains retryable', () => {
