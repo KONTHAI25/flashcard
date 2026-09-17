@@ -7,12 +7,18 @@ import { getDecks, getCards } from "@/lib/store";
 import { selectStudyCards, filterStudyCards, type StudyMode } from "@/lib/study-queue";
 import { CefrFilter, type CefrFilterValue } from "@/components/PairMeta";
 import { StudyPrompt } from "./StudyPrompt";
+import { StudyGradeActions } from "./StudyGradeActions";
 import { saveReview } from "../study-quiz/saveReview";
 import { shouldIgnoreShortcut } from "../study-quiz/keyboard";
 import { Button } from "@/components/Button";
 import { ProgressBar } from "@/components/ui";
 import { Icon } from "@/components/Icon";
-import { DEFAULT_STUDY_SETTINGS, shuffleCards, type StudySettings } from "@/lib/study-settings";
+import {
+  DEFAULT_STUDY_SETTINGS,
+  restorePendingCards,
+  shufflePendingCards,
+  type StudySettings,
+} from "@/lib/study-settings";
 import { formatElapsed } from "@/lib/match";
 import { LoadError } from "@/components/LoadError";
 
@@ -129,6 +135,7 @@ function StudyRound({ id, mode, levelFilter, settings }: { id?: string; mode: St
   const [finished, setFinished] = useState(false);
   const [loading, setLoading] = useState(true);
   const [originalLen, setOriginalLen] = useState(0);
+  const [shuffleNotice, setShuffleNotice] = useState("");
   // Total grade attempts (Still learning + Know). Used for session stats and progress.
   const [reviewed, setReviewed] = useState(0);
   // Session-scoped "missed this round" pile (Quizlet-style replay queue).
@@ -141,6 +148,10 @@ function StudyRound({ id, mode, levelFilter, settings }: { id?: string; mode: St
   settingsRef.current = settings;
   const currentIdxRef = useRef(currentIdx);
   currentIdxRef.current = currentIdx;
+  const revealedRef = useRef(revealed);
+  revealedRef.current = revealed;
+  const roundOrderRef = useRef<CardType[]>([]);
+  const previousShuffleRef = useRef(settings.shuffle);
   const startedAt = useRef(Date.now());
 
   useEffect(() => {
@@ -164,13 +175,22 @@ function StudyRound({ id, mode, levelFilter, settings }: { id?: string; mode: St
     if (finished) heading.current?.focus();
   }, [finished]);
 
-  // Toggling Shuffle reorders only the cards still ahead in the current round;
-  // graded progress and saved schedules are untouched.
+  // Toggling Shuffle reorders only cards still ahead in the current round;
+  // a revealed card remains pinned as the grading target.
   useEffect(() => {
-    if (!settings.shuffle) return;
+    if (previousShuffleRef.current === settings.shuffle) return;
+    previousShuffleRef.current = settings.shuffle;
+    const index = currentIdxRef.current;
+    const isRevealed = revealedRef.current;
+    if (settings.shuffle) {
+      setShuffleNotice(isRevealed ? "Current card stays in place while its answer is revealed." : "");
+    } else {
+      setShuffleNotice("");
+    }
     setDueCards(previous => {
-      const index = Math.min(currentIdxRef.current + 1, previous.length);
-      return [...previous.slice(0, index), ...shuffleCards(previous.slice(index))];
+      return settings.shuffle
+        ? shufflePendingCards(previous, index, isRevealed)
+        : restorePendingCards(previous, roundOrderRef.current, index, isRevealed);
     });
   }, [settings.shuffle]);
 
@@ -189,12 +209,15 @@ function StudyRound({ id, mode, levelFilter, settings }: { id?: string; mode: St
     setReviewed(r => r + 1);
     if (quality === 0) setMissedIds(prev => [...prev, card.id]);
     setRevealed(false);
+    setShuffleNotice("");
     if (currentIdx + 1 >= dueCards.length) setFinished(true);
     else setCurrentIdx(i => i + 1);
   }
 
   function startRound(cards: CardType[]) {
-    setDueCards(settingsRef.current.shuffle ? shuffleCards(cards) : [...cards]);
+    const original = [...cards];
+    roundOrderRef.current = original;
+    setDueCards(settingsRef.current.shuffle ? shufflePendingCards(original, 0, false) : original);
     startedAt.current = Date.now();
     setCurrentIdx(0);
     setOriginalLen(cards.length);
@@ -202,6 +225,7 @@ function StudyRound({ id, mode, levelFilter, settings }: { id?: string; mode: St
     setMissedIds([]);
     setFinished(cards.length === 0);
     setRevealed(false);
+    setShuffleNotice("");
     setError("");
     reviewedCard.current = null;
   }
@@ -385,8 +409,8 @@ function StudyRound({ id, mode, levelFilter, settings }: { id?: string; mode: St
         <StudyPrompt key={card.id} card={card} revealed={revealed} swap={settings.swap} onReveal={() => setRevealed(true)} onReview={handleReview} />
       </div>
 
-      <p className="mt-3 text-center text-xs text-slate-500">
-        Reveal the answer, then grade · {remaining} left in this round
+      <p className="mt-3 text-center text-xs text-slate-500" role="status">
+        {shuffleNotice || "Reveal the answer, then grade"} · {remaining} left in this round
       </p>
 
       {error && <p role="alert" className="mt-3 text-rose-700">{error}</p>}
@@ -394,40 +418,7 @@ function StudyRound({ id, mode, levelFilter, settings }: { id?: string; mode: St
         className="sticky bottom-0 bg-[#F6F7FB]/95 py-3 backdrop-blur"
         style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
       >
-        <div className="mx-auto grid max-w-2xl grid-cols-2 gap-3">
-          <Button
-            variant="danger"
-            size="grade"
-            disabled={!revealed}
-            onClick={() => handleReview(0)}
-            className="w-full"
-            aria-label="Still learning (press 1)"
-          >
-            <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" aria-hidden="true">
-              <path d="M18 6 6 18M6 6l12 12" />
-            </svg>
-            <span className="truncate">Still learning</span>
-            <kbd className="rounded border border-white/40 bg-white/20 px-1.5 py-0.5 font-mono text-[10px] font-medium leading-none text-white">
-              1
-            </kbd>
-          </Button>
-          <Button
-            variant="success"
-            size="grade"
-            disabled={!revealed}
-            onClick={() => handleReview(1)}
-            className="w-full"
-            aria-label="Know (press 2)"
-          >
-            <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M20 6 9 17l-5-5" />
-            </svg>
-            <span className="truncate">Know</span>
-            <kbd className="rounded border border-white/40 bg-white/20 px-1.5 py-0.5 font-mono text-[10px] font-medium leading-none text-white">
-              2
-            </kbd>
-          </Button>
-        </div>
+        <StudyGradeActions revealed={revealed} onReview={handleReview} />
       </div>
     </div>
   );

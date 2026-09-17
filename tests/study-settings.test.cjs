@@ -65,6 +65,56 @@ test('applyStudySettings shuffles only when requested and keeps every card once'
   assert.notEqual(shuffled, cards, 'a new array must be returned');
 });
 
+test('shufflePendingCards changes an unrevealed current card when at least two cards remain', () => {
+  const cards = [card({ id: 'a' }), card({ id: 'b' })];
+  assert.deepEqual(settings.shufflePendingCards(cards, 0, false, () => 0).map(c => c.id), ['b', 'a']);
+  assert.deepEqual(settings.shufflePendingCards(cards, 0, false, () => 0).map(c => c.id).sort(), ['a', 'b']);
+  assert.deepEqual(settings.shufflePendingCards([], 0, false, () => 0), []);
+  assert.deepEqual(settings.shufflePendingCards([cards[0]], 0, false, () => 0).map(c => c.id), ['a']);
+});
+
+test('shufflePendingCards changes the first eligible card even when shuffle only reorders later cards', () => {
+  const cards = ['a', 'b', 'c'].map(id => card({ id }));
+  let index = 0;
+  const random = () => [0.5, 0.99][index++];
+  assert.deepEqual(settings.shufflePendingCards(cards, 0, false, random).map(c => c.id), ['c', 'a', 'b']);
+});
+
+test('shufflePendingCards preserves reviewed prefix and revealed grading target', () => {
+  const cards = ['a', 'b', 'c', 'd'].map(id => card({ id }));
+  const unrevealed = settings.shufflePendingCards(cards, 1, false, () => 0);
+  assert.deepEqual(unrevealed.map(c => c.id), ['a', 'c', 'd', 'b']);
+  const revealed = settings.shufflePendingCards(cards, 1, true, () => 0);
+  assert.deepEqual(revealed.map(c => c.id), ['a', 'b', 'd', 'c']);
+});
+
+test('restorePendingCards returns pending cards to round order after shuffle', () => {
+  const original = ['a', 'b', 'c', 'd'].map(id => card({ id }));
+  const shuffled = ['a', 'c', 'd', 'b'].map(id => original.find(card => card.id === id));
+  assert.deepEqual(settings.restorePendingCards(shuffled, original, 2, false).map(c => c.id), ['a', 'c', 'b', 'd']);
+  assert.deepEqual(settings.restorePendingCards(shuffled, original, 1, true).map(c => c.id), ['a', 'c', 'b', 'd']);
+});
+
 test('defaults expose both settings as off and accept explicit settings', () => {
   assert.deepEqual(settings.DEFAULT_STUDY_SETTINGS, { shuffle: false, swap: false });
+});
+
+test('shuffle rejects an identity draw without mutating cards or losing IDs', () => {
+  const cards = ['a', 'b', 'c'].map(id => Object.freeze(card({ id })));
+  Object.freeze(cards);
+  const result = settings.shufflePendingCards(cards, 0, false, () => 0.999);
+  assert.notEqual(result[0].id, 'a');
+  assert.deepEqual(result.map(c => c.id).sort(), ['a', 'b', 'c']);
+  assert.deepEqual(cards.map(c => c.id), ['a', 'b', 'c']);
+  assert.deepEqual(settings.shufflePendingCards(cards, 2, true, () => 0.999), cards);
+});
+
+test('restoring order preserves current card objects and never resurrects missing cards', () => {
+  const original = ['a', 'b', 'c'].map(id => card({ id }));
+  const updated = card({ id: 'c', front: 'updated' });
+  const current = [updated, original[0]];
+  const result = settings.restorePendingCards(current, original, 0, false);
+  assert.deepEqual(result.map(c => c.id), ['a', 'c']);
+  assert.equal(result[1], updated);
+  assert.deepEqual(current, [updated, original[0]]);
 });
