@@ -144,3 +144,22 @@ has not been measured here (see Known gaps).
   set, which stays on `/` and one study route.
 - `redesign/app-wide-premium` contains a second, independent nav overflow fix;
   whichever branch survives should keep one implementation.
+
+## Pre-merge review (2026-09-17)
+
+Reviewed the complete six-file diff from `bed3e7e` to `04a7e54`, including CSS
+scope and sizing, quiz choice wrapping, regression assertions, and the earlier
+review record. No merge-blocking findings were identified. Remote refs were
+fetched; `origin/main` at `3933d6d` is already an ancestor of local `main`.
+
+Fresh verification used a detached worktree at `04a7e54`, Windows, Node
+`v24.15.0`, and dependencies installed with `npm ci`:
+
+- `git diff --check main...fix/mobile-nav-overflow`: passed.
+- `npm run verify`: passed lint, typecheck, all 83 unit tests, and production build.
+- `npm run test:e2e:run`: 55 passed, 5 skipped, 0 failed (39.8 seconds).
+  The five skips are the existing mobile hydration stress cases.
+
+This validates the branch commit, not the unrelated dirty files in the primary
+checkout. Linux fonts and Node 22 CI were not retested. Both redesign branches
+remain outside this merge. The user authorized merging after a passing review.
