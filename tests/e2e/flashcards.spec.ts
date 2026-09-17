@@ -27,7 +27,9 @@ test("library search, view controls, and remaining-card link work", async ({ pag
   await expect(page.getByRole("button", { name: "List view", exact: true })).toHaveAttribute("aria-pressed", "true");
   const remain = page.getByRole("link", { name: "Remain 1/4 still learning · play again", exact: true });
   if (isMobile) expect((await remain.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  // Compare against the layout viewport: Blink widens `window.innerWidth` to
+  // the content width under mobile emulation, which hides real overflow.
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
   await remain.click();
   await expect(page).toHaveURL(/\/study\/e2e-deck\?mode=learning$/);
   await expect(page.getByRole("combobox", { name: "Flashcard selection" })).toHaveValue("learning");

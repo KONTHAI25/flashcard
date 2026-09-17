@@ -28,13 +28,15 @@ async function auditMobileNav(page: Page) {
       const labelRect = label.getBoundingClientRect();
       // Measure the painted text, not just the box: `overflow: hidden` can clip
       // a label while the document stays perfectly scroll-free.
-      const range = document.createRange();
-      range.selectNodeContents(label);
       return {
         text: label.textContent ?? "",
         labelOutsideLink: Math.max(labelRect.right - linkRect.right, linkRect.left - labelRect.left, 0),
         linkOutsideViewport: Math.max(linkRect.right - viewport, 0),
-        textClippedBy: Math.max(range.getBoundingClientRect().width - label.clientWidth, 0),
+        // Element-level overflow: stays 0 for a label that wraps to a second
+        // line (legitimate) and goes positive when text is hard-clipped, which
+        // the document-level check cannot see.
+        textClippedBy: Math.max(label.scrollWidth - label.clientWidth, 0),
+        top: linkRect.top,
         height: linkRect.height,
         width: linkRect.width,
         active: link.getAttribute("aria-current") === "page",
@@ -49,7 +51,7 @@ async function auditMobileNav(page: Page) {
   });
 }
 
-async function expectNavFits(page: Page, where: string, expectedWidth: number) {
+async function expectNavFits(page: Page, where: string, expectedWidth: number, activeLabel = "Your library") {
   await page.evaluate(() => document.fonts.ready);
   const audit = await auditMobileNav(page);
   // A widened layout viewport (meta-viewport regression) would make every
@@ -58,6 +60,9 @@ async function expectNavFits(page: Page, where: string, expectedWidth: number) {
   expect(audit.viewport, `${where}: layout viewport`).toBeGreaterThan(expectedWidth - 20);
   expect(audit.scrollWidth, `${where}: horizontal page overflow`).toBeLessThanOrEqual(audit.viewport);
   expect(audit.links.map(link => link.text), `${where}: nav labels`).toEqual(LABELS);
+  // One row for every destination: guards the grid tracks against collapsing
+  // into a wrapped second row (the pre-fix layout produced 3 lines at 320px).
+  expect(new Set(audit.links.map(link => Math.round(link.top))).size, `${where}: links share one row`).toBe(1);
   for (const link of audit.links) {
     expect(link.labelOutsideLink, `${where}: "${link.text}" label inside its link`).toBeLessThanOrEqual(1);
     expect(link.linkOutsideViewport, `${where}: "${link.text}" inside the viewport`).toBeLessThanOrEqual(0);
@@ -66,7 +71,7 @@ async function expectNavFits(page: Page, where: string, expectedWidth: number) {
     expect(link.width, `${where}: "${link.text}" tap target width`).toBeGreaterThanOrEqual(44);
   }
   const active = audit.links.filter(link => link.active);
-  expect(active.map(link => link.text), `${where}: exactly one current link`).toEqual(["Your library"]);
+  expect(active.map(link => link.text), `${where}: exactly one current link`).toEqual([activeLabel]);
   expect(active[0].background, `${where}: active highlight`).not.toBe("rgba(0, 0, 0, 0)");
   for (const link of audit.links.filter(link => !link.active)) {
     expect(link.background, `${where}: "${link.text}" is not highlighted`).toBe("rgba(0, 0, 0, 0)");
@@ -87,14 +92,13 @@ test("mobile nav fits on a study route too", async ({ page }) => {
   await page.setViewportSize({ width, height: 900 });
   await page.goto("/study/e2e-deck?mode=learning");
   await expect(page.getByRole("combobox", { name: "Flashcard selection" })).toBeVisible();
-  await page.evaluate(() => document.fonts.ready);
-  const audit = await auditMobileNav(page);
-  expect(audit.scrollWidth, `/study/e2e-deck @${width}px: horizontal page overflow`).toBeLessThanOrEqual(audit.viewport);
+  await expectNavFits(page, `/study/e2e-deck @${width}px`, width, "Flashcards");
 });
 
 test("the nav switches layout at 430px without clipping", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "E2E vocabulary", exact: true })).toBeVisible();
+  await page.evaluate(() => document.fonts.ready);
   await page.setViewportSize({ width: 430, height: 900 });
   const stacked = await auditMobileNav(page);
   await page.setViewportSize({ width: 431, height: 900 });

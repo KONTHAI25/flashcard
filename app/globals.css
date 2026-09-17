@@ -300,9 +300,9 @@ select:-webkit-autofill {
      hardcoded, so an extra destination just adds a narrower column.
      Labels wrap when they must and ellipsize only if a word cannot fit. */
   .mobile-nav { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2px; padding: 8px 12px; background: white; border-bottom: 1px solid #e9ebf2; }
-  .mobile-nav .shell-nav-link { justify-content: center; min-width: 0; min-height: 44px; font-size: 12px; padding: 8px 6px; gap: 8px; }
-  .mobile-nav .shell-nav-link > span:not(.fc-icon) { max-width: 100%; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-  .mobile-nav .shell-nav-link .fc-icon { font-size: 18px; }
+  :where(.mobile-nav) .shell-nav-link { justify-content: center; min-width: 0; min-height: 44px; font-size: 12px; padding: 8px 6px; gap: 8px; }
+  :where(.mobile-nav) .shell-nav-link > span:not(.fc-icon) { max-width: 100%; min-width: 0; overflow: hidden; overflow-wrap: anywhere; text-align: center; text-overflow: ellipsis; }
+  :where(.mobile-nav) .shell-nav-link .fc-icon { font-size: 18px; }
   .app-main { margin-left: 0; padding: 28px 20px 48px; }
   .study-shortcuts { margin-bottom: 32px; }
   .study-shortcut h2 { font-size: 16px; }
@@ -317,7 +317,7 @@ select:-webkit-autofill {
   .header-create { height: 38px; padding: 0 17px; }
   /* Half a pixel smaller keeps "Practice quiz" on one line down to ~460px. */
   .mobile-nav { padding: 6px 10px; }
-  .mobile-nav .shell-nav-link { font-size: 11.5px; }
+  :where(.mobile-nav) .shell-nav-link { font-size: 11.5px; }
   .app-main { padding: 27px 16px 40px; }
   .library-intro { margin-bottom: 23px; }
   .library-intro h1 { font-size: 25px; max-width: 270px; }
@@ -348,8 +348,8 @@ select:-webkit-autofill {
   /* Icon above label: even the longest word still fits a quarter of a 320px
      row, so every label stays readable instead of being truncated. */
   .mobile-nav { padding: 6px 8px; }
-  .mobile-nav .shell-nav-link { flex-direction: column; gap: 3px; min-height: 52px; padding: 6px 2px; font-size: 10.5px; line-height: 1.25; }
-  .mobile-nav .shell-nav-link > span:not(.fc-icon) { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  :where(.mobile-nav) .shell-nav-link { flex-direction: column; gap: 3px; min-height: 52px; padding: 6px 2px; font-size: 10.5px; line-height: 1.25; }
+  :where(.mobile-nav) .shell-nav-link > span:not(.fc-icon) { max-width: 100%; overflow: hidden; overflow-wrap: normal; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
 }
 
 /* ---------- Find the pair (Match) ---------- */
