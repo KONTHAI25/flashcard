@@ -293,8 +293,13 @@ select:-webkit-autofill {
   .topbar { padding: 0 20px; gap: 18px; height: 68px; }
   .wordmark { min-width: auto; font-size: 21px; }
   .global-search { max-width: 350px; }
-  .mobile-nav { display: flex; gap: 8px; padding: 8px 20px; background: white; border-bottom: 1px solid #e9ebf2; }
-  .shell-nav-link { min-height: 42px; font-size: 12px; padding: 8px 12px; gap: 8px; }
+  /* Four equal tracks with `minmax(0, 1fr)` + `min-width: 0` on the links.
+     A flex row could not shrink below each link's min-content width (longest
+     unbreakable word + icon + padding = 383px minimum), so the row overflowed
+     every viewport narrower than ~375px. */
+  .mobile-nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; padding: 8px 12px; background: white; border-bottom: 1px solid #e9ebf2; }
+  .shell-nav-link { justify-content: center; min-width: 0; min-height: 44px; font-size: 12px; padding: 8px 6px; gap: 8px; }
+  .shell-nav-link > span:not(.fc-icon) { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .shell-nav-link .fc-icon { font-size: 18px; }
   .app-main { margin-left: 0; padding: 28px 20px 48px; }
   .study-shortcuts { margin-bottom: 32px; }
@@ -308,7 +313,8 @@ select:-webkit-autofill {
   .global-search { order: 3; max-width: none; min-height: 40px; }
   .global-search input { font-size: 16px; }
   .header-create { height: 38px; padding: 0 17px; }
-  .mobile-nav { gap: 1px; justify-content: space-between; padding: 7px 12px; }
+  .mobile-nav { gap: 2px; padding: 6px 10px; }
+  .shell-nav-link { font-size: 11.5px; }
   .app-main { padding: 27px 16px 40px; }
   .library-intro { margin-bottom: 23px; }
   .library-intro h1 { font-size: 25px; max-width: 270px; }
@@ -334,6 +340,14 @@ select:-webkit-autofill {
   .set-collection-list .set-card-body { grid-template-columns: minmax(0, 1fr); grid-template-areas: "heading" "metadata" "remain" "bottom"; row-gap: 8px; }
   .set-collection-list .set-remain { margin: 0; }
   .field { font-size: 16px; }
+}
+@media (max-width: 430px) {
+  /* Icon above label: the longest word ("Flashcards") still fits a quarter of
+     a 320px row, so every label stays visible without shrinking the row. */
+  .mobile-nav { padding: 6px 8px; }
+  .shell-nav-link { flex-direction: column; gap: 3px; min-height: 52px; padding: 6px 2px; font-size: 10.5px; line-height: 1.25; }
+  .shell-nav-link > span:not(.fc-icon) { white-space: nowrap; }
+  .shell-nav-link .fc-icon { font-size: 19px; }
 }
 
 /* ---------- Find the pair (Match) ---------- */
