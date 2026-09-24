@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, type ReactNode } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Card as CardType, Deck } from "@/lib/types";
 import { getDecks, getCards } from "@/lib/store";
@@ -156,8 +156,10 @@ function StudyRound({ id, mode, levelFilter, settings, toolbar }: { id?: string;
   }, [finished]);
 
   // Toggling Shuffle reorders only cards still ahead in the current round;
-  // a revealed card remains pinned as the grading target.
-  useEffect(() => {
+  // a revealed card remains pinned as the grading target. A layout effect
+  // applies the new order in the same task as the toggle, so the UI never
+  // shows Shuffle pressed with the old card still on screen.
+  useLayoutEffect(() => {
     if (previousShuffleRef.current === settings.shuffle) return;
     previousShuffleRef.current = settings.shuffle;
     const index = currentIdxRef.current;
