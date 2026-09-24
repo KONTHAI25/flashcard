@@ -85,6 +85,15 @@ export function StudySession({ id, initialMode }: { id?: string; initialMode?: S
         >
           <Icon name="swap" width="15" height="15" /> Swap
         </button>
+        <button
+          type="button"
+          aria-pressed={settings.type}
+          className={styles.toggle}
+          onClick={() => setSettings(current => ({ ...current, type: !current.type }))}
+          title="Type the answer; spelling must match exactly"
+        >
+          <Icon name="pencil" width="15" height="15" /> Type
+        </button>
       </div>
     </div>
   );
@@ -385,11 +394,15 @@ function StudyRound({ id, mode, levelFilter, settings, toolbar }: { id?: string;
       </div>
 
       {/* Remount each prompt to restore keyboard focus after grading. */}
-      <StudyPrompt key={card.id} card={card} revealed={revealed} swap={settings.swap} onReveal={() => setRevealed(true)} onReview={handleReview} />
+      <StudyPrompt key={card.id} card={card} revealed={revealed} swap={settings.swap} typing={settings.type} onReveal={() => setRevealed(true)} onReview={handleReview} />
 
       <p className={styles.hint} role="status">
         {shuffleNotice || (!revealed && (
-          <span className={styles.keys}>Tap the card or press <kbd>Space</kbd> to reveal</span>
+          <span className={styles.keys}>
+            {settings.type
+              ? <>Type the answer, then press <kbd>Enter</kbd></>
+              : <>Tap the card or press <kbd>Space</kbd> to reveal</>}
+          </span>
         ))}
       </p>
 

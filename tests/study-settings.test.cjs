@@ -96,7 +96,7 @@ test('restorePendingCards returns pending cards to round order after shuffle', (
 });
 
 test('defaults expose both settings as off and accept explicit settings', () => {
-  assert.deepEqual(settings.DEFAULT_STUDY_SETTINGS, { shuffle: false, swap: false });
+  assert.deepEqual(settings.DEFAULT_STUDY_SETTINGS, { shuffle: false, swap: false, type: false });
 });
 
 test('shuffle rejects an identity draw without mutating cards or losing IDs', () => {

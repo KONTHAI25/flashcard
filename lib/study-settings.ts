@@ -4,9 +4,11 @@ import { getDisplayBack, type Card } from "./types";
 export interface StudySettings {
   shuffle: boolean;
   swap: boolean;
+  /** Type the answer instead of only revealing it; checked with strict spelling. */
+  type: boolean;
 }
 
-export const DEFAULT_STUDY_SETTINGS: StudySettings = { shuffle: false, swap: false };
+export const DEFAULT_STUDY_SETTINGS: StudySettings = { shuffle: false, swap: false, type: false };
 
 /** Fisher–Yates over a copy; deterministic when a random source is supplied. */
 export function shuffleCards<T>(items: readonly T[], random: () => number = Math.random): T[] {
