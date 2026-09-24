@@ -123,29 +123,35 @@ test("mobile nav fits on a study route too", async ({ page }) => {
   await expectNavFits(page, `/study/e2e-deck @${width}px`, width, "Flashcards");
 });
 
-test("the nav switches layout at 470px without clipping", async ({ page }) => {
+test("the nav switches layout at 540px without clipping", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "E2E vocabulary", exact: true })).toBeVisible();
   const navHeight = () => page.locator(".mobile-nav").evaluate(nav => nav.getBoundingClientRect().height);
-  await page.setViewportSize({ width: 470, height: 900 });
+  await page.setViewportSize({ width: 540, height: 900 });
   // Both sides of the switch get the full guard set: a second row, a shrunken
   // tap target or a widened layout viewport is as wrong here as at 320px.
-  await expectNavFits(page, "/ @470px", 470);
+  await expectNavFits(page, "/ @540px", 540);
   const stackedHeight = await navHeight();
   // Pin the switch itself: moving the breakpoint back to where the row layout
   // wraps a shipped label must fail here rather than pass quietly.
-  expect(await navLinkDirection(page), "@470px: stacked layout").toBe("column");
-  expect(await wrappedLabels(page), "@470px: shipped labels stay on one line").toEqual([]);
-  await page.setViewportSize({ width: 471, height: 900 });
-  await expectNavFits(page, "/ @471px", 471);
+  expect(await navLinkDirection(page), "@540px: stacked layout").toBe("column");
+  expect(await wrappedLabels(page), "@540px: shipped labels stay on one line").toEqual([]);
+  await page.setViewportSize({ width: 541, height: 900 });
+  await expectNavFits(page, "/ @541px", 541);
   const rowHeight = await navHeight();
-  expect(await navLinkDirection(page), "@471px: row layout").toBe("row");
-  // From 471px the row layout must hold every shipped label on one line; a font
+  expect(await navLinkDirection(page), "@541px: row layout").toBe("row");
+  // From 541px the row layout must hold every shipped label on one line; a font
   // or padding regression that wraps one belongs in the stacked layout instead.
-  expect(await wrappedLabels(page), "@471px: shipped labels stay on one line").toEqual([]);
+  expect(await wrappedLabels(page), "@541px: shipped labels stay on one line").toEqual([]);
   // The stacked layout is taller by design (icon above label); it must stay a
   // bounded change rather than doubling the bar.
   expect(Math.abs(stackedHeight - rowHeight)).toBeLessThanOrEqual(14);
+  // System UI fonts differ by platform: Linux falls back to the much wider
+  // DejaVu Sans. Force a wide face (Verdana, or DejaVu where Verdana is
+  // missing) so a breakpoint tuned only on Segoe UI fails here, not just in CI.
+  await page.addStyleTag({ content: ".mobile-nav .shell-nav-link { font-family: Verdana, 'DejaVu Sans', sans-serif; }" });
+  await page.evaluate(() => document.fonts.ready);
+  expect(await wrappedLabels(page), "@541px: labels fit a wide system font").toEqual([]);
 });
 
 test("a long destination label wraps instead of widening the page", async ({ page }) => {
