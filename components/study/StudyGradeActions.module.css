@@ -10,18 +10,23 @@
 .action {
   display: flex;
   min-width: 0;
-  min-height: 4.25rem;
+  min-height: 4rem;
   align-items: center;
   justify-content: center;
   gap: 0.65rem;
-  border: 1px solid;
-  border-radius: 1rem;
-  padding: 1rem 1.25rem;
+  border: 2px solid;
+  border-radius: 1.125rem;
+  padding: 0.75rem 1rem;
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.25;
   cursor: pointer;
-  transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+  box-shadow: 0 6px 16px -10px rgb(20 30 80 / 35%);
+  transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease, transform 150ms ease, opacity 150ms ease;
+}
+
+.action:hover:not(:disabled) {
+  transform: translateY(-1px);
 }
 
 .action:active:not(:disabled) {
@@ -40,9 +45,8 @@
 }
 
 .stillLearning:hover:not(:disabled) {
-  border-color: #fb923c;
+  border-color: #f97316;
   background: #ffedd5;
-  box-shadow: 0 4px 12px rgb(154 52 18 / 12%);
 }
 
 .know {
@@ -52,23 +56,32 @@
 }
 
 .know:hover:not(:disabled) {
-  border-color: #4ade80;
+  border-color: #22c55e;
   background: #dcfce7;
-  box-shadow: 0 4px 12px rgb(22 101 52 / 12%);
 }
 
+/* Keep each action's colour identity while waiting for the reveal. */
 .action:disabled {
-  border-color: #d8dee9;
-  background: #f8fafc;
-  color: #64748b;
+  opacity: 0.5;
   cursor: not-allowed;
   box-shadow: none;
 }
 
 .icon {
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1.75rem;
+  height: 1.75rem;
   flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 0.35rem;
+  color: white;
+}
+
+.stillLearning .icon {
+  background: #f97316;
+}
+
+.know .icon {
+  background: #22c55e;
 }
 
 .label {
@@ -106,6 +119,7 @@
     transition: none;
   }
 
+  .action:hover:not(:disabled),
   .action:active:not(:disabled) {
     transform: none;
   }
