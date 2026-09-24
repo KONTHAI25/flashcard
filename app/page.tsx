@@ -13,6 +13,7 @@ import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/ui";
 import { showToast } from "@/components/Toast";
 import { Icon } from "@/components/Icon";
+import { errorMessage } from "@/lib/errors";
 
 const FILTERS = [{ value: "all", label: "All sets" }, { value: "due", label: "To review" }, { value: "new", label: "Not started" }] as const;
 type Filter = typeof FILTERS[number]["value"];
@@ -53,7 +54,7 @@ function Library() {
         if (removed.deck) restoreDeck(removed.deck, removed.cards);
         refresh();
       } });
-    } catch (cause) { showToast(cause instanceof Error ? cause.message : "Could not delete this set."); }
+    } catch (cause) { showToast(errorMessage(cause, "Could not delete this set.")); }
   }
 
   if (loading) return <LibraryLoading />;

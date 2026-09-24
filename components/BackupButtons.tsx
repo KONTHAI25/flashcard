@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { Button } from "./Button";
 import { showToast } from "./Toast";
 import { exportSnapshotJson, importSnapshotJson, readRawSnapshot } from "@/lib/export-import";
+import { errorMessage } from "@/lib/errors";
 
 /** Backup / restore for browser-only persistence (F1). */
 export function BackupButtons({ onRestored, recovery = false }: { onRestored?: () => void; recovery?: boolean }) {
@@ -24,7 +25,7 @@ export function BackupButtons({ onRestored, recovery = false }: { onRestored?: (
       a.remove();
       URL.revokeObjectURL(url);
     } catch (cause) {
-      showToast(cause instanceof Error ? cause.message : "Could not export your sets.");
+      showToast(errorMessage(cause, "Could not export your sets."));
     }
   }
 
@@ -37,7 +38,7 @@ export function BackupButtons({ onRestored, recovery = false }: { onRestored?: (
       onRestored?.();
       showToast(`Restored ${result.decks} sets and ${result.cards} terms.`);
     } catch (cause) {
-      showToast(cause instanceof Error ? cause.message : "Could not import this file.");
+      showToast(errorMessage(cause, "Could not import this file."));
     } finally {
       setBusy(false);
       if (fileRef.current) fileRef.current.value = "";

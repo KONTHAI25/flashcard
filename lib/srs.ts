@@ -26,7 +26,6 @@ export function reviewCard(card: Card, quality: number, now = Date.now()): Card 
     } else {
       interval = Math.round(interval * ease);
     }
-    ease = Math.max(1.3, ease + 0.0);
     streak = streak + 1;
   } else {
     // Easy

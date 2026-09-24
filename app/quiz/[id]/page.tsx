@@ -6,10 +6,12 @@ import { Deck, normalizeCard, isBilingualCard } from "@/lib/types";
 import { getDeck, getCardsByDeck } from "@/lib/store";
 import { buildQuiz, type Question } from "../quiz";
 import { saveReview } from "@/components/study-quiz/saveReview";
-import { shouldIgnoreShortcut } from "@/components/study-quiz/keyboard";
+import { isRepeatActivation, shouldIgnoreShortcut } from "@/components/study-quiz/keyboard";
 import { Button } from "@/components/Button";
 import { PairBadges } from "@/components/PairMeta";
 import { LoadError } from "@/components/LoadError";
+import { ArrowLeftIcon, CheckCircleIcon } from "@/components/StrokeIcons";
+import { errorMessage } from "@/lib/errors";
 
 const LETTERS = ["A", "B", "C", "D"];
 
@@ -46,24 +48,6 @@ function XIcon({ className = "h-5 w-5" }: { className?: string }) {
   );
 }
 
-function CheckCircleIcon({ className = "h-5 w-5" }: { className?: string }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <circle cx="12" cy="12" r="9" />
-      <path d="M8.5 12.5l2.5 2.5 4.5-5.5" />
-    </svg>
-  );
-}
-
 function XCircleIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (
     <svg
@@ -77,24 +61,6 @@ function XCircleIcon({ className = "h-5 w-5" }: { className?: string }) {
     >
       <circle cx="12" cy="12" r="9" />
       <path d="M9 9l6 6M15 9l-6 6" />
-    </svg>
-  );
-}
-
-function BackArrowIcon({ className = "h-5 w-5" }: { className?: string }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="m12 19-7-7 7-7" />
-      <path d="M19 12H5" />
     </svg>
   );
 }
@@ -143,7 +109,7 @@ function QuizSession({ id }: { id: string }) {
     const allCards = getCardsByDeck(id);
     setQuestions(buildQuiz(allCards));
     setLoadError("");
-    } catch (cause) { setLoadError(cause instanceof Error ? cause.message : "Could not read saved cards."); }
+    } catch (cause) { setLoadError(errorMessage(cause, "Could not read saved cards.")); }
   }, [id, router, attempt]);
 
   function handleSelect(idx: number) {
@@ -177,7 +143,7 @@ function QuizSession({ id }: { id: string }) {
   function resetQuiz() {
     let nextQuestions: Question[];
     try { nextQuestions = buildQuiz(getCardsByDeck(id)); }
-    catch (cause) { setLoadError(cause instanceof Error ? cause.message : "Could not read saved cards."); return; }
+    catch (cause) { setLoadError(errorMessage(cause, "Could not read saved cards.")); return; }
     answerLock.current = false;
     nextLock.current = false;
     setError("");
@@ -285,7 +251,7 @@ function QuizSession({ id }: { id: string }) {
           aria-label="Go back"
           className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-slate-200 bg-white text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
         >
-          <BackArrowIcon />
+          <ArrowLeftIcon />
         </button>
         <h1 className="min-w-0 flex-1 truncate text-xl font-bold text-slate-900">Quiz · {deck.name}</h1>
         <span
@@ -365,7 +331,7 @@ function QuizSession({ id }: { id: string }) {
               aria-pressed={isThisSelected}
               aria-disabled={answered}
               disabled={answered}
-              onKeyDown={e => { if (e.repeat && (e.key === "Enter" || e.key === " ")) e.preventDefault(); }}
+              onKeyDown={e => { if (isRepeatActivation(e)) e.preventDefault(); }}
               onClick={() => handleSelect(idx)}
               className={cls}
             >
@@ -405,7 +371,7 @@ function QuizSession({ id }: { id: string }) {
               </>
             )}
           </p>
-          <Button onKeyDown={e => { if (e.repeat && (e.key === "Enter" || e.key === " ")) e.preventDefault(); }} onClick={handleNext} className="w-full">
+          <Button onKeyDown={e => { if (isRepeatActivation(e)) e.preventDefault(); }} onClick={handleNext} className="w-full">
             {isLast ? "See results" : "Next"}
           </Button>
         </div>

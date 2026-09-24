@@ -7,3 +7,8 @@ export function shouldIgnoreShortcut(event: KeyboardEvent): boolean {
     'input, textarea, select, button, a, [contenteditable]:not([contenteditable="false"]), [role="dialog"], [role="slider"], [role="menu"], [role="radio"]'
   ));
 }
+
+/** A held Enter/Space auto-repeats clicks on buttons; callers preventDefault on it. */
+export function isRepeatActivation(event: Pick<KeyboardEvent, "repeat" | "key">): boolean {
+  return event.repeat && (event.key === "Enter" || event.key === " ");
+}

@@ -20,6 +20,7 @@ import { Button } from "@/components/Button";
 import { LoadError } from "@/components/LoadError";
 import { ProgressBar } from "@/components/ui";
 import { Icon } from "@/components/Icon";
+import { errorMessage } from "@/lib/errors";
 
 export default function MatchPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -61,7 +62,7 @@ function MatchSession({ id }: { id: string }) {
       startBoard(cards);
       setLoadError("");
     } catch (cause) {
-      setLoadError(cause instanceof Error ? cause.message : "Could not read saved cards.");
+      setLoadError(errorMessage(cause, "Could not read saved cards."));
     } finally {
       setLoading(false);
     }

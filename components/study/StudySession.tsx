@@ -21,24 +21,8 @@ import {
 } from "@/lib/study-settings";
 import { formatElapsed } from "@/lib/match";
 import { LoadError } from "@/components/LoadError";
-
-function ArrowLeftIcon({ className = "h-5 w-5" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="m12 19-7-7 7-7" />
-      <path d="M19 12H5" />
-    </svg>
-  );
-}
+import { errorMessage } from "@/lib/errors";
+import { ArrowLeftIcon, CheckCircleIcon } from "@/components/StrokeIcons";
 
 function TrophyIcon({ className = "h-8 w-8" }: { className?: string }) {
   return (
@@ -61,22 +45,9 @@ function TrophyIcon({ className = "h-8 w-8" }: { className?: string }) {
   );
 }
 
-function CheckCircleIcon({ className = "h-8 w-8" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="9" />
-      <path d="m8.5 12.5 2.5 2.5 4.5-5.5" />
-    </svg>
-  );
+/** Fresh cards in a round's deck/level scope; deleted cards are never resurrected. */
+function readScopedCards(deckId: string | undefined, level: CefrFilterValue, sets: Deck[] = getDecks(), cardIds?: ReadonlySet<string>): CardType[] {
+  return filterStudyCards(getCards(), { deckIds: new Set(sets.map(deck => deck.id)), deckId, level, cardIds });
 }
 
 export function StudySession({ id, initialMode }: { id?: string; initialMode?: StudyMode }) {
@@ -163,11 +134,11 @@ function StudyRound({ id, mode, levelFilter, settings }: { id?: string; mode: St
     }
     setDecks(sets);
     const names = new Map(sets.map(d => [d.id, d.name]));
-    const due = selectStudyCards(filterStudyCards(getCards(), { deckIds: new Set(names.keys()), deckId: id, level: levelFilter }), mode)
+    const due = selectStudyCards(readScopedCards(id, levelFilter, sets), mode)
       .sort((a, b) => (names.get(a.deckId) ?? "").localeCompare(names.get(b.deckId) ?? "") || a.due - b.due);
     startRound(due);
     setLoadError("");
-    } catch (cause) { setLoadError(cause instanceof Error ? cause.message : "Could not read saved cards."); }
+    } catch (cause) { setLoadError(errorMessage(cause, "Could not read saved cards.")); }
     finally { setLoading(false); }
   }, [id, mode, levelFilter, router, attempt]);
 
@@ -231,17 +202,13 @@ function StudyRound({ id, mode, levelFilter, settings }: { id?: string; mode: St
   }
 
   function handleReviewMissed() {
-    // Reload both content and schedule; deleted cards must not be resurrected.
-    const ids = new Set(missedIds);
-    try { startRound(filterStudyCards(getCards(), { deckIds: new Set(getDecks().map(deck => deck.id)), deckId: id, level: levelFilter, cardIds: ids })); }
-    catch (cause) { setLoadError(cause instanceof Error ? cause.message : "Could not read saved cards."); }
+    try { startRound(readScopedCards(id, levelFilter, undefined, new Set(missedIds))); }
+    catch (cause) { setLoadError(errorMessage(cause, "Could not read saved cards.")); }
   }
 
   function handleRestart() {
-    try {
-      const existingDecks = new Set(getDecks().map(deck => deck.id));
-      startRound(filterStudyCards(getCards(), { deckIds: existingDecks, deckId: id, level: levelFilter }));
-    } catch (cause) { setLoadError(cause instanceof Error ? cause.message : "Could not read saved cards."); }
+    try { startRound(readScopedCards(id, levelFilter)); }
+    catch (cause) { setLoadError(errorMessage(cause, "Could not read saved cards.")); }
   }
 
   useEffect(() => {
@@ -296,7 +263,7 @@ function StudyRound({ id, mode, levelFilter, settings }: { id?: string; mode: St
             className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-emerald-50 text-emerald-500"
             aria-hidden="true"
           >
-            <CheckCircleIcon />
+            <CheckCircleIcon className="h-8 w-8" strokeWidth={1.5} />
           </div>
           <h1 ref={heading} tabIndex={-1} className="mt-4 text-2xl font-bold tracking-tight text-slate-900">
             {mode === "learning" ? "No terms still learning" : "Nothing to review"}

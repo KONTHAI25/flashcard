@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { getCards, getDecks } from "./store";
 import { summarizeDecks, type DeckSummary } from "./library";
 import { useStorageRefresh } from "./use-storage-refresh";
+import { errorMessage } from "./errors";
 
 export function useLibrary() {
   const [summaries, setSummaries] = useState<DeckSummary[]>([]);
@@ -14,7 +15,7 @@ export function useLibrary() {
       setSummaries(summarizeDecks(getDecks(), getCards()));
       setError(null);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Could not load your sets. Please try again.");
+      setError(errorMessage(cause, "Could not load your sets. Please try again."));
     } finally { setLoading(false); }
   }, []);
 

@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Deck } from "@/lib/types";
 import { getDecks, getCards } from "@/lib/store";
+import { groupCardsByDeck } from "@/lib/library";
 import { Badge } from "@/components/ui";
 import { LoadError } from "@/components/LoadError";
 
 import { canBuildQuiz } from "./quiz";
+import { errorMessage } from "@/lib/errors";
 
 function ChevronRightIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (
@@ -35,13 +37,13 @@ export default function QuizIndexPage() {
   useEffect(() => {
     try {
     const sets = getDecks();
-    const cards = getCards();
+    const cardsByDeck = groupCardsByDeck(getCards());
     setDecks(sets.map(deck => {
-      const terms = cards.filter(c => c.deckId === deck.id);
+      const terms = cardsByDeck.get(deck.id) ?? [];
       return { deck, count: terms.length, ready: canBuildQuiz(terms) };
     }));
     setError("");
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "Could not read saved sets."); }
+    } catch (cause) { setError(errorMessage(cause, "Could not read saved sets.")); }
     finally { setLoading(false); }
   }, [attempt]);
 
