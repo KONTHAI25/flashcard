@@ -115,6 +115,99 @@
   color: #2a35a8;
 }
 
+/* ---------- Typed answer ---------- */
+.typeForm {
+  display: flex;
+  gap: 0.5rem;
+  border-top: 1px solid #eef0f6;
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.typeInput {
+  min-width: 0;
+  min-height: 3rem;
+  flex: 1;
+  border: 2px solid #dfe3f0;
+  border-radius: 0.875rem;
+  background: #fafbff;
+  padding: 0 1rem;
+  font-size: 1.0625rem; /* ≥16px stops iOS zooming on focus */
+  font-weight: 600;
+  color: #161b33;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.typeInput:focus {
+  outline: none;
+  border-color: #4255ff;
+  background: white;
+}
+
+.typeSubmit {
+  min-height: 3rem;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 0.875rem;
+  background: #4255ff;
+  padding: 0 1.25rem;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: white;
+  cursor: pointer;
+}
+
+.typeSubmit:hover:not(:disabled) {
+  background: #3040e6;
+}
+
+.typeSubmit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.typeSubmit:focus-visible,
+.continue:focus-visible {
+  outline: 2px solid #4255ff;
+  outline-offset: 2px;
+}
+
+.verdict {
+  margin-bottom: 0.75rem;
+  font-size: 0.9375rem;
+  font-weight: 800;
+}
+
+.verdictRight {
+  color: #15803d;
+}
+
+.verdictWrong {
+  color: #be123c;
+}
+
+.yourAnswer {
+  font-weight: 700;
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
+.continue {
+  margin-top: 1rem;
+  min-height: 2.75rem;
+  border: 0;
+  border-radius: 999px;
+  background: #4255ff;
+  padding: 0 1.4rem;
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: white;
+  cursor: pointer;
+}
+
+.continue:hover {
+  background: #3040e6;
+}
+
 @keyframes answer-in {
   from { opacity: 0; transform: translateY(-6px); }
   to { opacity: 1; transform: none; }
