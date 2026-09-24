@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { normalizeCard, isBilingualCard, type Card } from "@/lib/types";
 import { studyFace } from "@/lib/study-settings";
 import { PairBadges } from "@/components/PairMeta";
+import styles from "./StudyPrompt.module.css";
 
 export function StudyPrompt({ card, revealed, swap = false, onReveal, onReview }: {
   card: Card;
@@ -13,13 +14,20 @@ export function StudyPrompt({ card, revealed, swap = false, onReveal, onReview }
   onReview: (quality: number) => void;
 }) {
   const prompt = useRef<HTMLButtonElement>(null);
+  const answerRef = useRef<HTMLDivElement>(null);
   useEffect(() => { prompt.current?.focus(); }, []);
+  // On short screens the sticky grade bar can cover the answer; bring it into view.
+  useEffect(() => {
+    if (!revealed) return;
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    answerRef.current?.scrollIntoView?.({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+  }, [revealed]);
   const normalized = normalizeCard(card);
   const face = studyFace(normalized, swap);
   const answer = face.answer;
   const bilingual = isBilingualCard(card);
   return (
-    <div className="mx-auto w-full max-w-2xl">
+    <div className={styles.card}>
       <button
         ref={prompt}
         type="button"
@@ -36,32 +44,32 @@ export function StudyPrompt({ card, revealed, swap = false, onReveal, onReview }
             onReview(quality);
           }
         }}
-        className="block min-h-[240px] w-full rounded-xl border border-slate-200 bg-white p-6 text-center shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2 sm:p-8"
+        className={styles.face}
       >
-        <span className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <span className="inline-flex min-w-0 items-center rounded-full border border-indigo-100 bg-indigo-50 px-2.5 py-1 text-[11px] font-bold tracking-[0.1em] text-indigo-700 uppercase">
+        <span className={styles.meta}>
+          <span className={styles.direction}>
             {bilingual ? (
               <>
                 {face.promptLabel}
-                <span aria-hidden="true" className="px-1 text-indigo-400">→</span>
+                <span aria-hidden="true" className={styles.arrow}>→</span>
                 {face.answerLabel}
               </>
             ) : "Question"}
           </span>
-          <span className="flex min-w-0 flex-wrap justify-end gap-1.5">
+          <span className={styles.badges}>
             <PairBadges level={normalized.level} source={normalized.source} />
           </span>
         </span>
-        <span className="block break-words text-2xl font-semibold text-slate-900">{face.prompt}</span>
-        <span className="mt-4 block text-xs font-normal text-slate-500">{revealed ? "Choose Still learning or Know" : "Reveal answer · Space or Enter"}</span>
+        <span className={styles.word} data-study-word>{face.prompt}</span>
+        {!revealed && <span className={styles.reveal}>Show answer</span>}
       </button>
       <div id="study-answer" aria-live="polite">
         {revealed && (
-          <div className="mt-3 rounded-xl border border-indigo-200 bg-indigo-50 p-6 text-center sm:p-8">
-            <p className="mb-1 text-[11px] font-bold tracking-[0.14em] text-indigo-700 uppercase">
+          <div ref={answerRef} className={styles.answer}>
+            <p className={styles.answerLabel}>
               {bilingual ? `${face.answerLabel}${face.answerLabel === "Thai" ? " · คำแปล" : " · Answer"}` : "Answer"}
             </p>
-            <p className="break-words text-2xl font-semibold text-indigo-900">{answer}</p>
+            <p className={styles.answerText}>{answer}</p>
           </div>
         )}
       </div>

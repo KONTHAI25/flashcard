@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Card as CardType, Deck } from "@/lib/types";
 import { getDecks, getCards } from "@/lib/store";
 import { selectStudyCards, filterStudyCards, type StudyMode } from "@/lib/study-queue";
-import { CefrFilter, type CefrFilterValue } from "@/components/PairMeta";
+import { CEFR_FILTER_OPTIONS, type CefrFilterValue } from "@/components/PairMeta";
+import styles from "./StudySession.module.css";
 import { StudyPrompt } from "./StudyPrompt";
 import { StudyGradeActions } from "./StudyGradeActions";
 import { saveReview } from "../study-quiz/saveReview";
@@ -54,44 +55,43 @@ export function StudySession({ id, initialMode }: { id?: string; initialMode?: S
   const [mode, setMode] = useState<StudyMode>(initialMode ?? (id ? "continue" : "due"));
   const [level, setLevel] = useState<CefrFilterValue>("All");
   const [settings, setSettings] = useState<StudySettings>(DEFAULT_STUDY_SETTINGS);
-  return <div>
-    <div className="study-controls">
-      <label className="study-practice">
-        Practice
-        <select aria-label="Flashcard selection" value={mode} onChange={event => setMode(event.target.value as StudyMode)} className="field w-auto">
-          <option value="continue">Continue learning</option>
-          <option value="learning">Still learning only</option>
-          <option value="all">All terms</option>
-          <option value="due">Due now only</option>
-        </select>
-      </label>
-      <CefrFilter value={level} onChange={setLevel} idPrefix="study-cefr" />
-      <div className="study-settings" role="group" aria-label="Flashcard options">
+  const toolbar = (
+    <div className={styles.toolbar}>
+      <select aria-label="Flashcard selection" value={mode} onChange={event => setMode(event.target.value as StudyMode)} className={styles.select}>
+        <option value="continue">Continue learning</option>
+        <option value="learning">Still learning only</option>
+        <option value="all">All terms</option>
+        <option value="due">Due now only</option>
+      </select>
+      <select aria-label="CEFR level" value={level} onChange={event => setLevel(event.target.value as CefrFilterValue)} className={styles.select}>
+        {CEFR_FILTER_OPTIONS.map(option => <option key={option} value={option}>{option === "All" ? "All levels" : option}</option>)}
+      </select>
+      <div className={styles.toggles} role="group" aria-label="Flashcard options">
         <button
           type="button"
           aria-pressed={settings.shuffle}
-          className={`study-setting${settings.shuffle ? " active" : ""}`}
+          className={styles.toggle}
           onClick={() => setSettings(current => ({ ...current, shuffle: !current.shuffle }))}
           title="Shuffle the remaining cards"
         >
-          <Icon name="shuffle" width="16" height="16" /> Shuffle
+          <Icon name="shuffle" width="15" height="15" /> Shuffle
         </button>
         <button
           type="button"
           aria-pressed={settings.swap}
-          className={`study-setting${settings.swap ? " active" : ""}`}
+          className={styles.toggle}
           onClick={() => setSettings(current => ({ ...current, swap: !current.swap }))}
           title="Show Thai first and recall the English word"
         >
-          <Icon name="swap" width="16" height="16" /> Swap
+          <Icon name="swap" width="15" height="15" /> Swap
         </button>
       </div>
     </div>
-    <StudyRound key={`${id ?? "all"}:${mode}:${level}`} id={id} mode={mode} levelFilter={level} settings={settings} />
-  </div>;
+  );
+  return <StudyRound key={`${id ?? "all"}:${mode}:${level}`} id={id} mode={mode} levelFilter={level} settings={settings} toolbar={toolbar} />;
 }
 
-function StudyRound({ id, mode, levelFilter, settings }: { id?: string; mode: StudyMode; levelFilter: CefrFilterValue; settings: StudySettings }) {
+function StudyRound({ id, mode, levelFilter, settings, toolbar }: { id?: string; mode: StudyMode; levelFilter: CefrFilterValue; settings: StudySettings; toolbar: ReactNode }) {
   const router = useRouter();
   const [decks, setDecks] = useState<Deck[]>([]);
   const deck = decks.find(d => d.id === id);
@@ -231,10 +231,11 @@ function StudyRound({ id, mode, levelFilter, settings }: { id?: string; mode: St
   if (loading) {
     return (
       <div
-        className="mx-auto w-full max-w-3xl"
+        className="mx-auto w-full max-w-2xl"
         aria-busy="true"
         aria-label="Loading study session"
       >
+        {toolbar}
         <div className="mb-4 flex items-center gap-3">
           <div className="h-11 w-11 animate-pulse rounded-xl bg-slate-200" />
           <div className="h-6 w-40 animate-pulse rounded-lg bg-slate-200" />
@@ -257,7 +258,8 @@ function StudyRound({ id, mode, levelFilter, settings }: { id?: string; mode: St
   // Empty state: deck had nothing due when the session loaded.
   if (finished && originalLen === 0) {
     return (
-      <div className="mx-auto w-full max-w-3xl">
+      <div className="mx-auto w-full max-w-2xl">
+        {toolbar}
         <div className="mx-auto max-w-sm rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
           <div
             className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-emerald-50 text-emerald-500"
@@ -295,7 +297,8 @@ function StudyRound({ id, mode, levelFilter, settings }: { id?: string; mode: St
 
   if (finished || !card) {
     return (
-      <div className="mx-auto w-full max-w-3xl">
+      <div className="mx-auto w-full max-w-2xl">
+        {toolbar}
         <div className="mx-auto max-w-sm rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
           <div
             className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-amber-50 text-amber-500"
@@ -344,47 +347,54 @@ function StudyRound({ id, mode, levelFilter, settings }: { id?: string; mode: St
   }
 
   // Single pass per round: position is progress.
-  const remaining = Math.max(0, dueCards.length - currentIdx);
   const position = Math.min(currentIdx + 1, dueCards.length);
   const progress =
     originalLen > 0 ? Math.min(100, Math.round((reviewed / originalLen) * 100)) : 100;
+  const known = reviewed - missedIds.length;
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col min-h-[70dvh]">
-      <div className="mb-4 flex items-center gap-3">
+    <div className={styles.stage}>
+      <header className={styles.head}>
         <button
           type="button"
           onClick={() => router.push(id ? `/deck/${id}` : "/study")}
           aria-label={id ? "Back to set" : "Back to study"}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4255FF] focus-visible:ring-offset-2"
+          className={styles.back}
         >
           <ArrowLeftIcon />
         </button>
-        <h1 className="min-w-0 flex-1 truncate text-xl font-bold tracking-tight text-slate-900">
-          {deck?.name ?? "All sets"}
-        </h1>
-        <p className="shrink-0 text-sm tabular-nums text-slate-500">
+        <div className={styles.titles}>
+          <p className={styles.eyebrow}>{id ? "Flashcards" : `Flashcards · ${decks.find(d => d.id === card.deckId)?.name ?? ""}`}</p>
+          <h1 className={styles.title}>{deck?.name ?? "All sets"}</h1>
+        </div>
+        <p className={styles.counter} aria-label={`Card ${position} of ${dueCards.length}`}>
           {position} / {dueCards.length}
         </p>
+      </header>
+
+      {toolbar}
+
+      <div className={styles.score}>
+        <span className={`${styles.chip} ${styles.chipLearning}`} title="Still learning this round">
+          <span className="sr-only">Still learning: </span>{missedIds.length}
+        </span>
+        <ProgressBar value={progress} className={styles.track} />
+        <span className={`${styles.chip} ${styles.chipKnow}`} title="Known this round">
+          <span className="sr-only">Know: </span>{known}
+        </span>
       </div>
 
-      <ProgressBar value={progress} className="mb-6" />
+      {/* Remount each prompt to restore keyboard focus after grading. */}
+      <StudyPrompt key={card.id} card={card} revealed={revealed} swap={settings.swap} onReveal={() => setRevealed(true)} onReview={handleReview} />
 
-      <div className="flex-1">
-        {/* Remount each prompt to restore keyboard focus after grading. */}
-        {!id && <p className="mb-3 text-sm text-slate-500">Set: {decks.find(d => d.id === card.deckId)?.name}</p>}
-        <StudyPrompt key={card.id} card={card} revealed={revealed} swap={settings.swap} onReveal={() => setRevealed(true)} onReview={handleReview} />
-      </div>
-
-      <p className="mt-3 text-center text-xs text-slate-500" role="status">
-        {shuffleNotice || "Reveal the answer, then grade"} · {remaining} left in this round
+      <p className={styles.hint} role="status">
+        {shuffleNotice || (!revealed && (
+          <span className={styles.keys}>Tap the card or press <kbd>Space</kbd> to reveal</span>
+        ))}
       </p>
 
-      {error && <p role="alert" className="mt-3 text-rose-700">{error}</p>}
-      <div
-        className="sticky bottom-0 bg-[#F6F7FB]/95 py-3 backdrop-blur"
-        style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
-      >
+      {error && <p role="alert" className="mt-3 text-center text-rose-700">{error}</p>}
+      <div className={styles.footer}>
         <StudyGradeActions revealed={revealed} onReview={handleReview} />
       </div>
     </div>

@@ -78,7 +78,7 @@ test("shuffle keeps the revealed card as the grading target", async ({ page }) =
   await page.goto("/study/e2e-deck?mode=all");
   const prompt = page.locator('button[aria-controls="study-answer"]');
   await expect(prompt).toBeVisible();
-  const word = await prompt.locator("span.block").first().innerText();
+  const word = await prompt.locator("[data-study-word]").innerText();
   await prompt.click();
   const answer = await page.locator("#study-answer").textContent();
   const before = await savedSnapshot(page);

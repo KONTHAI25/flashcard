@@ -3,7 +3,7 @@ import { sampleSnapshot, savedSnapshot, test, expect } from "./fixtures";
 test("shuffle changes the hidden card, restores order, and reviews each card once", async ({ page }) => {
   await page.goto("/study/e2e-deck?mode=all");
   const prompt = page.locator('button[aria-controls="study-answer"]');
-  const word = prompt.locator("span.block").first();
+  const word = prompt.locator("[data-study-word]");
   const shuffle = page.getByRole("button", { name: "Shuffle", exact: true });
   await expect(prompt).toBeVisible();
   const original = await word.innerText();
@@ -44,13 +44,13 @@ test.describe("two-card shuffled round", () => {
   test("retains shuffled order when a filter remounts the round", async ({ page }) => {
     await page.goto("/study/e2e-deck?mode=all");
     const prompt = page.locator('button[aria-controls="study-answer"]');
-    const word = prompt.locator("span.block").first();
+    const word = prompt.locator("[data-study-word]");
     await expect(prompt).toBeVisible();
     const original = await word.innerText();
     const before = await savedSnapshot(page);
     await page.getByRole("button", { name: "Shuffle", exact: true }).click();
     await expect(word).not.toHaveText(original);
-    await page.getByRole("button", { name: "B1", exact: true }).click();
+    await page.getByRole("combobox", { name: "CEFR level" }).selectOption("B1");
     await expect(prompt).toBeVisible();
     await expect(word).not.toHaveText(original);
     await expect(page.getByRole("button", { name: "Shuffle", exact: true })).toHaveAttribute("aria-pressed", "true");

@@ -436,19 +436,11 @@ select:-webkit-autofill {
 }
 
 /* ---------- Study session controls ---------- */
-.study-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 18px; max-width: 48rem; margin: 0 auto 20px; }
-.study-practice { display: flex; align-items: center; gap: 12px; color: #5a647b; font-size: 14px; }
-.study-settings { display: inline-flex; padding: 3px; border: 1px solid #dfe3ee; border-radius: 999px; background: white; }
-.study-setting { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; color: #6a7389; font-size: 12px; font-weight: 700; cursor: pointer; }
-.study-setting:hover { color: #232a44; }
-.study-setting.active { background: #4255ff; color: white; }
-.study-setting:focus-visible { outline: 2px solid #4255ff; outline-offset: 2px; }
 .round-stats { display: flex; flex-wrap: wrap; justify-content: center; gap: 22px; margin: 20px 0 0; }
 .round-stats div { min-width: 58px; }
 .round-stats dt { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: #8b93a8; }
 .round-stats dd { margin-top: 3px; color: #232a44; font-size: 18px; font-weight: 750; }
 @media (max-width: 640px) {
-  .study-controls { justify-content: flex-start; }
   .round-stats { gap: 16px; }
 }
 

@@ -1,0 +1,222 @@
+.stage {
+  display: flex;
+  width: 100%;
+  max-width: 42rem;
+  min-height: 70dvh;
+  flex-direction: column;
+  margin: 0 auto;
+}
+
+/* ---------- Header ---------- */
+.head {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.back {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  place-items: center;
+  border: 1px solid #e3e6f0;
+  border-radius: 999px;
+  background: white;
+  color: #586079;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.back:hover {
+  border-color: #c9cee0;
+  background: #f3f4fa;
+  color: #1f2540;
+}
+
+.back:focus-visible,
+.toggle:focus-visible,
+.select:focus-visible {
+  outline: 2px solid #4255ff;
+  outline-offset: 2px;
+}
+
+.titles {
+  min-width: 0;
+  flex: 1;
+}
+
+.eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #7a82a0;
+  text-transform: uppercase;
+}
+
+.title {
+  overflow: hidden;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #1a1f36;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.counter {
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: #eef0ff;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #3242d9;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Toolbar ---------- */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid #e6e8f2;
+  border-radius: 1rem;
+  background: white;
+  padding: 0.375rem;
+}
+
+.select {
+  min-height: 2.25rem;
+  max-width: 100%;
+  appearance: none;
+  border: 0;
+  border-radius: 0.625rem;
+  background: #f4f5fa url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%235e6682' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3 4.5 3 3 3-3'/%3E%3C/svg%3E") no-repeat right 0.7rem center;
+  padding: 0 2rem 0 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  color: #2d3350;
+  cursor: pointer;
+}
+
+.select:hover {
+  background-color: #eceef7;
+}
+
+.select option {
+  background: white;
+}
+
+.toggles {
+  display: inline-flex;
+  gap: 0.25rem;
+  margin-left: auto;
+}
+
+.toggle {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  gap: 0.375rem;
+  border: 0;
+  border-radius: 0.625rem;
+  background: transparent;
+  padding: 0 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #5e6682;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.toggle:hover {
+  background: #f4f5fa;
+  color: #1f2540;
+}
+
+.toggle[aria-pressed="true"] {
+  background: #4255ff;
+  color: white;
+}
+
+/* ---------- Score + progress ---------- */
+.score {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.chip {
+  display: inline-flex;
+  min-width: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border-radius: 999px;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.chipLearning {
+  border: 1px solid #fed7aa;
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.chipKnow {
+  border: 1px solid #bbf7d0;
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.track {
+  flex: 1;
+}
+
+/* ---------- Hints + footer ---------- */
+.hint {
+  margin-top: 0.875rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #6b7390;
+}
+
+.hint kbd {
+  border: 1px solid #dde1ec;
+  border-radius: 0.3rem;
+  background: white;
+  padding: 0.05rem 0.35rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.6875rem;
+  color: #3d4460;
+}
+
+/* Keyboard hints are noise on touch-only devices. */
+@media (hover: none) {
+  .keys { display: none; }
+}
+
+.footer {
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+  padding: 1.25rem 0 calc(0.75rem + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, var(--bg) 72%, transparent);
+}
+
+@media (max-width: 480px) {
+  .toggles {
+    margin-left: 0;
+  }
+
+  .title {
+    font-size: 1.125rem;
+  }
+}
