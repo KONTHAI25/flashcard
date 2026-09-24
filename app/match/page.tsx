@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getDecks, getCards } from "@/lib/store";
 import { countMatchablePairs, MATCH_MIN_PAIRS } from "@/lib/match";
+import { groupCardsByDeck } from "@/lib/library";
 import { Badge } from "@/components/ui";
 import { LoadError } from "@/components/LoadError";
 import { Icon } from "@/components/Icon";
+import { errorMessage } from "@/lib/errors";
 
 interface MatchDeckRow {
   id: string;
@@ -23,16 +25,16 @@ export default function MatchIndexPage() {
 
   useEffect(() => {
     try {
-      const cards = getCards();
+      const cardsByDeck = groupCardsByDeck(getCards());
       setDecks(getDecks().map(deck => ({
         id: deck.id,
         name: deck.name,
         emoji: deck.emoji,
-        pairs: countMatchablePairs(cards.filter(card => card.deckId === deck.id)),
+        pairs: countMatchablePairs(cardsByDeck.get(deck.id) ?? []),
       })));
       setError("");
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Could not read saved sets.");
+      setError(errorMessage(cause, "Could not read saved sets."));
     } finally {
       setLoading(false);
     }

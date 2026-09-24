@@ -16,10 +16,22 @@ export function summarizeDecks(decks: Deck[], cards: Card[], now = Date.now()): 
     if (!summary) continue;
     summary.total++;
     if (card.due <= now) summary.due++;
-    if (card.streak > 0 || card.due > card.createdAt) summary.reviewed++;
-    if (card.streak > 0) summary.learned++;
+    const progress = cardProgress(card);
+    if (progress !== "notStarted") summary.reviewed++;
+    if (progress === "learned") summary.learned++;
   }
   return [...summaries.values()];
+}
+
+/** Bucket cards by deck in one pass, preserving storage order within each deck. */
+export function groupCardsByDeck<T extends Pick<Card, "deckId">>(cards: T[]): Map<string, T[]> {
+  const groups = new Map<string, T[]>();
+  for (const card of cards) {
+    const group = groups.get(card.deckId);
+    if (group) group.push(card);
+    else groups.set(card.deckId, [card]);
+  }
+  return groups;
 }
 
 /** Persistent "still learning" count for a deck summary (reviewed minus learned). */

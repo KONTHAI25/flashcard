@@ -18,26 +18,8 @@ import { countMatchablePairs } from "@/lib/match";
 import { fetchTranslate, type TranslateCandidate } from "@/lib/translate";
 import { LevelBadge, SourceTag, CefrFilter, type CefrFilterValue } from "@/components/PairMeta";
 import { deckProgress } from "@/lib/library";
+import { ArrowLeftIcon } from "@/components/StrokeIcons";
 import { answerMatchesWord, beginLookup, canAutoReplaceAnswer, isLookupCurrent, resolveSaveSource, type LookupRequest } from "@/lib/editor-state";
-
-function ArrowLeftIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M19 12H5" />
-      <path d="m12 19-7-7 7-7" />
-    </svg>
-  );
-}
 
 function CardStackIcon() {
   return (

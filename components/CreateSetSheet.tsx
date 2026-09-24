@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createDeck } from "@/lib/store";
 import { Button } from "./Button";
 import { Sheet } from "./Sheet";
+import { errorMessage } from "@/lib/errors";
 
 const ICONS = ["📖", "🎯", "🧮", "🌍", "💻", "🎨", "🔬", "🎵", "🧠", "⚡"];
 
@@ -21,7 +22,7 @@ export function CreateSetSheet({ open, onClose }: { open: boolean; onClose: () =
           const deck = createDeck(name.trim(), emoji);
           setName(""); setEmoji(ICONS[0]); setError(null);
           onClose(); router.push(`/deck/${deck.id}`);
-        } catch (cause) { setError(cause instanceof Error ? cause.message : "Could not save your set. Please try again."); }
+        } catch (cause) { setError(errorMessage(cause, "Could not save your set. Please try again.")); }
       }}>
         <div>
           <label htmlFor="set-name" className="mb-2 block text-sm font-medium">Set name</label>
