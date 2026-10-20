@@ -8,6 +8,10 @@ export function reviewCard(card: Card, quality: number, now = Date.now()): Card 
   if (quality !== 0 && quality !== 1 && quality !== 2) {
     throw new RangeError("Review quality must be 0, 1, or 2");
   }
+  // Voluntary practice ahead of schedule (quiz, "All terms") must not grow the
+  // interval as if it had fully elapsed; repeated runs would compound it into
+  // years. A learned card keeps its schedule; forgetting it still resets.
+  if (quality > 0 && card.streak >= 1 && card.due > now) return { ...card };
   let interval = Number.isFinite(card.interval) ? Math.max(0, card.interval) : 0;
   let ease = Number.isFinite(card.ease) ? Math.min(3, Math.max(1.3, card.ease)) : 2.5;
   let streak = Number.isFinite(card.streak) ? Math.max(0, Math.floor(card.streak)) : 0;

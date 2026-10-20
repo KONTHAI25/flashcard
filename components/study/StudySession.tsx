@@ -138,6 +138,7 @@ function StudyRound({ id, mode, levelFilter, settings, toolbar }: { id?: string;
     try {
     const sets = getDecks();
     if (id && !sets.some(d => d.id === id)) {
+      // Stay on the loading skeleton; an empty round would flash "Session complete".
       router.replace("/study");
       return;
     }
@@ -147,8 +148,8 @@ function StudyRound({ id, mode, levelFilter, settings, toolbar }: { id?: string;
       .sort((a, b) => (names.get(a.deckId) ?? "").localeCompare(names.get(b.deckId) ?? "") || a.due - b.due);
     startRound(due);
     setLoadError("");
-    } catch (cause) { setLoadError(errorMessage(cause, "Could not read saved cards.")); }
-    finally { setLoading(false); }
+    setLoading(false);
+    } catch (cause) { setLoadError(errorMessage(cause, "Could not read saved cards.")); setLoading(false); }
   }, [id, mode, levelFilter, router, attempt]);
 
   useEffect(() => {

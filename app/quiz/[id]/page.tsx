@@ -104,7 +104,7 @@ function QuizSession({ id }: { id: string }) {
   useEffect(() => {
     try {
     const d = getDeck(id);
-    if (!d) { router.push("/"); return; }
+    if (!d) { router.replace("/"); return; }
     setDeck(d);
     const allCards = getCardsByDeck(id);
     setQuestions(buildQuiz(allCards));

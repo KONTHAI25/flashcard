@@ -78,6 +78,25 @@ test('new cards, ease limits, malformed schedules and invalid grades', () => {
   assert.throws(() => srs.reviewCard(card(), NaN), RangeError);
 });
 
+test('practising a learned card before its due date keeps its schedule', () => {
+  // Repeated quizzes on a learned card must not compound the interval
+  // (8 → 26 → 90 → 328 days) as if each full interval had elapsed.
+  const learned = card({ interval: 8, streak: 4, due: 1000 + 8 * DAY });
+  for (const quality of [1, 2]) {
+    const early = srs.reviewCard(learned, quality, 1000);
+    assert.deepEqual(early, learned);
+    assert.notEqual(early, learned);
+  }
+  const forgotten = srs.reviewCard(learned, 0, 1000);
+  assert.deepEqual([forgotten.interval, forgotten.streak, forgotten.due], [1, 0, 1000 + DAY]);
+  // Still-learning cards are not yet scheduled, so an early Know graduates them.
+  const missed = srs.reviewCard(card(), 0, 1000);
+  const graduated = srs.reviewCard(missed, 1, 2000);
+  assert.deepEqual([graduated.interval, graduated.streak, graduated.due], [2, 1, 2000 + 2 * DAY]);
+  // A due learned card still advances normally.
+  assert.equal(srs.reviewCard({ ...learned, due: 1000 }, 1, 1000).interval, 20);
+});
+
 test('due boundary and future labels do not display zero minutes', t => {
   t.mock.method(Date, 'now', () => 1000);
   assert.equal(srs.isDue(card({ due: 1000 })), true);
